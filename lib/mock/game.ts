@@ -1,0 +1,98 @@
+export interface PoolEntry {
+  id: string;
+  name: string;
+  totalWagers: number;
+  participantCount: number;
+  rewardPool: number;
+  status: 'active' | 'upcoming' | 'completed';
+}
+
+export const mockPoolData: PoolEntry[] = [
+  {
+    id: 'pool_1',
+    name: 'Daily Dragon Masters',
+    totalWagers: 45250,
+    participantCount: 342,
+    rewardPool: 12500,
+    status: 'active',
+  },
+  {
+    id: 'pool_2',
+    name: 'Panda Championship 2024',
+    totalWagers: 89500,
+    participantCount: 687,
+    rewardPool: 25000,
+    status: 'active',
+  },
+  {
+    id: 'pool_3',
+    name: 'Weekend Warriors Cup',
+    totalWagers: 32100,
+    participantCount: 245,
+    rewardPool: 8500,
+    status: 'active',
+  },
+  {
+    id: 'pool_4',
+    name: 'Bamboo Elite Showdown',
+    totalWagers: 67800,
+    participantCount: 512,
+    rewardPool: 18900,
+    status: 'active',
+  },
+  {
+    id: 'pool_5',
+    name: 'Night Owls Battle Royale',
+    totalWagers: 54300,
+    participantCount: 421,
+    rewardPool: 15000,
+    status: 'active',
+  },
+  {
+    id: 'pool_6',
+    name: 'Speed Racer Tournament',
+    totalWagers: 38600,
+    participantCount: 298,
+    rewardPool: 11200,
+    status: 'active',
+  },
+];
+
+export interface UserStats {
+  totalWins: number;
+  totalLosses: number;
+  level: number;
+  rating: number;
+  winRate: number;
+  currentStreak: number;
+}
+
+export const mockUserStats: UserStats = {
+  totalWins: 42,
+  totalLosses: 18,
+  level: 7,
+  rating: 1620,
+  winRate: 70,
+  currentStreak: 5,
+};
+
+export interface TurnData {
+  remainingTurns: number;
+  maxTurns: number;
+  nextResetTime: Date;
+  turnsRegeneratePerHour: number;
+}
+
+export const mockTurnData: TurnData = {
+  remainingTurns: 8,
+  maxTurns: 10,
+  nextResetTime: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 hours from now
+  turnsRegeneratePerHour: 2,
+};
+
+export const battleStances = [
+  { id: 'aggressive', label: 'Aggressive', emoji: '⚔️' },
+  { id: 'balanced', label: 'Balanced', emoji: '⚖️' },
+  { id: 'defensive', label: 'Defensive', emoji: '🛡️' },
+  { id: 'swift', label: 'Swift', emoji: '💨' },
+];
