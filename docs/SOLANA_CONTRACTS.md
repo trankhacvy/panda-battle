@@ -15,9 +15,10 @@
 8. [Cross-Program Interactions](#cross-program-interactions)
 9. [Error Handling & Events](#error-handling--events)
 10. [Security Considerations](#security-considerations)
-11. [Upgrade & Authority Strategy](#upgrade--authority-strategy)
-12. [Testing Philosophy](#testing-philosophy)
-13. [Integration with Frontend](#integration-with-frontend)
+11. [Tokenomics & Economic Model](#tokenomics--economic-model)
+12. [Upgrade & Authority Strategy](#upgrade--authority-strategy)
+13. [Testing Philosophy](#testing-philosophy)
+14. [Integration with Frontend](#integration-with-frontend)
 
 ---
 
@@ -706,6 +707,337 @@ async function getLeaderboard(limit: number = 100) {
         .map(({ account }) => PlayerProfile.deserialize(account.data))
         .sort((a, b) => b.current_rating - a.current_rating)
         .slice(0, limit);
+}
+```
+
+---
+
+## Tokenomics & Economic Model
+
+### Token Economy Overview
+
+**Bamboo Token (BAMBOO)**
+- **Type:** SPL Token (decimals: 9)
+- **Supply Cap:** 1 Billion tokens (1,000,000,000 BAMBOO)
+- **Distribution:** 60% player rewards, 20% treasury, 20% dev/operations
+- **Purpose:** In-game currency for forging pandas, claiming rewards, and staking
+
+### Cost Structure
+
+| Action | Cost | Recipient | Rationale |
+|--------|------|-----------|-----------|
+| **Forge Panda** | 50 BAMBOO | Treasury | Generation requires computational resources |
+| **Battle Win** | +100 BAMBOO | Player | Primary reward mechanism |
+| **Battle Loss** | +25 BAMBOO | Player | Participation incentive |
+| **Claim Seasonal Reward** | +5-500 BAMBOO | Player | Variable based on rank/performance |
+| **Panda Breeding** | 75 BAMBOO | Treasury | Advanced feature (future) |
+
+### Treasury Management
+
+**TreasuryConfig PDA Seed:** `["treasury"]`
+**Authority:** Program upgrade authority
+**Vault Account:** Associated Token Account (ATA) for Bamboo mint
+
+```rust
+#[account]
+pub struct TreasuryConfig {
+    pub vault_ata: Pubkey,              // Holds all treasury BAMBOO tokens
+    pub authority: Pubkey,              // Authority signer
+    pub bump: u8,                       // PDA bump seed
+    pub total_distributed: u64,         // Lifetime rewards paid out
+    pub total_deposited: u64,           // Lifetime tokens received
+    pub version: u8,                    // Schema version
+}
+```
+
+**Invariants:**
+- `total_distributed <= vault_ata.balance + total_distributed - total_deposited`
+- All transfers to/from vault require valid CPI signer authority
+- Treasury can only receive deposits or distribute rewards via specific instructions
+
+### Reward Pool System
+
+**RewardPool PDA Seed:** `["reward_pool", pool_id: u64]`
+**Authority:** Program signer
+**Purpose:** Manages seasonal reward distribution and per-player limits
+
+```rust
+#[account]
+pub struct RewardPool {
+    pub pool_id: u64,                  // Unique pool identifier
+    pub total_rewards: u64,            // Total pool reserve
+    pub distributed_rewards: u64,      // Cumulative distributed
+    pub max_claimable: u64,            // Per-player limit
+    pub season: u32,                   // Season number
+    pub created_at: i64,               // Pool creation timestamp
+    pub expires_at: i64,               // Expiration timestamp (90 days)
+    pub bump: u8,                      // PDA bump seed
+    pub version: u8,                   // Schema version
+}
+
+#[account]
+pub struct PlayerRewardClaim {
+    pub player: Pubkey,                // Player wallet
+    pub pool_id: u64,                  // Claimed from which pool
+    pub amount_claimed: u64,           // Tokens claimed
+    pub claimed_at: i64,               // Claim timestamp
+    pub bump: u8,                      // PDA bump seed
+}
+```
+
+### Token Flow Diagrams
+
+#### Battle Reward Flow
+```
+Player Wins Battle
+      ↓
+BattleEngine::submit_turn() → resolves battle
+      ↓
+If winner:
+  - RewardVault::distribute_bamboo_rewards(100)
+    - Transfer: treasury_vault → player_ata
+    - Emit: RewardsDistributed { player, amount: 100, reason: "battle_victory" }
+    - Update: treasury.total_distributed += 100
+      ↓
+Player receives 100 BAMBOO in token account
+```
+
+#### Forging Cost Flow
+```
+Player Initiates Forge
+      ↓
+PandaFactory::forge_panda(cost: 50)
+      ↓
+Validate: player_ata.balance >= 50
+      ↓
+Spend: RewardVault::spend_bamboo_for_action(50, "forge_panda")
+  - Transfer: player_ata → treasury_vault
+  - Emit: TokensSpent { player, amount: 50, action: "forge_panda" }
+  - Update: treasury.total_deposited += 50
+      ↓
+Panda NFT minted to player
+```
+
+#### Seasonal Reward Claim Flow
+```
+End of Season
+      ↓
+RewardPool created with:
+  - pool_id: season_number
+  - total_rewards: budget_for_season
+  - max_claimable: (total / 1000) per player
+  - expires_at: now + 90 days
+      ↓
+Player claims rewards:
+  1. Lookup PlayerRewardClaim record
+  2. If not claimed in this pool:
+     - Calculate eligible amount (min of request, max_claimable)
+     - Transfer from treasury_vault → player_ata
+     - Mark claim as claimed_at: now
+     - Emit: RewardsClaimed { player, pool_id, amount }
+      ↓
+If already claimed in pool: Error (RewardAlreadyClaimed)
+```
+
+### Token Instructions (RewardVault Program)
+
+#### 1. initialize_treasury
+Initializes the treasury with an SPL token vault.
+
+```rust
+pub fn initialize_treasury(ctx: Context<InitializeTreasury>) -> Result<()>
+```
+
+**Accounts:**
+- `authority` (signer): Upgrade authority
+- `mint`: Bamboo token mint
+- `treasury_config` (init): PDA for treasury state
+- `vault_ata` (init): Associated token account for vault
+
+**Effects:**
+- Creates TreasuryConfig PDA
+- Creates ATA for treasury
+- Emits TreasuryInitialized event
+
+#### 2. distribute_bamboo_rewards
+Distributes tokens to player from treasury vault (authority-only).
+
+```rust
+pub fn distribute_bamboo_rewards(
+    ctx: Context<DistributeBambooRewards>,
+    amount: u64,
+    reason: String,
+) -> Result<()>
+```
+
+**Accounts:**
+- `authority` (signer): Treasury authority
+- `treasury_config`: PDA treasury state
+- `vault_ata`: Treasury vault (token source)
+- `player_token_account`: Player's ATA (token destination)
+- `token_program`: SPL Token program
+
+**Validation:**
+- Verify `authority == treasury_config.authority`
+- Verify `vault_ata.amount >= amount`
+- Transfer via CPI with PDA signer authority
+
+**Effects:**
+- Transfer tokens: vault → player_ata
+- Update `treasury.total_distributed`
+- Emit TreasuryTransferred + RewardsDistributed events
+
+**Error Codes:**
+- `InvalidTreasuryAuthority` - Signer is not authority
+- `InsufficientBalance` - Vault balance too low
+- `InvalidTokenAccount` - Wrong vault ATA provided
+
+#### 3. claim_rewards
+Player claims seasonal rewards with per-pool limits.
+
+```rust
+pub fn claim_rewards(
+    ctx: Context<ClaimRewards>,
+    claim_amount: u64,
+) -> Result<()>
+```
+
+**Accounts:**
+- `player` (signer): Player wallet
+- `treasury_config`: PDA treasury state
+- `vault_ata`: Treasury vault
+- `player_token_account`: Player's ATA
+- `reward_claim` (init_if_needed): Player's claim record
+- `reward_pool` (init_if_needed): Seasonal pool
+
+**Validation:**
+- Check `reward_pool.expires_at > now` (not expired)
+- Check `player_reward_claim.pool_id != reward_pool.pool_id OR amount_claimed == 0`
+  - (Prevents duplicate claims in same pool)
+- Verify `claim_amount <= reward_pool.max_claimable`
+- Verify `vault_ata.amount >= claim_amount`
+
+**Effects:**
+- Create/update PlayerRewardClaim record
+- Create/initialize RewardPool if needed
+- Transfer tokens: vault → player_ata
+- Update `reward_pool.distributed_rewards`
+- Update `treasury.total_distributed`
+- Emit RewardsClaimed + TreasuryTransferred events
+
+**Error Codes:**
+- `RewardPoolExpired` - Pool claim period over
+- `RewardAlreadyClaimed` - Player already claimed from this pool
+- `ExceedsMaxClaimable` - Request exceeds per-player limit
+- `InsufficientBalance` - Treasury vault insufficient
+
+#### 4. spend_bamboo_for_action
+Player transfers tokens to treasury for in-game actions.
+
+```rust
+pub fn spend_bamboo_for_action(
+    ctx: Context<SpendBambooForAction>,
+    amount: u64,
+    action: String,
+) -> Result<()>
+```
+
+**Accounts:**
+- `player` (signer): Player wallet
+- `treasury_config`: PDA treasury state
+- `treasury_ata`: Treasury vault (destination)
+- `player_token_account`: Player's ATA (source)
+- `token_program`: SPL Token program
+
+**Validation:**
+- Verify `player_token_account.amount >= amount`
+- Verify `player_token_account.owner == player`
+
+**Effects:**
+- Transfer tokens: player_ata → vault
+- Update `treasury.total_deposited`
+- Emit TokensSpent + TreasuryTransferred events
+
+**Error Codes:**
+- `InsufficientBalance` - Player insufficient funds
+- `InvalidSigner` - Player didn't sign
+
+### Events Emitted
+
+```rust
+#[event]
+pub struct TreasuryInitialized {
+    pub vault_ata: Pubkey,
+    pub authority: Pubkey,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct RewardsDistributed {
+    pub player: Pubkey,
+    pub amount: u64,
+    pub reason: String,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct RewardsClaimed {
+    pub player: Pubkey,
+    pub pool_id: u64,
+    pub amount: u64,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct TokensSpent {
+    pub player: Pubkey,
+    pub amount: u64,
+    pub action: String,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct TreasuryTransferred {
+    pub from: Pubkey,
+    pub to: Pubkey,
+    pub amount: u64,
+    pub reason: String,
+    pub timestamp: i64,
+}
+```
+
+### Security Considerations for Tokenomics
+
+1. **Authority Checks**: All distributions require authority signature via CPI
+2. **Supply Safety**: Tokens never created on-chain; only distributed from initial vault
+3. **Per-Player Limits**: RewardPool enforces max_claimable to prevent abuse
+4. **Duplicate Prevention**: PlayerRewardClaim prevents double-claiming from same pool
+5. **Balance Verification**: All transfers check source balance before execution
+6. **Event Transparency**: All transfers emit immutable events for auditing
+
+### Integration with BattleEngine
+
+BattleEngine calls RewardVault via CPI:
+
+```rust
+// In battle_engine::submit_turn(), after determining winner
+if battle_is_over {
+    let reward_amount = if player_won { 100_000_000 } else { 25_000_000 };
+    
+    invoke_signed(
+        &instruction::distribute_bamboo_rewards(
+            reward_vault_program_id,
+            treasury_config_pubkey,
+            reward_amount,
+            "battle_outcome".to_string(),
+        ),
+        &[
+            treasury_config_account,
+            vault_ata_account,
+            player_token_account,
+        ],
+        &[treasury_signer_seeds],
+    )?;
 }
 ```
 

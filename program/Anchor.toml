@@ -17,3 +17,18 @@ wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "pnpm exec ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+tokenomics_test = "pnpm exec ts-mocha -p ./tsconfig.json -t 1000000 tests/tokenomics.test.ts"
+
+# Environment Variables Reference
+# 
+# For local testing with pnpm test:
+#   - ANCHOR_PROVIDER_URL: RPC endpoint (default: http://localhost:8899)
+#   - ANCHOR_WALLET: Path to keypair (default: ~/.config/solana/id.json)
+#
+# For Devnet:
+#   - ANCHOR_PROVIDER_URL=https://api.devnet.solana.com
+#   - ANCHOR_WALLET=~/.config/solana/id.json (needs devnet SOL)
+#
+# Bamboo Token Mint (to be set after mint creation):
+#   - BAMBOO_MINT_ADDRESS: Public key of Bamboo SPL Token mint
+#
