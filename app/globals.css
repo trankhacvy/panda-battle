@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *, [data-theme="dark"] *));
 
 @theme inline {
   --color-background: var(--background);
@@ -118,5 +118,83 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  html {
+    @apply h-full;
+  }
+}
+
+/* Safe area paddings for mobile notches */
+@layer utilities {
+  .safe-area-inset-left {
+    padding-left: max(env(safe-area-inset-left), 0px);
+  }
+  .safe-area-inset-right {
+    padding-right: max(env(safe-area-inset-right), 0px);
+  }
+  .safe-area-inset-top {
+    padding-top: max(env(safe-area-inset-top), 0px);
+  }
+  .safe-area-inset-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+
+  /* Neon gradients for UI elements */
+  .gradient-neon-primary {
+    background: linear-gradient(to right, #4ade80, #06b6d4);
+  }
+
+  .gradient-neon-secondary {
+    background: linear-gradient(to right, #f472b6, #a855f7);
+  }
+
+  .gradient-neon-danger {
+    background: linear-gradient(to right, #f87171, #fed7aa);
+  }
+
+  /* Spring/tap animations */
+  .tap-scale {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 100ms;
+  }
+  .tap-scale:active {
+    transform: scale(0.95);
+  }
+
+  .spring-scale {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+  .spring-scale:hover {
+    transform: scale(1.05);
+  }
+  .spring-scale:active {
+    transform: scale(0.95);
+  }
+
+  /* App shell specific utilities */
+  .app-shell-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  .app-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-left: max(env(safe-area-inset-left), 0px);
+    padding-right: max(env(safe-area-inset-right), 0px);
+  }
+
+  .app-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
   }
 }
