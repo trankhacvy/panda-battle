@@ -18,4 +18,16 @@ pub mod panda_battle {
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
         initialize::handler(ctx)
     }
+
+    pub fn initialize_player(ctx: Context<InitializePlayer>, name: String) -> Result<()> {
+        initialize_player::handler(ctx, name)
+    }
+
+    pub fn update_progress(ctx: Context<UpdateProgress>, update: ProgressUpdate) -> Result<()> {
+        update_progress::handler(ctx, update)
+    }
+
+    pub fn record_activity(ctx: Context<RecordActivity>, activity: ActivityRecord) -> Result<()> {
+        record_activity::handler(ctx, activity)
+    }
 }
