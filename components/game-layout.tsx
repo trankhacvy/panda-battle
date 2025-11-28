@@ -16,7 +16,7 @@ interface GameLayoutProps {
  */
 export function GameLayout({ children }: GameLayoutProps) {
   return (
-    <div className="min-h-screen bg-linear-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+    <div className="min-h-screen bg-linear-to-b from-[#FFDD17] to-[#FFDD17]">
       {/* Desktop empty space styling with decorative elements */}
       <div className="fixed inset-0 -z-10 hidden lg:block">
         {/* Gradient overlays for visual interest */}
@@ -33,7 +33,7 @@ export function GameLayout({ children }: GameLayoutProps) {
       </div>
 
       {/* Main container - centered on desktop with shadow */}
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col lg:shadow-2xl lg:border-x lg:border-border/50 relative">
+      <div className="mx-auto flex min-h-screen w-full max-w-md bg-white flex-col lg:shadow-2xl lg:border-x lg:border-border/50 relative">
         {/* Subtle inner glow on desktop */}
         <div className="absolute inset-0 -z-10 hidden lg:block bg-background/95 backdrop-blur-sm" />
 

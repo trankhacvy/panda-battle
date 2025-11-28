@@ -7,19 +7,87 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   rollRandomStats,
   calculateRarity,
   getRarityColor,
 } from "@/lib/mock/pandas";
-import { Sparkles, RefreshCw, Coins } from "lucide-react";
+import { Sparkles, RefreshCw, Coins, Wallet } from "lucide-react";
+import { useSolana } from "@/components/providers/solana-provider";
+import { useConnect, type UiWallet } from "@wallet-standard/react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ENTRY_FEE = 0.1; // SOL
 
+function WalletIcon({
+  wallet,
+  className,
+}: {
+  wallet: UiWallet;
+  className?: string;
+}) {
+  return (
+    <Avatar className={className}>
+      {wallet.icon && (
+        <AvatarImage src={wallet.icon} alt={`${wallet.name} icon`} />
+      )}
+      <AvatarFallback>{wallet.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+    </Avatar>
+  );
+}
+
+function WalletOption({
+  wallet,
+  onConnect,
+}: {
+  wallet: UiWallet;
+  onConnect: () => void;
+}) {
+  const { setWalletAndAccount } = useSolana();
+  const [isConnecting, connect] = useConnect(wallet);
+
+  const handleConnect = async () => {
+    if (isConnecting) return;
+
+    try {
+      const accounts = await connect();
+
+      if (accounts && accounts.length > 0) {
+        const account = accounts[0];
+        setWalletAndAccount(wallet, account);
+        onConnect();
+      }
+    } catch (err) {
+      console.error(`Failed to connect ${wallet.name}:`, err);
+    }
+  };
+
+  return (
+    <Button
+      variant="outline"
+      className="w-full justify-start h-auto py-4"
+      onClick={handleConnect}
+      disabled={isConnecting}
+    >
+      <WalletIcon wallet={wallet} className="h-8 w-8 mr-3" />
+      <span className="text-base font-medium">{wallet.name}</span>
+    </Button>
+  );
+}
+
 export default function CreatePandaPage() {
   const router = useRouter();
+  const { wallets, isConnected, selectedAccount } = useSolana();
   const [attributes, setAttributes] = useState(() => rollRandomStats());
   const [isRolling, setIsRolling] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
+  const [showWalletDialog, setShowWalletDialog] = useState(false);
 
   const rarity = calculateRarity(attributes);
   const rarityColor = getRarityColor(rarity);
@@ -180,17 +248,57 @@ export default function CreatePandaPage() {
             />
             Reroll Attributes
           </Button>
-          <Button
-            variant="game"
-            size="lg"
-            onClick={handleMint}
-            disabled={isRolling || isMinting}
-            className="flex-1 text-sm sm:text-base"
-          >
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
-            {isMinting ? "Minting..." : "Mint Panda"}
-          </Button>
+
+          {!isConnected ? (
+            <Button
+              variant="game"
+              size="lg"
+              onClick={() => setShowWalletDialog(true)}
+              className="flex-1 text-sm sm:text-base"
+            >
+              <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
+              Connect Wallet
+            </Button>
+          ) : (
+            <Button
+              variant="game"
+              size="lg"
+              onClick={handleMint}
+              disabled={isRolling || isMinting}
+              className="flex-1 text-sm sm:text-base"
+            >
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+              {isMinting ? "Minting..." : "Mint Panda"}
+            </Button>
+          )}
         </div>
+
+        {/* Wallet Connection Dialog */}
+        <Dialog open={showWalletDialog} onOpenChange={setShowWalletDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Connect Wallet</DialogTitle>
+              <DialogDescription>
+                Choose a wallet to connect and mint your panda
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 py-4">
+              {wallets.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No wallets detected. Please install a Solana wallet extension.
+                </p>
+              ) : (
+                wallets.map((wallet, index) => (
+                  <WalletOption
+                    key={`${wallet.name}-${index}`}
+                    wallet={wallet}
+                    onConnect={() => setShowWalletDialog(false)}
+                  />
+                ))
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Info Text */}
         <p className="text-center text-xs text-muted-foreground px-2">

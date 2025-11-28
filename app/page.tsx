@@ -7,9 +7,9 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Simulate splash screen - auto-navigate to wallet connection after 2 seconds
+    // Simulate splash screen - auto-navigate to create panda after 2 seconds
     const timer = setTimeout(() => {
-      router.push("/connect-wallet");
+      router.push("/create-panda");
     }, 2000);
 
     return () => clearTimeout(timer);

@@ -4,6 +4,7 @@ import "./globals.css";
 import { GameLayout } from "@/components/game-layout";
 import { ToastProvider } from "@/lib/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import { SolanaProvider } from "@/components/providers/solana-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,10 +31,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ToastProvider>
-          <GameLayout>{children}</GameLayout>
-          <Toaster />
-        </ToastProvider>
+        <SolanaProvider>
+          <ToastProvider>
+            <GameLayout>{children}</GameLayout>
+            <Toaster />
+          </ToastProvider>
+        </SolanaProvider>
       </body>
     </html>
   );
