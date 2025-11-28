@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import AppShell from "@/components/layout/AppShell";
-import ThemeToggle from "@/components/theme/ThemeToggle";
+import { GameLayout } from "@/components/game-layout";
+import { ToastProvider } from "@/lib/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,8 +30,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeToggle />
-        <AppShell>{children}</AppShell>
+        <ToastProvider>
+          <GameLayout>{children}</GameLayout>
+          <Toaster />
+        </ToastProvider>
       </body>
     </html>
   );
