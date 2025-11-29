@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface AttributeChangeAnimationProps {
   value: number;
@@ -25,7 +25,7 @@ export function AttributeChangeAnimation({
       const diff = value - previousValue;
       setChange(diff);
       setShowChange(true);
-
+      //
       const timer = setTimeout(() => {
         setShowChange(false);
       }, 2000);

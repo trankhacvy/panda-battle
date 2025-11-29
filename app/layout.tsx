@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { GameLayout } from "@/components/game-layout";
-import { ToastProvider } from "@/lib/hooks/use-toast";
-import { Toaster } from "@/components/ui/toaster";
+import "@/styles/globals.css";
 import { SolanaProvider } from "@/components/providers/solana-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { AppBackground } from "@/components/background/app-background";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,15 +26,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className="flex h-full flex-col items-center overscroll-none"
+    >
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`flex h-full min-h-0 w-full max-w-(--max-layout-width) flex-col ${geistSans.variable} ${geistMono.variable}  antialiased`}
       >
         <SolanaProvider>
-          <ToastProvider>
-            <GameLayout>{children}</GameLayout>
-            <Toaster />
-          </ToastProvider>
+          <AppBackground />
+          <main className="h-full min-h-0 grow overflow-auto overscroll-contain bg-background">
+            {children}
+          </main>
+
+          <Toaster className="z-100" position="top-center" />
         </SolanaProvider>
       </body>
     </html>
