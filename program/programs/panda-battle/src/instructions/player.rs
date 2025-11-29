@@ -126,14 +126,14 @@ pub fn purchase_turns(ctx: Context<PurchaseTurns>, amount: u8) -> Result<()> {
             4..=5 => TURN_PRICE_MULTIPLIER_2,
             _ => TURN_PRICE_MULTIPLIER_3,
         };
-        
+
         let turn_cost = game_config
             .turn_base_price
             .checked_mul(multiplier)
             .ok_or(PandaBattleError::Overflow)?
             .checked_div(10000)
             .ok_or(PandaBattleError::Overflow)?;
-        
+
         total_cost = total_cost
             .checked_add(turn_cost)
             .ok_or(PandaBattleError::Overflow)?;
@@ -169,10 +169,7 @@ pub fn purchase_turns(ctx: Context<PurchaseTurns>, amount: u8) -> Result<()> {
 }
 
 /// Initiate a battle against another player
-pub fn initiate_battle(
-    ctx: Context<InitiateBattle>,
-    steal_attribute: AttributeType,
-) -> Result<()> {
+pub fn initiate_battle(ctx: Context<InitiateBattle>, steal_attribute: AttributeType) -> Result<()> {
     let game_config = &ctx.accounts.game_config;
     let game_round = &mut ctx.accounts.game_round;
     let attacker = &mut ctx.accounts.attacker_state;
@@ -196,12 +193,8 @@ pub fn initiate_battle(
         clock.unix_timestamp,
         true,
     );
-    let defender_score = calculate_battle_score(
-        defender,
-        &defender.player,
-        clock.unix_timestamp,
-        false,
-    );
+    let defender_score =
+        calculate_battle_score(defender, &defender.player, clock.unix_timestamp, false);
 
     // Determine winner
     let attacker_wins = if attacker_score == defender_score {
@@ -213,10 +206,20 @@ pub fn initiate_battle(
 
     // Execute steal
     let steal_amount = if attacker_wins {
-        execute_steal(attacker, defender, &steal_attribute, game_config.steal_percentage)?
+        execute_steal(
+            attacker,
+            defender,
+            &steal_attribute,
+            game_config.steal_percentage,
+        )?
     } else {
         // Defender counter-steals on win
-        execute_steal(defender, attacker, &steal_attribute, game_config.steal_percentage / 2)?
+        execute_steal(
+            defender,
+            attacker,
+            &steal_attribute,
+            game_config.steal_percentage / 2,
+        )?
     };
 
     // Update battle stats
@@ -259,7 +262,10 @@ pub fn claim_reward(ctx: Context<ClaimReward>) -> Result<()> {
     let game_config = &ctx.accounts.game_config;
 
     require!(!game_round.is_active, PandaBattleError::RoundNotEnded);
-    require!(!player_state.rewards_claimed, PandaBattleError::AlreadyClaimed);
+    require!(
+        !player_state.rewards_claimed,
+        PandaBattleError::AlreadyClaimed
+    );
     require!(
         player_state.battles_fought >= MIN_BATTLES_FOR_PAYOUT,
         PandaBattleError::NotEligibleForRewards
@@ -267,11 +273,7 @@ pub fn claim_reward(ctx: Context<ClaimReward>) -> Result<()> {
 
     // Calculate reward based on performance
     // Simple MVP formula: proportional to wins and total attributes
-    let reward = calculate_reward(
-        player_state,
-        game_round.prize_pool,
-        game_round.player_count,
-    )?;
+    let reward = calculate_reward(player_state, game_round.prize_pool, game_round.player_count)?;
 
     require!(reward > 0, PandaBattleError::NoRewardsAvailable);
 
@@ -289,7 +291,7 @@ pub fn claim_reward(ctx: Context<ClaimReward>) -> Result<()> {
         .lamports()
         .checked_sub(reward)
         .ok_or(PandaBattleError::Underflow)?;
-    
+
     **ctx.accounts.player.try_borrow_mut_lamports()? = ctx
         .accounts
         .player
@@ -320,17 +322,17 @@ fn generate_random_attributes(
     // Use player key and timestamp for pseudo-randomness
     let seed_bytes = player_key.to_bytes();
     let timestamp_bytes = timestamp.to_le_bytes();
-    
+
     let mut hash_input = [0u8; 40];
     hash_input[..32].copy_from_slice(&seed_bytes);
     hash_input[32..40].copy_from_slice(&timestamp_bytes);
-    
+
     // Simple hash-based randomization
     let strength = generate_attribute(seed_bytes[0], seed_bytes[1], penalty_bps);
     let speed = generate_attribute(seed_bytes[2], seed_bytes[3], penalty_bps);
     let endurance = generate_attribute(seed_bytes[4], seed_bytes[5], penalty_bps);
     let luck = generate_attribute(seed_bytes[6], seed_bytes[7], penalty_bps);
-    
+
     (strength, speed, endurance, luck)
 }
 
@@ -339,7 +341,7 @@ fn generate_attribute(byte1: u8, byte2: u8, penalty_bps: u16) -> u16 {
     let range = BASE_ATTRIBUTE_MAX - BASE_ATTRIBUTE_MIN;
     let combined = ((byte1 as u16) << 8) | (byte2 as u16);
     let value = BASE_ATTRIBUTE_MIN + (combined % range);
-    
+
     // Apply penalty
     if penalty_bps > 0 {
         let penalty = (value as u32 * penalty_bps as u32 / 10000) as u16;
@@ -357,15 +359,15 @@ fn calculate_battle_score(
     is_attacker: bool,
 ) -> u64 {
     let base_score = player.battle_score();
-    
+
     // Add luck-based variance (up to ±10%)
     let seed_bytes = player_key.to_bytes();
     let time_factor = (timestamp % 256) as u8;
     let luck_roll = ((seed_bytes[if is_attacker { 0 } else { 16 }] ^ time_factor) % 21) as i64 - 10;
-    
+
     let variance = (base_score as i64 * luck_roll / 100) as i64;
     let luck_bonus = (player.luck as i64 * luck_roll / 200) as i64;
-    
+
     ((base_score as i64) + variance + luck_bonus).max(1) as u64
 }
 
@@ -400,18 +402,14 @@ fn execute_steal(
 }
 
 /// Calculate reward for a player
-fn calculate_reward(
-    player: &PlayerState,
-    prize_pool: u64,
-    player_count: u32,
-) -> Result<u64> {
+fn calculate_reward(player: &PlayerState, prize_pool: u64, player_count: u32) -> Result<u64> {
     if player_count == 0 || prize_pool == 0 {
         return Ok(0);
     }
 
     // MVP formula: base share + performance bonus
     let base_share = prize_pool / player_count as u64;
-    
+
     // Performance multiplier based on win rate
     let win_rate = if player.battles_fought > 0 {
         (player.wins as u64 * 100) / player.battles_fought as u64
@@ -421,7 +419,7 @@ fn calculate_reward(
 
     // Scale from 0.5x to 1.5x based on win rate
     let multiplier = 50 + win_rate; // 50-150%
-    
+
     let reward = base_share
         .checked_mul(multiplier)
         .ok_or(PandaBattleError::Overflow)?
@@ -459,7 +457,7 @@ pub struct JoinRound<'info> {
     #[account(
         init,
         payer = player,
-        space = PlayerState::LEN,
+        space = 8 + PlayerState::INIT_SPACE,
         seeds = [
             PLAYER_STATE_SEED,
             game_round.key().as_ref(),

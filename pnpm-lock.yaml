@@ -66,6 +66,12 @@ importers:
         specifier: ^5.0.8
         version: 5.0.8(@types/react@19.2.7)(react@19.1.0)(use-sync-external-store@1.6.0(react@19.1.0))
     devDependencies:
+      '@codama/nodes-from-anchor':
+        specifier: ^1.3.4
+        version: 1.3.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
+      '@codama/renderers-js':
+        specifier: ^1.5.1
+        version: 1.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
       '@eslint/eslintrc':
         specifier: ^3
         version: 3.3.1
@@ -81,6 +87,9 @@ importers:
       '@types/react-dom':
         specifier: ^19
         version: 19.2.3(@types/react@19.2.7)
+      codama:
+        specifier: ^1.4.2
+        version: 1.4.2
       eslint:
         specifier: ^9
         version: 9.39.1(jiti@2.6.1)
@@ -102,6 +111,39 @@ packages:
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
+
+  '@codama/cli@1.4.1':
+    resolution: {integrity: sha512-TZSN4MAUy93Y2h9w7vGwBwaGPkxdm0PWmDu5g1jMCJbJo02kx9NIu2cBk94wamYSSq75uoQDuaU+YW5DMteIQQ==}
+    hasBin: true
+
+  '@codama/errors@1.4.2':
+    resolution: {integrity: sha512-T7oVaM80AYfHoP1NFjDMpIZhZ/oWPCyPP6g/UG2SCJLOmkNOjiY99uvQ4kkYQcvErsOO3ftcsqgAzK9LgZMHMA==}
+    hasBin: true
+
+  '@codama/node-types@1.4.2':
+    resolution: {integrity: sha512-Sj3BMQfwQ6Sn0jlQmBkXktOJzgsK4S7en2b6Ns+DLwYsqisSdU3au3rZcHs2ZJ2ntHv+6WTxFnvEk5zdWrT7YQ==}
+
+  '@codama/nodes-from-anchor@1.3.4':
+    resolution: {integrity: sha512-EL+uftd1OB40CR9KUiwETgqB8B7PvHw2QzjE2C+zGG5v5hF0jLQSa+TATfCSZI4PzKCCfKrwYBxF4ktGJSGA8A==}
+
+  '@codama/nodes@1.4.2':
+    resolution: {integrity: sha512-A+6gx9C7h0Ksu2tRi2g9BTdpv2RZ29KFDUIJrEc9n0tua91pFKBUaW+1/bcnEqRYKOrfUXARwEgymSdjSfOAig==}
+
+  '@codama/renderers-core@1.3.1':
+    resolution: {integrity: sha512-WS0FuGiR2FZOv4cRrrhw4DfMHJjeapxnyHCVwjKn6YBXHUv6eszkmEbZ1c9+xSrUH3ixCtise2YSfXFY6WkQ+w==}
+
+  '@codama/renderers-js@1.5.1':
+    resolution: {integrity: sha512-kwuMwBZILSkCtjSrceF2vCmzbyqrBLNtHgQwvWFkpgHETScfo8F4FXkK7TholIkxXNPFNBUF0tEBHi6eiomrvQ==}
+    engines: {node: '>=20.18.0'}
+
+  '@codama/validators@1.4.2':
+    resolution: {integrity: sha512-fj5R9aNIABOkt4Qp4BTEE7LSyettYkmwvu8rgGT2CcHfbtjHFJuB3Jb4F3yBZK5eGPhvz5Gf6YDW5Z6UQa9KkQ==}
+
+  '@codama/visitors-core@1.4.2':
+    resolution: {integrity: sha512-i5mWxHOE8eLzoE4I0tly7Q/n0KEub2l1AIkpQ7J5HV1ACaViXW2l9j2cCfKmskN8HuDA2JXdlaKP+cT2cSW01w==}
+
+  '@codama/visitors@1.4.2':
+    resolution: {integrity: sha512-AIzXtsK82o9I+B5KcdWW48kVknal1qDGlV5guQiF809PWTNOWKgas/St17N7od7wkwtw5BkivtQ8/s5zVBAIaA==}
 
   '@emnapi/core@1.7.1':
     resolution: {integrity: sha512-o1uhUASyo921r2XtHYOHy7gdkGLge8ghBEQHMWmyJFoXlpU58kIrhhN3w26lpQb6dspetweapMn2CSNwQ8I4wg==}
@@ -390,6 +432,10 @@ packages:
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
+
+  '@noble/hashes@2.0.1':
+    resolution: {integrity: sha512-XlOlEbQcE9fmuXxrVTXCTlG2nlRXa9Rj3rr5Ue/+tX+nmkgbX720YHh0VR3hBF9xDvwnb8D2shVGOwNx+ulArw==}
+    engines: {node: '>= 20.19.0'}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -1468,6 +1514,10 @@ packages:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
 
+  codama@1.4.2:
+    resolution: {integrity: sha512-AYv6TmlodOBl1ZmaHyjFMQ5CMVEXvkPbKLQoU3bRJNpDcbf4UriGVpaSvMNhbs0MSbArjXmFj6sf7ZcdIxcYlw==}
+    hasBin: true
+
   color-convert@2.0.1:
     resolution: {integrity: sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==}
     engines: {node: '>=7.0.0'}
@@ -1481,6 +1531,10 @@ packages:
 
   commander@14.0.1:
     resolution: {integrity: sha512-2JkV3gUZUVrbNA+1sjBOYLsMZ5cEEl8GTFP2a4AVz5hvasAMCQ1D2l2le/cX+pV4N6ZU17zjUahLpIXRrnWL8A==}
+    engines: {node: '>=20'}
+
+  commander@14.0.2:
+    resolution: {integrity: sha512-TywoWNNRbhoD0BXs1P3ZEScW8W5iKrnbithIl0YH+uCmBd0QpPOA8yc82DS3BIE5Ma6FnBVUsJ7wVUDz4dvOWQ==}
     engines: {node: '>=20'}
 
   concat-map@0.0.1:
@@ -2000,9 +2054,16 @@ packages:
   json-stable-stringify-without-jsonify@1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
 
+  json-stable-stringify@1.3.0:
+    resolution: {integrity: sha512-qtYiSSFlwot9XHtF9bD9c7rwKjr+RecWT//ZnPvSmEjpV5mmPOCN4j8UjY5hbjNkOwZ/jQv3J6R1/pL7RwgMsg==}
+    engines: {node: '>= 0.4'}
+
   json5@1.0.2:
     resolution: {integrity: sha512-g1MWMLBiz8FKi1e4w0UyVL3w+iJceWAFBAaBnnGKOpNa5f8TLktkbre1+s6oICydWAm+HRUGTmI+//xv2hvXYA==}
     hasBin: true
+
+  jsonify@0.0.1:
+    resolution: {integrity: sha512-2/Ki0GcmuqSrgFyelQq9M05y7PS0mEwuIzrf3f1fPqkVDVRvZrPZtVSMHxdgo8Aq0sxAOb/cr2aqqA3LeWHVPg==}
 
   jsx-ast-utils@3.3.5:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
@@ -2010,6 +2071,10 @@ packages:
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
+
+  kleur@3.0.3:
+    resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
+    engines: {node: '>=6'}
 
   language-subtag-registry@0.3.23:
     resolution: {integrity: sha512-0K65Lea881pHotoGEa5gDlMxt3pctLi2RplBb7Ezh4rRdLEOtgi7n4EwK9lamnUCkKBqaeKRVebTq6BAxSkpXQ==}
@@ -2260,6 +2325,15 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
+  prettier@3.7.1:
+    resolution: {integrity: sha512-RWKXE4qB3u5Z6yz7omJkjWwmTfLdcbv44jUVHC5NpfXwFGzvpQM798FGv/6WNK879tc+Cn0AAyherCl1KjbyZQ==}
+    engines: {node: '>=14'}
+    hasBin: true
+
+  prompts@2.4.2:
+    resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}
+    engines: {node: '>= 6'}
+
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
 
@@ -2406,6 +2480,9 @@ packages:
   side-channel@1.1.0:
     resolution: {integrity: sha512-ZX99e6tRweoUXqR+VBrslhda51Nh5MTQwou5tnUDgbtyM0dBgmhEDtWGP/xbKn6hqfPRHujUNwz5fy/wbbhnpw==}
     engines: {node: '>= 0.4'}
+
+  sisteransi@1.0.5:
+    resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -2631,6 +2708,75 @@ packages:
 snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
+
+  '@codama/cli@1.4.1':
+    dependencies:
+      '@codama/nodes': 1.4.2
+      '@codama/visitors': 1.4.2
+      '@codama/visitors-core': 1.4.2
+      commander: 14.0.2
+      picocolors: 1.1.1
+      prompts: 2.4.2
+
+  '@codama/errors@1.4.2':
+    dependencies:
+      '@codama/node-types': 1.4.2
+      commander: 14.0.2
+      picocolors: 1.1.1
+
+  '@codama/node-types@1.4.2': {}
+
+  '@codama/nodes-from-anchor@1.3.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)':
+    dependencies:
+      '@codama/errors': 1.4.2
+      '@codama/nodes': 1.4.2
+      '@codama/visitors': 1.4.2
+      '@noble/hashes': 2.0.1
+      '@solana/codecs': 5.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
+    transitivePeerDependencies:
+      - fastestsmallesttextencoderdecoder
+      - typescript
+
+  '@codama/nodes@1.4.2':
+    dependencies:
+      '@codama/errors': 1.4.2
+      '@codama/node-types': 1.4.2
+
+  '@codama/renderers-core@1.3.1':
+    dependencies:
+      '@codama/errors': 1.4.2
+      '@codama/nodes': 1.4.2
+      '@codama/visitors-core': 1.4.2
+
+  '@codama/renderers-js@1.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)':
+    dependencies:
+      '@codama/errors': 1.4.2
+      '@codama/nodes': 1.4.2
+      '@codama/renderers-core': 1.3.1
+      '@codama/visitors-core': 1.4.2
+      '@solana/codecs-strings': 5.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
+      prettier: 3.7.1
+    transitivePeerDependencies:
+      - fastestsmallesttextencoderdecoder
+      - typescript
+
+  '@codama/validators@1.4.2':
+    dependencies:
+      '@codama/errors': 1.4.2
+      '@codama/nodes': 1.4.2
+      '@codama/visitors-core': 1.4.2
+
+  '@codama/visitors-core@1.4.2':
+    dependencies:
+      '@codama/errors': 1.4.2
+      '@codama/nodes': 1.4.2
+      json-stable-stringify: 1.3.0
+
+  '@codama/visitors@1.4.2':
+    dependencies:
+      '@codama/errors': 1.4.2
+      '@codama/nodes': 1.4.2
+      '@codama/visitors-core': 1.4.2
 
   '@emnapi/core@1.7.1':
     dependencies:
@@ -2874,6 +3020,8 @@ snapshots:
 
   '@next/swc-win32-x64-msvc@15.5.6':
     optional: true
+
+  '@noble/hashes@2.0.1': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -4089,6 +4237,14 @@ snapshots:
 
   clsx@2.1.1: {}
 
+  codama@1.4.2:
+    dependencies:
+      '@codama/cli': 1.4.1
+      '@codama/errors': 1.4.2
+      '@codama/nodes': 1.4.2
+      '@codama/validators': 1.4.2
+      '@codama/visitors': 1.4.2
+
   color-convert@2.0.1:
     dependencies:
       color-name: 1.1.4
@@ -4098,6 +4254,8 @@ snapshots:
   commander@13.1.0: {}
 
   commander@14.0.1: {}
+
+  commander@14.0.2: {}
 
   concat-map@0.0.1: {}
 
@@ -4763,9 +4921,19 @@ snapshots:
 
   json-stable-stringify-without-jsonify@1.0.1: {}
 
+  json-stable-stringify@1.3.0:
+    dependencies:
+      call-bind: 1.0.8
+      call-bound: 1.0.4
+      isarray: 2.0.5
+      jsonify: 0.0.1
+      object-keys: 1.1.1
+
   json5@1.0.2:
     dependencies:
       minimist: 1.2.8
+
+  jsonify@0.0.1: {}
 
   jsx-ast-utils@3.3.5:
     dependencies:
@@ -4777,6 +4945,8 @@ snapshots:
   keyv@4.5.4:
     dependencies:
       json-buffer: 3.0.1
+
+  kleur@3.0.3: {}
 
   language-subtag-registry@0.3.23: {}
 
@@ -5003,6 +5173,13 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
+  prettier@3.7.1: {}
+
+  prompts@2.4.2:
+    dependencies:
+      kleur: 3.0.3
+      sisteransi: 1.0.5
+
   prop-types@15.8.1:
     dependencies:
       loose-envify: 1.4.0
@@ -5203,6 +5380,8 @@ snapshots:
       side-channel-list: 1.0.0
       side-channel-map: 1.0.1
       side-channel-weakmap: 1.0.2
+
+  sisteransi@1.0.5: {}
 
   source-map-js@1.2.1: {}
 

@@ -18,14 +18,11 @@ pub fn initialize_game(
         steal_percentage <= MAX_STEAL_PERCENTAGE,
         PandaBattleError::InvalidConfig
     );
-    require!(
-        idle_decay_percentage <= 10,
-        PandaBattleError::InvalidConfig
-    );
+    require!(idle_decay_percentage <= 10, PandaBattleError::InvalidConfig);
     require!(round_duration > 0, PandaBattleError::InvalidConfig);
 
     let game_config = &mut ctx.accounts.game_config;
-    
+
     game_config.admin = ctx.accounts.admin.key();
     game_config.entry_fee = entry_fee;
     game_config.turn_base_price = turn_base_price;
@@ -37,8 +34,12 @@ pub fn initialize_game(
     game_config.bump = ctx.bumps.game_config;
     game_config.vault_bump = ctx.bumps.vault;
 
-    msg!("Game initialized with entry_fee: {}, turn_price: {}", entry_fee, turn_base_price);
-    
+    msg!(
+        "Game initialized with entry_fee: {}, turn_price: {}",
+        entry_fee,
+        turn_base_price
+    );
+
     Ok(())
 }
 
@@ -80,15 +81,12 @@ pub fn end_round(ctx: Context<EndRound>) -> Result<()> {
     let clock = Clock::get()?;
 
     require!(game_round.is_active, PandaBattleError::RoundAlreadyEnded);
-    
+
     // Allow early end by admin or auto-end after duration
     let is_admin = ctx.accounts.admin.key() == ctx.accounts.game_config.admin;
     let is_expired = clock.unix_timestamp >= game_round.end_time;
-    
-    require!(
-        is_admin || is_expired,
-        PandaBattleError::Unauthorized
-    );
+
+    require!(is_admin || is_expired, PandaBattleError::Unauthorized);
 
     game_round.is_active = false;
     game_round.end_time = clock.unix_timestamp;
@@ -156,7 +154,7 @@ pub struct InitializeGame<'info> {
     #[account(
         init,
         payer = admin,
-        space = GameConfig::LEN,
+        space = 8 + GameConfig::INIT_SPACE,
         seeds = [GAME_CONFIG_SEED],
         bump
     )]
@@ -190,7 +188,7 @@ pub struct CreateRound<'info> {
     #[account(
         init,
         payer = admin,
-        space = GameRound::LEN,
+        space = 8 + GameRound::INIT_SPACE,
         seeds = [
             GAME_ROUND_SEED,
             game_config.key().as_ref(),
