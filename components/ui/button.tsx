@@ -35,19 +35,6 @@ const buttonVariants = cva(
           "bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-lg hover:shadow-purple-500/50 hover:scale-105 active:scale-95 border-2 border-purple-400/50",
         warning:
           "bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-bold shadow-lg hover:shadow-yellow-500/50 hover:scale-105 active:scale-95 border-2 border-yellow-400/50",
-        // 3D Button variants inspired by PlayButton
-        "3d-green":
-          "relative bg-[#74D700] hover:bg-[#7ce006] text-white font-black rounded-3xl shadow-[0_8px_0_#4ca600] active:shadow-none active:translate-y-[8px] transition-all duration-150 ease-in-out",
-        "3d-blue":
-          "relative bg-[#00A3FF] hover:bg-[#00B3FF] text-white font-black rounded-3xl shadow-[0_8px_0_#0073B3] active:shadow-none active:translate-y-[8px] transition-all duration-150 ease-in-out",
-        "3d-red":
-          "relative bg-[#FF4757] hover:bg-[#FF5767] text-white font-black rounded-3xl shadow-[0_8px_0_#CC3946] active:shadow-none active:translate-y-[8px] transition-all duration-150 ease-in-out",
-        "3d-purple":
-          "relative bg-[#A855F7] hover:bg-[#B865F7] text-white font-black rounded-3xl shadow-[0_8px_0_#7E3FB8] active:shadow-none active:translate-y-[8px] transition-all duration-150 ease-in-out",
-        "3d-orange":
-          "relative bg-[#FF9500] hover:bg-[#FFA500] text-white font-black rounded-3xl shadow-[0_8px_0_#CC7700] active:shadow-none active:translate-y-[8px] transition-all duration-150 ease-in-out",
-        "3d-yellow":
-          "relative bg-[#FFD700] hover:bg-[#FFE700] text-white font-black rounded-3xl shadow-[0_8px_0_#CCB000] active:shadow-none active:translate-y-[8px] transition-all duration-150 ease-in-out",
       },
       size: {
         default: "h-11 px-4 py-2 min-h-[44px]",
@@ -55,11 +42,6 @@ const buttonVariants = cva(
         lg: "h-12 rounded-md px-8 text-base min-h-[48px]",
         xl: "h-14 rounded-lg px-10 text-lg min-h-[56px]",
         icon: "h-11 w-11 min-h-[44px] min-w-[44px]",
-        // 3D Button sizes
-        "3d-sm": "h-12 px-6 text-xl",
-        "3d-md": "h-16 px-10 text-2xl",
-        "3d-lg": "h-20 px-14 text-3xl",
-        "3d-xl": "h-24 px-16 text-4xl",
       },
     },
     defaultVariants: {
@@ -78,30 +60,6 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    const is3DVariant = variant?.startsWith("3d-");
-
-    if (is3DVariant) {
-      return (
-        <Comp
-          className={cn(buttonVariants({ variant, size, className }))}
-          ref={ref}
-          {...props}
-        >
-          {/* Glossy Top Highlight */}
-          <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent rounded-t-3xl pointer-events-none" />
-          {/* Inner Highlight Ring */}
-          <div className="absolute inset-0 rounded-3xl ring-2 ring-inset ring-white/20 pointer-events-none" />
-          {/* Content */}
-          <span
-            className="z-10 drop-shadow-md"
-            style={{ textShadow: "0px 2px 0px rgba(0,0,0,0.1)" }}
-          >
-            {props.children}
-          </span>
-        </Comp>
-      );
-    }
-
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
@@ -113,38 +71,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = "Button";
 
-// 3D Button with white shell wrapper (like PlayButton)
-export interface Button3DProps extends ButtonProps {
-  shellClassName?: string;
-}
-
-const Button3D = React.forwardRef<HTMLButtonElement, Button3DProps>(
-  (
-    {
-      className,
-      shellClassName,
-      variant = "3d-green",
-      size = "3d-md",
-      ...props
-    },
-    ref
-  ) => {
-    return (
-      <div className={cn("relative inline-block", shellClassName)}>
-        {/* White Shell (The "Tub") */}
-        <div className="bg-white rounded-[2rem] p-2 pb-4 shadow-xl select-none">
-          <Button
-            ref={ref}
-            variant={variant}
-            size={size}
-            className={className}
-            {...props}
-          />
-        </div>
-      </div>
-    );
-  }
-);
-Button3D.displayName = "Button3D";
-
-export { Button, Button3D, buttonVariants };
+export { Button, buttonVariants };
