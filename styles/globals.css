@@ -261,3 +261,102 @@
     }
   }
 }
+
+
+/* Scrollbar styles */
+
+/* Only use for desktops, use native scrolls for mobile device */
+@media (hover: hover) and (pointer: fine) {
+  body,
+  div {
+    --sb-track-color: var(--color-ds-gray-500);
+    --sb-thumb-color: var(--color-ds-gray-300);
+    --sb-size: 8px;
+  }
+
+  *::-webkit-scrollbar {
+    width: var(--sb-size);
+    height: var(--sb-size);
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--sb-track-color);
+    border-radius: 10px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--sb-thumb-color);
+    border-radius: 10px;
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+    }
+  }
+}
+
+@media (hover: none) {
+  /* Devices that do not support hover – typically phones/tablets */
+  *::-webkit-scrollbar {
+    /* Hide scrollbar for phones/tablets */
+    display: none;
+  }
+
+  button:active,
+  a:active,
+  [role="button"]:active,
+  [data-state="active"]:active {
+    opacity: 0.85;
+    transform: scale(0.93);
+    transition:
+      transform 0.15s ease,
+      opacity 0.15s ease;
+  }
+
+  /* Exclude elements that should not have active effects */
+  [data-no-active-effect]:active,
+  [data-no-active-effect] *:active {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  thead {
+    pointer-events: none;
+  }
+
+  /* Responsive scaling for landing hero decorative art */
+  .hero-art {
+    --hero-art-scale: 0.52;
+    /* base for ~360px devices */
+  }
+
+  @media (min-width: 380px) {
+    .hero-art {
+      --hero-art-scale: 0.56;
+    }
+  }
+
+  @media (min-width: 400px) {
+    .hero-art {
+      --hero-art-scale: 0.6;
+    }
+  }
+
+  @media (min-width: 430px) {
+    .hero-art {
+      --hero-art-scale: 0.65;
+    }
+  }
+}
