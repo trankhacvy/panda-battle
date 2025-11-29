@@ -29,8 +29,12 @@ export default function Header() {
     }
   };
 
+  if (pathname === "/") {
+    return null;
+  }
+
   return (
-    <div className="flex items-center justify-between px-2 py-2 w-full">
+    <div className="flex items-center justify-between px-2 py-2 w-full bg-background">
       <Button3D
         variant="3d-green"
         size="3d-sm"

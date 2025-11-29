@@ -4,6 +4,8 @@ import "@/styles/globals.css";
 import { SolanaProvider } from "@/components/providers/solana-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AppBackground } from "@/components/background/app-background";
+import { Navigation } from "@/components/navigation";
+import Header from "@/components/header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,10 +38,11 @@ export default function RootLayout({
       >
         <SolanaProvider>
           <AppBackground />
+          <Header />
           <main className="h-full min-h-0 grow overflow-auto overscroll-contain bg-background">
             {children}
           </main>
-
+          <Navigation />
           <Toaster className="z-100" position="top-center" />
         </SolanaProvider>
       </body>

@@ -59,9 +59,13 @@ export function Navigation() {
     return pathname === path || pathname.startsWith(path + "/");
   };
 
+  if (pathname === "/") {
+    return null;
+  }
+
   return (
     <nav
-      className="flex items-center justify-center gap-4 px-4 pb-3 pt-2"
+      className="flex items-center justify-center gap-4 px-4 pb-3 pt-2 bg-background"
       role="navigation"
       aria-label="Main navigation"
     >

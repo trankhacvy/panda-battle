@@ -198,17 +198,17 @@ export default function HomePage() {
       {/* Actions */}
       <div className="space-y-4">
         <Button3D
-          className="w-full h-10"
+          className="w-full h-10 text-base"
           variant="3d-red"
           disabled={player.turns === 0}
         >
           Start Battle
         </Button3D>
         <div className="grid grid-cols-2 gap-2 h-14">
-          <Button3D variant="3d-green" className="h-10">
+          <Button3D variant="3d-green" className="h-10 text-sm">
             Buy Turns
           </Button3D>
-          <Button3D variant="3d-green" className="h-10">
+          <Button3D variant="3d-green" className="h-10 text-sm">
             View Leaderboard
           </Button3D>
         </div>
