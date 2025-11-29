@@ -1,5 +1,8 @@
 use anchor_lang::prelude::*;
-use anchor_lang::system_program;
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token::{transfer, Mint, Token, TokenAccount, Transfer},
+};
 
 use crate::constants::*;
 use crate::errors::PandaBattleError;
@@ -32,7 +35,6 @@ pub fn initialize_game(
     game_config.current_round = 0;
     game_config.total_rounds = 0;
     game_config.bump = ctx.bumps.game_config;
-    game_config.vault_bump = ctx.bumps.vault;
 
     msg!(
         "Game initialized with entry_fee: {}, turn_price: {}",
@@ -43,7 +45,7 @@ pub fn initialize_game(
     Ok(())
 }
 
-/// Create a new game round
+/// Create a new game round with dedicated vault
 pub fn create_round(ctx: Context<CreateRound>) -> Result<()> {
     let game_config = &mut ctx.accounts.game_config;
     let game_round = &mut ctx.accounts.game_round;
@@ -55,6 +57,7 @@ pub fn create_round(ctx: Context<CreateRound>) -> Result<()> {
 
     // Initialize round
     game_round.game_config = game_config.key();
+    game_round.mint = ctx.accounts.mint.key();
     game_round.round_number = game_config.current_round;
     game_round.start_time = clock.unix_timestamp;
     game_round.end_time = clock.unix_timestamp + game_config.round_duration;
@@ -66,8 +69,10 @@ pub fn create_round(ctx: Context<CreateRound>) -> Result<()> {
     game_round.bump = ctx.bumps.game_round;
 
     msg!(
-        "Round {} created. Starts: {}, Ends: {}",
+        "Round {} created with mint: {}, vault: {}. Starts: {}, Ends: {}",
         game_round.round_number,
+        ctx.accounts.mint.key(),
+        ctx.accounts.vault.key(),
         game_round.start_time,
         game_round.end_time
     );
@@ -160,13 +165,6 @@ pub struct InitializeGame<'info> {
     )]
     pub game_config: Account<'info, GameConfig>,
 
-    /// CHECK: Vault PDA for holding prize pool funds
-    #[account(
-        seeds = [VAULT_SEED, game_config.key().as_ref()],
-        bump
-    )]
-    pub vault: AccountInfo<'info>,
-
     pub system_program: Program<'info, System>,
 }
 
@@ -177,6 +175,9 @@ pub struct CreateRound<'info> {
         constraint = admin.key() == game_config.admin @ PandaBattleError::Unauthorized
     )]
     pub admin: Signer<'info>,
+
+    /// Token mint for this round
+    pub mint: Account<'info, Mint>,
 
     #[account(
         mut,
@@ -198,7 +199,18 @@ pub struct CreateRound<'info> {
     )]
     pub game_round: Account<'info, GameRound>,
 
+    /// Vault for this round (ATA owned by game_round PDA)
+    #[account(
+        init,
+        payer = admin,
+        associated_token::mint = mint,
+        associated_token::authority = game_round,
+    )]
+    pub vault: Account<'info, TokenAccount>,
+
     pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
 #[derive(Accounts)]
@@ -238,4 +250,50 @@ pub struct UpdateConfig<'info> {
         bump = game_config.bump
     )]
     pub game_config: Account<'info, GameConfig>,
+}
+
+// ============== UTILITY FUNCTIONS ==============
+
+/// Transfer tokens from user to vault
+pub fn transfer_to_vault<'info>(
+    from: &Account<'info, TokenAccount>,
+    to: &Account<'info, TokenAccount>,
+    authority: &Signer<'info>,
+    token_program: &Program<'info, Token>,
+    amount: u64,
+) -> Result<()> {
+    let cpi_accounts = Transfer {
+        from: from.to_account_info(),
+        to: to.to_account_info(),
+        authority: authority.to_account_info(),
+    };
+
+    let cpi_ctx = CpiContext::new(token_program.to_account_info(), cpi_accounts);
+    transfer(cpi_ctx, amount)?;
+
+    msg!("Transferred {} tokens to vault", amount);
+    Ok(())
+}
+
+/// Transfer tokens from vault to user (requires PDA signer)
+pub fn transfer_from_vault<'info>(
+    from: &Account<'info, TokenAccount>,
+    to: &Account<'info, TokenAccount>,
+    authority: &AccountInfo<'info>,
+    token_program: &Program<'info, Token>,
+    amount: u64,
+    signer_seeds: &[&[&[u8]]],
+) -> Result<()> {
+    let cpi_accounts = Transfer {
+        from: from.to_account_info(),
+        to: to.to_account_info(),
+        authority: authority.to_account_info(),
+    };
+
+    let cpi_ctx =
+        CpiContext::new_with_signer(token_program.to_account_info(), cpi_accounts, signer_seeds);
+    transfer(cpi_ctx, amount)?;
+
+    msg!("Transferred {} tokens from vault", amount);
+    Ok(())
 }

@@ -1,65 +1,125 @@
 use anchor_lang::prelude::*;
-use anchor_lang::system_program;
+use anchor_spl::token::{transfer, Token, TokenAccount, Transfer};
+use ephemeral_vrf_sdk::anchor::vrf;
+use ephemeral_vrf_sdk::instructions::{create_request_randomness_ix, RequestRandomnessParams};
+use ephemeral_vrf_sdk::types::SerializableAccountMeta;
 
 use crate::constants::*;
 use crate::errors::PandaBattleError;
 use crate::state::*;
 
-/// Join the current round by paying entry fee
-pub fn join_round(ctx: Context<JoinRound>) -> Result<()> {
-    let game_config = &ctx.accounts.game_config;
-    let game_round = &mut ctx.accounts.game_round;
+/// Request to join the current round (Step 1: Request VRF)
+pub fn request_join_round(ctx: Context<RequestJoinRound>, client_seed: u8) -> Result<()> {
+    {
+        let game_config = &ctx.accounts.game_config;
+        let game_round = &mut ctx.accounts.game_round;
+        let clock = Clock::get()?;
+
+        require!(game_round.is_active, PandaBattleError::RoundNotActive);
+
+        // Calculate late join penalty
+        let time_since_start = clock.unix_timestamp - game_round.start_time;
+        let (fee_multiplier, _attr_penalty) = if time_since_start >= LATE_JOIN_TIER2 {
+            (LATE_JOIN_FEE_TIER2, LATE_JOIN_ATTR_PENALTY_TIER2)
+        } else if time_since_start >= LATE_JOIN_TIER1 {
+            (LATE_JOIN_FEE_TIER1, LATE_JOIN_ATTR_PENALTY_TIER1)
+        } else {
+            (10000u64, 0u16) // 100%, no penalty
+        };
+
+        // Calculate actual entry fee
+        let entry_fee = game_config
+            .entry_fee
+            .checked_mul(fee_multiplier)
+            .ok_or(PandaBattleError::Overflow)?
+            .checked_div(10000)
+            .ok_or(PandaBattleError::Overflow)?;
+
+        // Transfer entry fee to vault (SPL token)
+        let cpi_accounts = Transfer {
+            from: ctx.accounts.player_token_account.to_account_info(),
+            to: ctx.accounts.vault.to_account_info(),
+            authority: ctx.accounts.player.to_account_info(),
+        };
+        let cpi_ctx = CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts);
+        transfer(cpi_ctx, entry_fee)?;
+
+        // Update prize pool
+        game_round.prize_pool = game_round
+            .prize_pool
+            .checked_add(entry_fee)
+            .ok_or(PandaBattleError::Overflow)?;
+        game_round.player_count += 1;
+
+        // Initialize player state with placeholder values (will be set by VRF callback)
+        let player_state = &mut ctx.accounts.player_state;
+        player_state.player = ctx.accounts.player.key();
+        player_state.round = game_round.key();
+        player_state.entry_fee_paid = entry_fee;
+        player_state.bump = ctx.bumps.player_state;
+        // Attributes will be set by VRF callback
+    }
+
+    {
+        msg!("Requesting randomness for player attributes...");
+
+        // Request randomness from VRF
+        let ix = create_request_randomness_ix(RequestRandomnessParams {
+            payer: ctx.accounts.player.key(),
+            oracle_queue: ctx.accounts.oracle_queue.key(),
+            callback_program_id: crate::ID,
+            callback_discriminator: crate::instruction::CallbackJoinRound::DISCRIMINATOR.to_vec(),
+            caller_seed: [client_seed; 32],
+            accounts_metas: Some(vec![
+                SerializableAccountMeta {
+                    pubkey: ctx.accounts.player_state.key(),
+                    is_signer: false,
+                    is_writable: true,
+                },
+                SerializableAccountMeta {
+                    pubkey: ctx.accounts.game_round.key(),
+                    is_signer: false,
+                    is_writable: false,
+                },
+            ]),
+            ..Default::default()
+        });
+
+        ctx.accounts
+            .invoke_signed_vrf(&ctx.accounts.player.to_account_info(), &ix)?;
+
+        msg!(
+            "Player {} requested to join round {}. Waiting for VRF callback...",
+            ctx.accounts.player.key(),
+            ctx.accounts.game_round.round_number
+        );
+    }
+
+    Ok(())
+}
+
+/// Callback to complete join round (Step 2: Consume VRF randomness)
+pub fn callback_join_round(ctx: Context<CallbackJoinRound>, randomness: [u8; 32]) -> Result<()> {
     let player_state = &mut ctx.accounts.player_state;
+    let game_round = &ctx.accounts.game_round;
     let clock = Clock::get()?;
 
-    require!(game_round.is_active, PandaBattleError::RoundNotActive);
-
-    // Calculate late join penalty
+    // Calculate late join penalty based on when they joined
     let time_since_start = clock.unix_timestamp - game_round.start_time;
-    let (fee_multiplier, attr_penalty) = if time_since_start >= LATE_JOIN_TIER2 {
-        (LATE_JOIN_FEE_TIER2, LATE_JOIN_ATTR_PENALTY_TIER2)
+    let attr_penalty = if time_since_start >= LATE_JOIN_TIER2 {
+        LATE_JOIN_ATTR_PENALTY_TIER2
     } else if time_since_start >= LATE_JOIN_TIER1 {
-        (LATE_JOIN_FEE_TIER1, LATE_JOIN_ATTR_PENALTY_TIER1)
+        LATE_JOIN_ATTR_PENALTY_TIER1
     } else {
-        (10000u64, 0u16) // 100%, no penalty
+        0u16
     };
 
-    // Calculate actual entry fee
-    let entry_fee = game_config
-        .entry_fee
-        .checked_mul(fee_multiplier)
-        .ok_or(PandaBattleError::Overflow)?
-        .checked_div(10000)
-        .ok_or(PandaBattleError::Overflow)?;
-
-    // Transfer entry fee to vault
-    system_program::transfer(
-        CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::Transfer {
-                from: ctx.accounts.player.to_account_info(),
-                to: ctx.accounts.vault.to_account_info(),
-            },
-        ),
-        entry_fee,
-    )?;
-
-    // Update prize pool
-    game_round.prize_pool = game_round
-        .prize_pool
-        .checked_add(entry_fee)
-        .ok_or(PandaBattleError::Overflow)?;
-    game_round.player_count += 1;
-
-    // Generate randomized attributes
-    let (strength, speed, endurance, luck) = generate_random_attributes(
-        &ctx.accounts.player.key(),
-        clock.unix_timestamp,
-        attr_penalty,
-    );
+    // Generate attributes using VRF randomness
+    let (strength, speed, endurance, luck) =
+        generate_attributes_from_vrf(&randomness, attr_penalty);
 
     // Initialize player state
-    player_state.player = ctx.accounts.player.key();
+    player_state.player = player_state.player; // Already set during init
     player_state.round = game_round.key();
     player_state.strength = strength;
     player_state.speed = speed;
@@ -76,8 +136,6 @@ pub fn join_round(ctx: Context<JoinRound>) -> Result<()> {
     player_state.rewards_claimed = false;
     player_state.joined_at = clock.unix_timestamp;
     player_state.last_decay = clock.unix_timestamp;
-    player_state.entry_fee_paid = entry_fee;
-    player_state.bump = ctx.bumps.player_state;
 
     // Early bird bonus: extra turns
     if time_since_start < LATE_JOIN_TIER1 {
@@ -88,8 +146,8 @@ pub fn join_round(ctx: Context<JoinRound>) -> Result<()> {
     }
 
     msg!(
-        "Player {} joined round {}. Attributes: S:{} Sp:{} E:{} L:{}",
-        ctx.accounts.player.key(),
+        "Player {} joined round {} with VRF attributes: S:{} Sp:{} E:{} L:{}",
+        player_state.player,
         game_round.round_number,
         strength,
         speed,
@@ -139,17 +197,14 @@ pub fn purchase_turns(ctx: Context<PurchaseTurns>, amount: u8) -> Result<()> {
             .ok_or(PandaBattleError::Overflow)?;
     }
 
-    // Transfer payment to vault
-    system_program::transfer(
-        CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::Transfer {
-                from: ctx.accounts.player.to_account_info(),
-                to: ctx.accounts.vault.to_account_info(),
-            },
-        ),
-        total_cost,
-    )?;
+    // Transfer payment to vault (SPL token)
+    let cpi_accounts = Transfer {
+        from: ctx.accounts.player_token_account.to_account_info(),
+        to: ctx.accounts.vault.to_account_info(),
+        authority: ctx.accounts.player.to_account_info(),
+    };
+    let cpi_ctx = CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts);
+    transfer(cpi_ctx, total_cost)?;
 
     // Update state
     game_round.prize_pool = game_round
@@ -277,14 +332,17 @@ pub fn claim_reward(ctx: Context<ClaimReward>) -> Result<()> {
 
     require!(reward > 0, PandaBattleError::NoRewardsAvailable);
 
-    // Transfer reward from vault
+    // Transfer reward from vault (SPL token with PDA signer - game_round is the authority)
     let game_config_key = game_config.key();
-    let vault_seeds = &[
-        VAULT_SEED,
+    let round_number_bytes = game_round.round_number.to_le_bytes();
+    let signer_seeds: &[&[&[u8]]] = &[&[
+        GAME_ROUND_SEED,
         game_config_key.as_ref(),
-        &[game_config.vault_bump],
-    ];
+        round_number_bytes.as_ref(),
+        &[game_round.bump],
+    ]];
 
+<<<<<<< HEAD
     **ctx.accounts.vault.try_borrow_mut_lamports()? = ctx
         .accounts
         .vault
@@ -298,12 +356,25 @@ pub fn claim_reward(ctx: Context<ClaimReward>) -> Result<()> {
         .lamports()
         .checked_add(reward)
         .ok_or(PandaBattleError::Overflow)?;
+=======
+    let cpi_accounts = Transfer {
+        from: ctx.accounts.vault.to_account_info(),
+        to: ctx.accounts.player_token_account.to_account_info(),
+        authority: game_round.to_account_info(),
+    };
+    let cpi_ctx = CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        cpi_accounts,
+        signer_seeds,
+    );
+    transfer(cpi_ctx, reward)?;
+>>>>>>> 6594ddf (program)
 
     player_state.rewards_earned = reward;
     player_state.rewards_claimed = true;
 
     msg!(
-        "Player {} claimed {} lamports reward",
+        "Player {} claimed {} tokens reward",
         ctx.accounts.player.key(),
         reward
     );
@@ -313,6 +384,7 @@ pub fn claim_reward(ctx: Context<ClaimReward>) -> Result<()> {
 
 // ============== HELPER FUNCTIONS ==============
 
+<<<<<<< HEAD
 /// Generate randomized attributes for a new player
 fn generate_random_attributes(
     player_key: &Pubkey,
@@ -348,7 +420,67 @@ fn generate_attribute(byte1: u8, byte2: u8, penalty_bps: u16) -> u16 {
         value.saturating_sub(penalty)
     } else {
         value
+=======
+/// Generate attributes from VRF randomness
+fn generate_attributes_from_vrf(randomness: &[u8; 32], penalty_bps: u16) -> (u16, u16, u16, u16) {
+    // Use VRF utility to generate 4 random values in attribute range
+    let attributes = random_u16_four_values(randomness, BASE_ATTRIBUTE_MIN, BASE_ATTRIBUTE_MAX);
+
+    // Apply penalty to each attribute
+    let apply_penalty = |value: u16| -> u16 {
+        if penalty_bps > 0 {
+            let penalty = (value as u32 * penalty_bps as u32 / 10000) as u16;
+            value.saturating_sub(penalty)
+        } else {
+            value
+        }
+    };
+
+    (
+        apply_penalty(attributes[0]), // strength
+        apply_penalty(attributes[1]), // speed
+        apply_penalty(attributes[2]), // endurance
+        apply_penalty(attributes[3]), // luck
+    )
+}
+
+/// Generates 4 random u16 values within a specified range from a 32-byte random seed
+///
+/// # Arguments
+///
+/// * `bytes` - A 32-byte array containing random data from the VRF
+/// * `min_value` - The minimum value (inclusive) of the desired range
+/// * `max_value` - The maximum value (inclusive) of the desired range
+///
+/// # Returns
+///
+/// An array of 4 random u16 values uniformly distributed in the range [min_value, max_value]
+///
+/// # Algorithm
+///
+/// Divides the 32 bytes into 4 segments of 8 bytes each. For each segment,
+/// converts to u64 and maps to the desired range to avoid modulo bias.
+/// This approach provides better distribution than simple modulo operations.
+fn random_u16_four_values(bytes: &[u8; 32], min_value: u16, max_value: u16) -> [u16; 4] {
+    let range = (max_value - min_value + 1) as u64;
+    let mut results = [0u16; 4];
+
+    // Process each 8-byte segment for better randomness distribution
+    for i in 0..4 {
+        let start = i * 8;
+        let end = start + 8;
+
+        // Convert 8 bytes to u64
+        let mut segment_bytes = [0u8; 8];
+        segment_bytes.copy_from_slice(&bytes[start..end]);
+        let random_u64 = u64::from_le_bytes(segment_bytes);
+
+        // Map to range [min_value, max_value]
+        results[i] = min_value + ((random_u64 % range) as u16);
+>>>>>>> 6594ddf (program)
     }
+
+    results
 }
 
 /// Calculate battle score with some randomness
@@ -431,8 +563,9 @@ fn calculate_reward(player: &PlayerState, prize_pool: u64, player_count: u32) ->
 
 // ============== CONTEXTS ==============
 
+#[vrf]
 #[derive(Accounts)]
-pub struct JoinRound<'info> {
+pub struct RequestJoinRound<'info> {
     #[account(mut)]
     pub player: Signer<'info>,
 
@@ -467,15 +600,40 @@ pub struct JoinRound<'info> {
     )]
     pub player_state: Account<'info, PlayerState>,
 
-    /// CHECK: Vault PDA
+    /// Player's token account
     #[account(
         mut,
-        seeds = [VAULT_SEED, game_config.key().as_ref()],
-        bump = game_config.vault_bump
+        constraint = player_token_account.owner == player.key() @ PandaBattleError::Unauthorized,
+        constraint = player_token_account.mint == game_round.mint @ PandaBattleError::InvalidMint
     )]
-    pub vault: AccountInfo<'info>,
+    pub player_token_account: Account<'info, TokenAccount>,
+
+    /// Vault token account for this round (ATA owned by game_round)
+    #[account(
+        mut,
+        constraint = vault.owner == game_round.key() @ PandaBattleError::Unauthorized,
+        constraint = vault.mint == game_round.mint @ PandaBattleError::InvalidMint
+    )]
+    pub vault: Account<'info, TokenAccount>,
+
+    /// CHECK: The oracle queue for VRF
+    #[account(mut, address = ephemeral_vrf_sdk::consts::DEFAULT_QUEUE)]
+    pub oracle_queue: AccountInfo<'info>,
 
     pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+}
+
+#[derive(Accounts)]
+pub struct CallbackJoinRound<'info> {
+    /// VRF program identity ensures callback is from VRF program
+    #[account(address = ephemeral_vrf_sdk::consts::VRF_PROGRAM_IDENTITY)]
+    pub vrf_program_identity: Signer<'info>,
+
+    #[account(mut)]
+    pub player_state: Account<'info, PlayerState>,
+
+    pub game_round: Account<'info, GameRound>,
 }
 
 #[derive(Accounts)]
@@ -512,15 +670,24 @@ pub struct PurchaseTurns<'info> {
     )]
     pub player_state: Account<'info, PlayerState>,
 
-    /// CHECK: Vault PDA
+    /// Player's token account
     #[account(
         mut,
-        seeds = [VAULT_SEED, game_config.key().as_ref()],
-        bump = game_config.vault_bump
+        constraint = player_token_account.owner == player.key() @ PandaBattleError::Unauthorized,
+        constraint = player_token_account.mint == game_round.mint @ PandaBattleError::InvalidMint
     )]
-    pub vault: AccountInfo<'info>,
+    pub player_token_account: Account<'info, TokenAccount>,
+
+    /// Vault token account for this round (ATA owned by game_round)
+    #[account(
+        mut,
+        constraint = vault.owner == game_round.key() @ PandaBattleError::Unauthorized,
+        constraint = vault.mint == game_round.mint @ PandaBattleError::InvalidMint
+    )]
+    pub vault: Account<'info, TokenAccount>,
 
     pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
 }
 
 #[derive(Accounts)]
@@ -581,6 +748,7 @@ pub struct ClaimReward<'info> {
     pub game_config: Account<'info, GameConfig>,
 
     #[account(
+        mut,
         seeds = [
             GAME_ROUND_SEED,
             game_config.key().as_ref(),
@@ -603,13 +771,22 @@ pub struct ClaimReward<'info> {
     )]
     pub player_state: Account<'info, PlayerState>,
 
-    /// CHECK: Vault PDA
+    /// Player's token account
     #[account(
         mut,
-        seeds = [VAULT_SEED, game_config.key().as_ref()],
-        bump = game_config.vault_bump
+        constraint = player_token_account.owner == player.key() @ PandaBattleError::Unauthorized,
+        constraint = player_token_account.mint == game_round.mint @ PandaBattleError::InvalidMint
     )]
-    pub vault: AccountInfo<'info>,
+    pub player_token_account: Account<'info, TokenAccount>,
+
+    /// Vault token account for this round (ATA owned by game_round)
+    #[account(
+        mut,
+        constraint = vault.owner == game_round.key() @ PandaBattleError::Unauthorized,
+        constraint = vault.mint == game_round.mint @ PandaBattleError::InvalidMint
+    )]
+    pub vault: Account<'info, TokenAccount>,
 
     pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
 }

@@ -80,4 +80,8 @@ pub enum PandaBattleError {
 
     #[msg("Numerical underflow")]
     Underflow,
+
+    // Token Errors
+    #[msg("Invalid token mint for this round")]
+    InvalidMint,
 }

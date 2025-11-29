@@ -66,9 +66,17 @@ pub mod panda_battle {
 
     // ============== PLAYER INSTRUCTIONS ==============
 
-    /// Join the current round by paying entry fee
-    pub fn join_round(ctx: Context<JoinRound>) -> Result<()> {
-        instructions::player::join_round(ctx)
+    /// Request to join the current round (Step 1: Request VRF)
+    pub fn request_join_round(ctx: Context<RequestJoinRound>, client_seed: u8) -> Result<()> {
+        instructions::player::request_join_round(ctx, client_seed)
+    }
+
+    /// Callback to complete join round (Step 2: Consume VRF randomness)
+    pub fn callback_join_round(
+        ctx: Context<CallbackJoinRound>,
+        randomness: [u8; 32],
+    ) -> Result<()> {
+        instructions::player::callback_join_round(ctx, randomness)
     }
 
     /// Purchase additional turns

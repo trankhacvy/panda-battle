@@ -7,10 +7,17 @@ pub struct GameConfig {
     /// Admin authority
     pub admin: Pubkey,
 
+<<<<<<< HEAD
     /// Entry fee in lamports
     pub entry_fee: u64,
 
     /// Base price for purchasing turns (in lamports)
+=======
+    /// Entry fee in tokens
+    pub entry_fee: u64,
+
+    /// Base price for purchasing turns (in tokens)
+>>>>>>> 6594ddf (program)
     pub turn_base_price: u64,
 
     /// Round duration in seconds
@@ -30,9 +37,12 @@ pub struct GameConfig {
 
     /// Bump seed for PDA
     pub bump: u8,
+<<<<<<< HEAD
 
     /// Vault bump seed
     pub vault_bump: u8,
+=======
+>>>>>>> 6594ddf (program)
 }
 
 impl GameConfig {}
@@ -44,6 +54,12 @@ pub struct GameRound {
     /// Reference to game config
     pub game_config: Pubkey,
 
+<<<<<<< HEAD
+=======
+    /// Token mint for this round
+    pub mint: Pubkey,
+
+>>>>>>> 6594ddf (program)
     /// Round number
     pub round_number: u64,
 
@@ -53,7 +69,11 @@ pub struct GameRound {
     /// Round end timestamp
     pub end_time: i64,
 
+<<<<<<< HEAD
     /// Total prize pool in lamports
+=======
+    /// Total prize pool in tokens
+>>>>>>> 6594ddf (program)
     pub prize_pool: u64,
 
     /// Number of players in this round
