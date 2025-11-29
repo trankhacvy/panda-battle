@@ -278,27 +278,27 @@ export function BattleArena({
             <div
               className={cn(
                 "h-2 flex-1 rounded-full transition-all duration-300",
-                phase === "fighting" || phase === "steal" || phase === "results"
+                phase === "fighting"
                   ? "bg-gradient-to-r from-orange-500 to-red-500"
                   : "bg-muted"
               )}
             />
-            <div
+            {/* <div
               className={cn(
                 "h-2 flex-1 rounded-full transition-all duration-300",
                 phase === "steal" || phase === "results"
                   ? "bg-gradient-to-r from-purple-500 to-pink-500"
                   : "bg-muted"
               )}
-            />
-            <div
+            /> */}
+            {/* <div
               className={cn(
                 "h-2 flex-1 rounded-full transition-all duration-300",
                 phase === "results"
                   ? "bg-gradient-to-r from-yellow-500 to-amber-500"
                   : "bg-muted"
               )}
-            />
+            /> */}
           </div>
         </div>
       </div>

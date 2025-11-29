@@ -1,187 +1,95 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  mockLeaderboardEntries,
-  type LeaderboardEntry,
-} from "@/lib/mock/leaderboard";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { Search, ArrowDownUp, Filter } from "lucide-react";
+import { PlayerCard } from "@/components/leaderboard/player-card";
+
+const players = [
+  {
+    rank: 1,
+    name: "Grand Master",
+    points: 10500,
+    bgColor: "bg-cyan-600",
+    borderColor: "ring-yellow-400 ring-2 shadow-[0_0_20px_rgba(234,179,8,0.5)]",
+  },
+  {
+    rank: 2,
+    name: "Dragon Warrior",
+    points: 9800,
+    bgColor: "bg-gray-700",
+    borderColor: "ring-gray-400 ring-1",
+  },
+  {
+    rank: 3,
+    name: "Bamboo Fury",
+    points: 7500,
+    bgColor: "bg-teal-700",
+    borderColor: "ring-amber-600 ring-1",
+  },
+  {
+    rank: 4,
+    name: "Bamboo Paw",
+    points: 6600,
+    bgColor: "bg-teal-700",
+    borderColor: "ring-amber-700 ring-1",
+  },
+  {
+    rank: 5,
+    name: "Shadow Claw",
+    points: 5200,
+    bgColor: "bg-gray-500",
+    borderColor: "ring-amber-700 ring-1",
+  },
+];
 
 export default function LeaderboardPage() {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const toggleExpand = (id: string) => {
-    setExpandedId(expandedId === id ? null : id);
+  const filteredPlayers = players.filter((player) =>
+    player.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleBattle = (playerName: string) => {
+    console.log("Battle with player:", playerName);
+    // TODO: Navigate to battle screen
   };
 
   return (
-    <div className="mx-auto px-4 space-y-4">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">Leaderboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Top players and rankings
-        </p>
+    <div className="flex-1 px-4 py-2 space-y-3 overflow-auto relative z-10">
+      {/* Search and Filters */}
+      <div className="flex gap-2">
+        <div className="flex-1 bg-[#0f2a4a]/80 border border-cyan-500/20 rounded-lg flex items-center px-3 py-2">
+          <Search className="w-5 h-5 text-white/50 mr-2" />
+          <input
+            type="text"
+            placeholder="Search Players..."
+            className="bg-transparent text-white placeholder:text-white/50 outline-none flex-1"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <button className="bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-2 flex flex-col items-center justify-center min-w-[50px] transition-colors">
+          <ArrowDownUp className="w-4 h-4 text-white" />
+          <span className="text-white text-xs sr-only">Sort</span>
+        </button>
+        <button className="bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-2 flex flex-col items-center justify-center min-w-[50px] transition-colors">
+          <Filter className="w-4 h-4 text-white" />
+          <span className="text-white text-xs sr-only">Filter</span>
+        </button>
       </div>
 
-      {/* Top 20 Notice */}
-      <Card className="bg-muted/50">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-sm">
-            <span>🏆</span>
-            <span>Top 20 players have full stats visible</span>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Leaderboard List */}
-      <div className="space-y-2">
-        {mockLeaderboardEntries.map((entry) => (
-          <Card
-            key={entry.id}
-            className={entry.isCurrentPlayer ? "border-primary" : ""}
-          >
-            <CardContent className="pt-6">
-              <div className="space-y-3">
-                {/* Main Row */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="text-center min-w-[40px]">
-                      <div className="text-xl font-bold">#{entry.rank}</div>
-                    </div>
-                    <div className="text-3xl">{entry.avatar}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold truncate">
-                          {entry.player}
-                        </h3>
-                        {entry.isCurrentPlayer && (
-                          <Badge variant="default" className="text-xs">
-                            YOU
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>⚡ {entry.totalPower}</span>
-                        <span>•</span>
-                        <span>
-                          {entry.totalWins}W - {entry.totalLosses}L
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleExpand(entry.id)}
-                  >
-                    {expandedId === entry.id ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-
-                {/* Expanded Details */}
-                {expandedId === entry.id && entry.attributes !== null && (
-                  <div className="pt-3 border-t space-y-2">
-                    {entry.attributes && (
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        {entry.visibility === "full" ? (
-                          <>
-                            <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">
-                                💪 Strength
-                              </span>
-                              <span className="font-semibold">
-                                {entry.attributes.strength}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">
-                                ⚡ Speed
-                              </span>
-                              <span className="font-semibold">
-                                {entry.attributes.speed}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">
-                                🛡️ Endurance
-                              </span>
-                              <span className="font-semibold">
-                                {entry.attributes.endurance}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">
-                                🍀 Luck
-                              </span>
-                              <span className="font-semibold">
-                                {entry.attributes.luck}
-                              </span>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">
-                                💪 Strength
-                              </span>
-                              <span className="font-semibold">
-                                {entry.attributes.strength}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">
-                                ⚡ Speed
-                              </span>
-                              <span className="font-semibold">
-                                {entry.attributes.speed}
-                              </span>
-                            </div>
-                            <div className="col-span-2 text-xs text-muted-foreground text-center">
-                              Other stats hidden
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
-                    <div className="pt-2 border-t">
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">
-                            Win Rate
-                          </span>
-                          <span className="font-semibold">
-                            {entry.winRate.toFixed(1)}%
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">
-                            Total Power
-                          </span>
-                          <span className="font-semibold">
-                            {entry.totalPower}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    {!entry.isCurrentPlayer &&
-                      entry.visibility !== "hidden" && (
-                        <Button className="w-full" size="sm">
-                          Challenge
-                        </Button>
-                      )}
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+      {/* Player List */}
+      <div className="space-y-3">
+        {filteredPlayers.map((player) => (
+          <PlayerCard
+            key={player.rank}
+            rank={player.rank}
+            name={player.name}
+            points={player.points}
+            bgColor={player.bgColor}
+            borderColor={player.borderColor}
+            onBattle={() => handleBattle(player.name)}
+          />
         ))}
       </div>
     </div>

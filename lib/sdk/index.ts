@@ -12,7 +12,7 @@ import {
 import {
   getInitializeGameInstructionAsync,
   getCreateRoundInstructionAsync,
-  getJoinRoundInstructionAsync,
+  // getJoinRoundInstructionAsync,
   getPurchaseTurnsInstructionAsync,
   getInitiateBattleInstructionAsync,
   getClaimRewardInstructionAsync,
@@ -124,7 +124,7 @@ export class PandaBattleSDK {
     return await getInitializeGameInstructionAsync({
       admin: params.admin,
       gameConfig: gameConfigPDA,
-      vault: vaultPDA,
+      // vault: vaultPDA,
       entryFee: BigInt(Math.floor(params.entryFee * 1e9)),
       turnBasePrice: BigInt(Math.floor(params.turnBasePrice * 1e9)),
       roundDuration: BigInt(params.roundDuration),
@@ -136,21 +136,21 @@ export class PandaBattleSDK {
   /**
    * Create a new game round
    */
-  async createRoundIx(params: CreateRoundParams): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-    const gameConfig = await fetchGameConfig(this.rpc, gameConfigPDA);
-    const nextRoundNumber = Number(gameConfig.data.totalRounds) + 1;
-    const [gameRoundPDA] = await getGameRoundPDA(
-      gameConfigPDA,
-      nextRoundNumber
-    );
+  // async createRoundIx(params: CreateRoundParams): Promise<Instruction> {
+  //   const [gameConfigPDA] = await getGameConfigPDA();
+  //   const gameConfig = await fetchGameConfig(this.rpc, gameConfigPDA);
+  //   const nextRoundNumber = Number(gameConfig.data.totalRounds) + 1;
+  //   const [gameRoundPDA] = await getGameRoundPDA(
+  //     gameConfigPDA,
+  //     nextRoundNumber
+  //   );
 
-    return await getCreateRoundInstructionAsync({
-      admin: params.admin,
-      gameConfig: gameConfigPDA,
-      gameRound: gameRoundPDA,
-    });
-  }
+  //   return await getCreateRoundInstructionAsync({
+  //     admin: params.admin,
+  //     gameConfig: gameConfigPDA,
+  //     gameRound: gameRoundPDA,
+  //   });
+  // }
 
   /**
    * End the current round
@@ -172,172 +172,172 @@ export class PandaBattleSDK {
   /**
    * Update game configuration parameters
    */
-  async updateConfigIx(params: UpdateConfigParams): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
+  // async updateConfigIx(params: UpdateConfigParams): Promise<Instruction> {
+  //   const [gameConfigPDA] = await getGameConfigPDA();
 
-    return await getUpdateConfigInstructionAsync({
-      admin: params.admin,
-      gameConfig: gameConfigPDA,
-      entryFee: params.entryFee
-        ? BigInt(Math.floor(params.entryFee * 1e9))
-        : undefined,
-      turnBasePrice: params.turnBasePrice
-        ? BigInt(Math.floor(params.turnBasePrice * 1e9))
-        : undefined,
-      roundDuration: params.roundDuration
-        ? BigInt(params.roundDuration)
-        : undefined,
-      stealPercentage: params.stealPercentage,
-      idleDecayPercentage: params.idleDecayPercentage,
-    });
-  }
+  //   return await getUpdateConfigInstructionAsync({
+  //     admin: params.admin,
+  //     gameConfig: gameConfigPDA,
+  //     entryFee: params.entryFee
+  //       ? BigInt(Math.floor(params.entryFee * 1e9))
+  //       : undefined,
+  //     turnBasePrice: params.turnBasePrice
+  //       ? BigInt(Math.floor(params.turnBasePrice * 1e9))
+  //       : undefined,
+  //     roundDuration: params.roundDuration
+  //       ? BigInt(params.roundDuration)
+  //       : undefined,
+  //     stealPercentage: params.stealPercentage,
+  //     idleDecayPercentage: params.idleDecayPercentage,
+  //   });
+  // }
 
   // ============== PLAYER INSTRUCTIONS ==============
 
   /**
    * Join the current round by paying entry fee
    */
-  async joinRoundIx(params: JoinRoundParams): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-    const [gameRoundPDA] = await getGameRoundPDA(
-      gameConfigPDA,
-      params.roundNumber
-    );
-    const [playerStatePDA] = await getPlayerStatePDA(
-      gameRoundPDA,
-      params.player.address
-    );
-    const [vaultPDA] = await getVaultPDA(gameConfigPDA);
+  // async joinRoundIx(params: JoinRoundParams): Promise<Instruction> {
+  //   const [gameConfigPDA] = await getGameConfigPDA();
+  //   const [gameRoundPDA] = await getGameRoundPDA(
+  //     gameConfigPDA,
+  //     params.roundNumber
+  //   );
+  //   const [playerStatePDA] = await getPlayerStatePDA(
+  //     gameRoundPDA,
+  //     params.player.address
+  //   );
+  //   const [vaultPDA] = await getVaultPDA(gameConfigPDA);
 
-    return await getJoinRoundInstructionAsync({
-      player: params.player,
-      gameConfig: gameConfigPDA,
-      gameRound: gameRoundPDA,
-      playerState: playerStatePDA,
-      vault: vaultPDA,
-    });
-  }
+  //   return await getJoinRoundInstructionAsync({
+  //     player: params.player,
+  //     gameConfig: gameConfigPDA,
+  //     gameRound: gameRoundPDA,
+  //     playerState: playerStatePDA,
+  //     vault: vaultPDA,
+  //   });
+  // }
 
   /**
    * Purchase additional turns
    */
-  async purchaseTurnsIx(params: PurchaseTurnsParams): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-    const [gameRoundPDA] = await getGameRoundPDA(
-      gameConfigPDA,
-      params.roundNumber
-    );
-    const [playerStatePDA] = await getPlayerStatePDA(
-      gameRoundPDA,
-      params.player.address
-    );
-    const [vaultPDA] = await getVaultPDA(gameConfigPDA);
+  // async purchaseTurnsIx(params: PurchaseTurnsParams): Promise<Instruction> {
+  //   const [gameConfigPDA] = await getGameConfigPDA();
+  //   const [gameRoundPDA] = await getGameRoundPDA(
+  //     gameConfigPDA,
+  //     params.roundNumber
+  //   );
+  //   const [playerStatePDA] = await getPlayerStatePDA(
+  //     gameRoundPDA,
+  //     params.player.address
+  //   );
+  //   const [vaultPDA] = await getVaultPDA(gameConfigPDA);
 
-    return await getPurchaseTurnsInstructionAsync({
-      player: params.player,
-      gameConfig: gameConfigPDA,
-      gameRound: gameRoundPDA,
-      playerState: playerStatePDA,
-      vault: vaultPDA,
-      amount: params.amount,
-    });
-  }
+  //   return await getPurchaseTurnsInstructionAsync({
+  //     player: params.player,
+  //     gameConfig: gameConfigPDA,
+  //     gameRound: gameRoundPDA,
+  //     playerState: playerStatePDA,
+  //     vault: vaultPDA,
+  //     amount: params.amount,
+  //   });
+  // }
 
   /**
    * Initiate a battle against another player
    */
-  async initiateBattleIx(params: InitiateBattleParams): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-    const [gameRoundPDA] = await getGameRoundPDA(
-      gameConfigPDA,
-      params.roundNumber
-    );
-    const [attackerStatePDA] = await getPlayerStatePDA(
-      gameRoundPDA,
-      params.player.address
-    );
-    const [defenderStatePDA] = await getPlayerStatePDA(
-      gameRoundPDA,
-      params.defenderAddress
-    );
+  // async initiateBattleIx(params: InitiateBattleParams): Promise<Instruction> {
+  //   const [gameConfigPDA] = await getGameConfigPDA();
+  //   const [gameRoundPDA] = await getGameRoundPDA(
+  //     gameConfigPDA,
+  //     params.roundNumber
+  //   );
+  //   const [attackerStatePDA] = await getPlayerStatePDA(
+  //     gameRoundPDA,
+  //     params.player.address
+  //   );
+  //   const [defenderStatePDA] = await getPlayerStatePDA(
+  //     gameRoundPDA,
+  //     params.defenderAddress
+  //   );
 
-    return await getInitiateBattleInstructionAsync({
-      player: params.player,
-      gameConfig: gameConfigPDA,
-      gameRound: gameRoundPDA,
-      attackerState: attackerStatePDA,
-      defenderState: defenderStatePDA,
-      stealAttribute: { __kind: getAttributeTypeKind(params.stealAttribute) },
-    });
-  }
+  //   return await getInitiateBattleInstructionAsync({
+  //     player: params.player,
+  //     gameConfig: gameConfigPDA,
+  //     gameRound: gameRoundPDA,
+  //     attackerState: attackerStatePDA,
+  //     defenderState: defenderStatePDA,
+  //     stealAttribute: { __kind: getAttributeTypeKind(params.stealAttribute) },
+  //   });
+  // }
 
   /**
    * Claim rewards after round ends
    */
-  async claimRewardIx(params: ClaimRewardParams): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-    const [gameRoundPDA] = await getGameRoundPDA(
-      gameConfigPDA,
-      params.roundNumber
-    );
-    const [playerStatePDA] = await getPlayerStatePDA(
-      gameRoundPDA,
-      params.player.address
-    );
-    const [vaultPDA] = await getVaultPDA(gameConfigPDA);
+  // async claimRewardIx(params: ClaimRewardParams): Promise<Instruction> {
+  //   const [gameConfigPDA] = await getGameConfigPDA();
+  //   const [gameRoundPDA] = await getGameRoundPDA(
+  //     gameConfigPDA,
+  //     params.roundNumber
+  //   );
+  //   const [playerStatePDA] = await getPlayerStatePDA(
+  //     gameRoundPDA,
+  //     params.player.address
+  //   );
+  //   const [vaultPDA] = await getVaultPDA(gameConfigPDA);
 
-    return await getClaimRewardInstructionAsync({
-      player: params.player,
-      gameConfig: gameConfigPDA,
-      gameRound: gameRoundPDA,
-      playerState: playerStatePDA,
-      vault: vaultPDA,
-    });
-  }
+  //   return await getClaimRewardInstructionAsync({
+  //     player: params.player,
+  //     gameConfig: gameConfigPDA,
+  //     gameRound: gameRoundPDA,
+  //     playerState: playerStatePDA,
+  //     vault: vaultPDA,
+  //   });
+  // }
 
   // ============== CRANK INSTRUCTIONS ==============
 
   /**
    * Regenerate turns for a player (can be called by anyone)
    */
-  async regenerateTurnsIx(params: RegenerateTurnsParams): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-    const [gameRoundPDA] = await getGameRoundPDA(
-      gameConfigPDA,
-      params.roundNumber
-    );
-    const [playerStatePDA] = await getPlayerStatePDA(
-      gameRoundPDA,
-      params.playerAddress
-    );
+  // async regenerateTurnsIx(params: RegenerateTurnsParams): Promise<Instruction> {
+  //   const [gameConfigPDA] = await getGameConfigPDA();
+  //   const [gameRoundPDA] = await getGameRoundPDA(
+  //     gameConfigPDA,
+  //     params.roundNumber
+  //   );
+  //   const [playerStatePDA] = await getPlayerStatePDA(
+  //     gameRoundPDA,
+  //     params.playerAddress
+  //   );
 
-    return await getRegenerateTurnsInstructionAsync({
-      gameConfig: gameConfigPDA,
-      gameRound: gameRoundPDA,
-      playerState: playerStatePDA,
-    });
-  }
+  //   return await getRegenerateTurnsInstructionAsync({
+  //     gameConfig: gameConfigPDA,
+  //     gameRound: gameRoundPDA,
+  //     playerState: playerStatePDA,
+  //   });
+  // }
 
   /**
    * Apply idle decay to inactive player (can be called by anyone)
    */
-  async applyIdleDecayIx(params: ApplyIdleDecayParams): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-    const [gameRoundPDA] = await getGameRoundPDA(
-      gameConfigPDA,
-      params.roundNumber
-    );
-    const [playerStatePDA] = await getPlayerStatePDA(
-      gameRoundPDA,
-      params.playerAddress
-    );
+  // async applyIdleDecayIx(params: ApplyIdleDecayParams): Promise<Instruction> {
+  //   const [gameConfigPDA] = await getGameConfigPDA();
+  //   const [gameRoundPDA] = await getGameRoundPDA(
+  //     gameConfigPDA,
+  //     params.roundNumber
+  //   );
+  //   const [playerStatePDA] = await getPlayerStatePDA(
+  //     gameRoundPDA,
+  //     params.playerAddress
+  //   );
 
-    return await getApplyIdleDecayInstructionAsync({
-      gameConfig: gameConfigPDA,
-      gameRound: gameRoundPDA,
-      playerState: playerStatePDA,
-    });
-  }
+  //   return await getApplyIdleDecayInstructionAsync({
+  //     gameConfig: gameConfigPDA,
+  //     gameRound: gameRoundPDA,
+  //     playerState: playerStatePDA,
+  //   });
+  // }
 
   // ============== FETCH METHODS ==============
 
@@ -444,4 +444,4 @@ function getAttributeTypeKind(
 // Re-export types and utilities
 export * from "./types";
 export * from "./pda";
-export * from "./generated";
+// export * from "./generated";

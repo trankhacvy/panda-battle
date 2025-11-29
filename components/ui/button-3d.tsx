@@ -23,6 +23,7 @@ const button3DVariants = cva(
           "bg-[#FFD700] hover:bg-[#FFE700] shadow-[0_8px_0_#CCB000] active:shadow-none active:translate-y-[8px]",
       },
       size: {
+        "3d-tiny": "h-10 px-2.5 text-sm",
         "3d-sm": "h-12 px-6 text-xl",
         "3d-md": "h-16 px-10 text-2xl",
         "3d-lg": "h-20 px-14 text-3xl",

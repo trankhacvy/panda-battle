@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Rubik } from "next/font/google";
 import "@/styles/globals.css";
-import { SolanaProvider } from "@/components/providers/solana-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AppBackground } from "@/components/background/app-background";
-import { Navigation } from "@/components/navigation";
-import Header from "@/components/header";
+import { AppProviders } from "@/components/providers/app-provider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const rubik = Rubik({
+  variable: "--font-rubik",
   subsets: ["latin"],
 });
 
@@ -34,17 +27,25 @@ export default function RootLayout({
       className="flex h-full flex-col items-center overscroll-none"
     >
       <body
-        className={`flex h-full min-h-0 w-full max-w-(--max-layout-width) flex-col ${geistSans.variable} ${geistMono.variable}  antialiased`}
+        className={`flex h-full min-h-0 w-full max-w-lg flex-col ${rubik.variable}  antialiased`}
       >
-        <SolanaProvider>
+        <AppProviders>
           <AppBackground />
-          <Header />
-          <main className="h-full min-h-0 grow overflow-auto overscroll-contain bg-background">
+          {/* <Header /> */}
+          <main
+            className="h-full min-h-0 grow overflow-auto overscroll-contain"
+            style={{
+              backgroundImage: "url(/images/game-bg.png)",
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
             {children}
           </main>
-          <Navigation />
+          {/* <Navigation /> */}
           <Toaster className="z-100" position="top-center" />
-        </SolanaProvider>
+        </AppProviders>
       </body>
     </html>
   );
