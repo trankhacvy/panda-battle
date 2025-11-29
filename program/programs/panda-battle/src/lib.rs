@@ -62,6 +62,14 @@ pub mod panda_battle {
         instructions::player::callback_join_round(ctx, randomness)
     }
 
+    /// Callback to complete join round (Step 2: Consume VRF randomness)
+    pub fn callback_join_round(
+        ctx: Context<CallbackJoinRound>,
+        randomness: [u8; 32],
+    ) -> Result<()> {
+        instructions::player::callback_join_round(ctx, randomness)
+    }
+
     /// Buy attack packs (replaces purchase_turns)
     pub fn buy_attack_packs(ctx: Context<BuyAttackPacks>, num_packs: u8) -> Result<()> {
         instructions::player::buy_attack_packs(ctx, num_packs)

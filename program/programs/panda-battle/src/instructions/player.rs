@@ -640,6 +640,7 @@ pub fn claim_prize(ctx: Context<ClaimPrize>) -> Result<()> {
         &[game_round.bump],
     ]];
 
+<<<<<<< HEAD
     let cpi_accounts = Transfer {
         from: ctx.accounts.vault.to_account_info(),
         to: ctx.accounts.player_token_account.to_account_info(),
@@ -656,6 +657,51 @@ pub fn claim_prize(ctx: Context<ClaimPrize>) -> Result<()> {
 
     msg!(
         "Player {} claimed {} tokens prize",
+=======
+    // Transfer reward from vault (SPL token with PDA signer - game_round is the authority)
+    let game_config_key = game_config.key();
+    let round_number_bytes = game_round.round_number.to_le_bytes();
+    let signer_seeds: &[&[&[u8]]] = &[&[
+        GAME_ROUND_SEED,
+        game_config_key.as_ref(),
+        round_number_bytes.as_ref(),
+        &[game_round.bump],
+    ]];
+
+<<<<<<< HEAD
+    **ctx.accounts.vault.try_borrow_mut_lamports()? = ctx
+        .accounts
+        .vault
+        .lamports()
+        .checked_sub(reward)
+        .ok_or(PandaBattleError::Underflow)?;
+
+    **ctx.accounts.player.try_borrow_mut_lamports()? = ctx
+        .accounts
+        .player
+        .lamports()
+        .checked_add(reward)
+        .ok_or(PandaBattleError::Overflow)?;
+=======
+    let cpi_accounts = Transfer {
+        from: ctx.accounts.vault.to_account_info(),
+        to: ctx.accounts.player_token_account.to_account_info(),
+        authority: game_round.to_account_info(),
+    };
+    let cpi_ctx = CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        cpi_accounts,
+        signer_seeds,
+    );
+    transfer(cpi_ctx, reward)?;
+>>>>>>> 6594ddf (program)
+
+    player_state.rewards_earned = reward;
+    player_state.rewards_claimed = true;
+
+    msg!(
+        "Player {} claimed {} tokens reward",
+>>>>>>> 15227bc (program)
         ctx.accounts.player.key(),
         prize
     );
@@ -663,6 +709,188 @@ pub fn claim_prize(ctx: Context<ClaimPrize>) -> Result<()> {
     Ok(())
 }
 
+<<<<<<< HEAD
+=======
+// ============== HELPER FUNCTIONS ==============
+
+<<<<<<< HEAD
+/// Generate randomized attributes for a new player
+fn generate_random_attributes(
+    player_key: &Pubkey,
+    timestamp: i64,
+    penalty_bps: u16,
+) -> (u16, u16, u16, u16) {
+    // Use player key and timestamp for pseudo-randomness
+    let seed_bytes = player_key.to_bytes();
+    let timestamp_bytes = timestamp.to_le_bytes();
+
+    let mut hash_input = [0u8; 40];
+    hash_input[..32].copy_from_slice(&seed_bytes);
+    hash_input[32..40].copy_from_slice(&timestamp_bytes);
+
+    // Simple hash-based randomization
+    let strength = generate_attribute(seed_bytes[0], seed_bytes[1], penalty_bps);
+    let speed = generate_attribute(seed_bytes[2], seed_bytes[3], penalty_bps);
+    let endurance = generate_attribute(seed_bytes[4], seed_bytes[5], penalty_bps);
+    let luck = generate_attribute(seed_bytes[6], seed_bytes[7], penalty_bps);
+
+    (strength, speed, endurance, luck)
+}
+
+/// Generate a single attribute value with penalty
+fn generate_attribute(byte1: u8, byte2: u8, penalty_bps: u16) -> u16 {
+    let range = BASE_ATTRIBUTE_MAX - BASE_ATTRIBUTE_MIN;
+    let combined = ((byte1 as u16) << 8) | (byte2 as u16);
+    let value = BASE_ATTRIBUTE_MIN + (combined % range);
+
+    // Apply penalty
+    if penalty_bps > 0 {
+        let penalty = (value as u32 * penalty_bps as u32 / 10000) as u16;
+        value.saturating_sub(penalty)
+    } else {
+        value
+=======
+/// Generate attributes from VRF randomness
+fn generate_attributes_from_vrf(randomness: &[u8; 32], penalty_bps: u16) -> (u16, u16, u16, u16) {
+    // Use VRF utility to generate 4 random values in attribute range
+    let attributes = random_u16_four_values(randomness, BASE_ATTRIBUTE_MIN, BASE_ATTRIBUTE_MAX);
+
+    // Apply penalty to each attribute
+    let apply_penalty = |value: u16| -> u16 {
+        if penalty_bps > 0 {
+            let penalty = (value as u32 * penalty_bps as u32 / 10000) as u16;
+            value.saturating_sub(penalty)
+        } else {
+            value
+        }
+    };
+
+    (
+        apply_penalty(attributes[0]), // strength
+        apply_penalty(attributes[1]), // speed
+        apply_penalty(attributes[2]), // endurance
+        apply_penalty(attributes[3]), // luck
+    )
+}
+
+/// Generates 4 random u16 values within a specified range from a 32-byte random seed
+///
+/// # Arguments
+///
+/// * `bytes` - A 32-byte array containing random data from the VRF
+/// * `min_value` - The minimum value (inclusive) of the desired range
+/// * `max_value` - The maximum value (inclusive) of the desired range
+///
+/// # Returns
+///
+/// An array of 4 random u16 values uniformly distributed in the range [min_value, max_value]
+///
+/// # Algorithm
+///
+/// Divides the 32 bytes into 4 segments of 8 bytes each. For each segment,
+/// converts to u64 and maps to the desired range to avoid modulo bias.
+/// This approach provides better distribution than simple modulo operations.
+fn random_u16_four_values(bytes: &[u8; 32], min_value: u16, max_value: u16) -> [u16; 4] {
+    let range = (max_value - min_value + 1) as u64;
+    let mut results = [0u16; 4];
+
+    // Process each 8-byte segment for better randomness distribution
+    for i in 0..4 {
+        let start = i * 8;
+        let end = start + 8;
+
+        // Convert 8 bytes to u64
+        let mut segment_bytes = [0u8; 8];
+        segment_bytes.copy_from_slice(&bytes[start..end]);
+        let random_u64 = u64::from_le_bytes(segment_bytes);
+
+        // Map to range [min_value, max_value]
+        results[i] = min_value + ((random_u64 % range) as u16);
+>>>>>>> 6594ddf (program)
+    }
+
+    results
+}
+
+/// Calculate battle score with some randomness
+fn calculate_battle_score(
+    player: &PlayerState,
+    player_key: &Pubkey,
+    timestamp: i64,
+    is_attacker: bool,
+) -> u64 {
+    let base_score = player.battle_score();
+
+    // Add luck-based variance (up to ±10%)
+    let seed_bytes = player_key.to_bytes();
+    let time_factor = (timestamp % 256) as u8;
+    let luck_roll = ((seed_bytes[if is_attacker { 0 } else { 16 }] ^ time_factor) % 21) as i64 - 10;
+
+    let variance = (base_score as i64 * luck_roll / 100) as i64;
+    let luck_bonus = (player.luck as i64 * luck_roll / 200) as i64;
+
+    ((base_score as i64) + variance + luck_bonus).max(1) as u64
+}
+
+/// Execute attribute steal from loser to winner
+fn execute_steal(
+    winner: &mut PlayerState,
+    loser: &mut PlayerState,
+    attribute: &AttributeType,
+    steal_percentage: u8,
+) -> Result<u16> {
+    let (winner_attr, loser_attr) = match attribute {
+        AttributeType::Strength => (&mut winner.strength, &mut loser.strength),
+        AttributeType::Speed => (&mut winner.speed, &mut loser.speed),
+        AttributeType::Endurance => (&mut winner.endurance, &mut loser.endurance),
+        AttributeType::Luck => (&mut winner.luck, &mut loser.luck),
+    };
+
+    // Calculate steal amount
+    let steal_amount = (*loser_attr as u32 * steal_percentage as u32 / 100) as u16;
+    let steal_amount = steal_amount.max(1); // Minimum 1
+
+    // Execute transfer
+    *loser_attr = loser_attr.saturating_sub(steal_amount);
+    *winner_attr = winner_attr.saturating_add(steal_amount);
+
+    // Ensure minimum attribute value of 10
+    if *loser_attr < 10 {
+        *loser_attr = 10;
+    }
+
+    Ok(steal_amount)
+}
+
+/// Calculate reward for a player
+fn calculate_reward(player: &PlayerState, prize_pool: u64, player_count: u32) -> Result<u64> {
+    if player_count == 0 || prize_pool == 0 {
+        return Ok(0);
+    }
+
+    // MVP formula: base share + performance bonus
+    let base_share = prize_pool / player_count as u64;
+
+    // Performance multiplier based on win rate
+    let win_rate = if player.battles_fought > 0 {
+        (player.wins as u64 * 100) / player.battles_fought as u64
+    } else {
+        50
+    };
+
+    // Scale from 0.5x to 1.5x based on win rate
+    let multiplier = 50 + win_rate; // 50-150%
+
+    let reward = base_share
+        .checked_mul(multiplier)
+        .ok_or(PandaBattleError::Overflow)?
+        .checked_div(100)
+        .ok_or(PandaBattleError::Overflow)?;
+
+    Ok(reward)
+}
+
+>>>>>>> 15227bc (program)
 // ============== CONTEXTS ==============
 
 #[vrf]
@@ -706,7 +934,11 @@ pub struct RequestJoinRound<'info> {
     #[account(
         mut,
         constraint = player_token_account.owner == player.key() @ PandaBattleError::Unauthorized,
+<<<<<<< HEAD
         constraint = player_token_account.mint == global_config.token_mint @ PandaBattleError::InvalidMint
+=======
+        constraint = player_token_account.mint == game_round.mint @ PandaBattleError::InvalidMint
+>>>>>>> 15227bc (program)
     )]
     pub player_token_account: Account<'info, TokenAccount>,
 
@@ -714,7 +946,11 @@ pub struct RequestJoinRound<'info> {
     #[account(
         mut,
         constraint = vault.owner == game_round.key() @ PandaBattleError::Unauthorized,
+<<<<<<< HEAD
         constraint = vault.mint == global_config.token_mint @ PandaBattleError::InvalidMint
+=======
+        constraint = vault.mint == game_round.mint @ PandaBattleError::InvalidMint
+>>>>>>> 15227bc (program)
     )]
     pub vault: Account<'info, TokenAccount>,
 
@@ -724,6 +960,21 @@ pub struct RequestJoinRound<'info> {
 
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
+<<<<<<< HEAD
+=======
+}
+
+#[derive(Accounts)]
+pub struct CallbackJoinRound<'info> {
+    /// VRF program identity ensures callback is from VRF program
+    #[account(address = ephemeral_vrf_sdk::consts::VRF_PROGRAM_IDENTITY)]
+    pub vrf_program_identity: Signer<'info>,
+
+    #[account(mut)]
+    pub player_state: Account<'info, PlayerState>,
+
+    pub game_round: Account<'info, GameRound>,
+>>>>>>> 15227bc (program)
 }
 
 #[derive(Accounts)]
@@ -776,7 +1027,11 @@ pub struct BuyAttackPacks<'info> {
     #[account(
         mut,
         constraint = player_token_account.owner == player.key() @ PandaBattleError::Unauthorized,
+<<<<<<< HEAD
         constraint = player_token_account.mint == global_config.token_mint @ PandaBattleError::InvalidMint
+=======
+        constraint = player_token_account.mint == game_round.mint @ PandaBattleError::InvalidMint
+>>>>>>> 15227bc (program)
     )]
     pub player_token_account: Account<'info, TokenAccount>,
 
@@ -784,7 +1039,11 @@ pub struct BuyAttackPacks<'info> {
     #[account(
         mut,
         constraint = vault.owner == game_round.key() @ PandaBattleError::Unauthorized,
+<<<<<<< HEAD
         constraint = vault.mint == global_config.token_mint @ PandaBattleError::InvalidMint
+=======
+        constraint = vault.mint == game_round.mint @ PandaBattleError::InvalidMint
+>>>>>>> 15227bc (program)
     )]
     pub vault: Account<'info, TokenAccount>,
 
@@ -971,7 +1230,11 @@ pub struct ClaimPrize<'info> {
     #[account(
         mut,
         constraint = player_token_account.owner == player.key() @ PandaBattleError::Unauthorized,
+<<<<<<< HEAD
         constraint = player_token_account.mint == global_config.token_mint @ PandaBattleError::InvalidMint
+=======
+        constraint = player_token_account.mint == game_round.mint @ PandaBattleError::InvalidMint
+>>>>>>> 15227bc (program)
     )]
     pub player_token_account: Account<'info, TokenAccount>,
 
@@ -979,7 +1242,11 @@ pub struct ClaimPrize<'info> {
     #[account(
         mut,
         constraint = vault.owner == game_round.key() @ PandaBattleError::Unauthorized,
+<<<<<<< HEAD
         constraint = vault.mint == global_config.token_mint @ PandaBattleError::InvalidMint
+=======
+        constraint = vault.mint == game_round.mint @ PandaBattleError::InvalidMint
+>>>>>>> 15227bc (program)
     )]
     pub vault: Account<'info, TokenAccount>,
 

@@ -264,3 +264,49 @@ pub fn transfer_from_vault<'info>(
     msg!("Transferred {} tokens from vault", amount);
     Ok(())
 }
+
+// ============== UTILITY FUNCTIONS ==============
+
+/// Transfer tokens from user to vault
+pub fn transfer_to_vault<'info>(
+    from: &Account<'info, TokenAccount>,
+    to: &Account<'info, TokenAccount>,
+    authority: &Signer<'info>,
+    token_program: &Program<'info, Token>,
+    amount: u64,
+) -> Result<()> {
+    let cpi_accounts = Transfer {
+        from: from.to_account_info(),
+        to: to.to_account_info(),
+        authority: authority.to_account_info(),
+    };
+
+    let cpi_ctx = CpiContext::new(token_program.to_account_info(), cpi_accounts);
+    transfer(cpi_ctx, amount)?;
+
+    msg!("Transferred {} tokens to vault", amount);
+    Ok(())
+}
+
+/// Transfer tokens from vault to user (requires PDA signer)
+pub fn transfer_from_vault<'info>(
+    from: &Account<'info, TokenAccount>,
+    to: &Account<'info, TokenAccount>,
+    authority: &AccountInfo<'info>,
+    token_program: &Program<'info, Token>,
+    amount: u64,
+    signer_seeds: &[&[&[u8]]],
+) -> Result<()> {
+    let cpi_accounts = Transfer {
+        from: from.to_account_info(),
+        to: to.to_account_info(),
+        authority: authority.to_account_info(),
+    };
+
+    let cpi_ctx =
+        CpiContext::new_with_signer(token_program.to_account_info(), cpi_accounts, signer_seeds);
+    transfer(cpi_ctx, amount)?;
+
+    msg!("Transferred {} tokens from vault", amount);
+    Ok(())
+}

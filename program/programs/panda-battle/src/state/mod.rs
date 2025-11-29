@@ -7,8 +7,32 @@ pub struct GlobalConfig {
     /// Admin authority
     pub admin: Pubkey,
 
+<<<<<<< HEAD
     /// Token mint for the game
     pub token_mint: Pubkey,
+=======
+<<<<<<< HEAD
+    /// Entry fee in lamports
+    pub entry_fee: u64,
+
+    /// Base price for purchasing turns (in lamports)
+=======
+    /// Entry fee in tokens
+    pub entry_fee: u64,
+
+    /// Base price for purchasing turns (in tokens)
+>>>>>>> 6594ddf (program)
+    pub turn_base_price: u64,
+
+    /// Round duration in seconds
+    pub round_duration: i64,
+
+    /// Percentage of attribute stolen on win (0-25)
+    pub steal_percentage: u8,
+
+    /// Percentage of attribute decay per hour when idle (0-10)
+    pub idle_decay_percentage: u8,
+>>>>>>> 15227bc (program)
 
     /// Current active round number
     pub current_round: u64,
@@ -18,9 +42,12 @@ pub struct GlobalConfig {
 
     /// Bump seed for PDA
     pub bump: u8,
+<<<<<<< HEAD
 
     /// Vault bump seed
     pub vault_bump: u8,
+=======
+>>>>>>> 6594ddf (program)
 }
 
 impl GlobalConfig {}
@@ -32,6 +59,12 @@ pub struct GameRound {
     /// Reference to global config
     pub global_config: Pubkey,
 
+<<<<<<< HEAD
+=======
+    /// Token mint for this round
+    pub mint: Pubkey,
+
+>>>>>>> 6594ddf (program)
     /// Round number
     pub round_number: u64,
 
@@ -53,10 +86,18 @@ pub struct GameRound {
     /// Round end timestamp
     pub end_time: i64,
 
+<<<<<<< HEAD
     /// Leaderboard reveal timestamp (12 hours after start)
     pub leaderboard_reveal_ts: i64,
 
     /// Total prize pool in tokens
+=======
+<<<<<<< HEAD
+    /// Total prize pool in lamports
+=======
+    /// Total prize pool in tokens
+>>>>>>> 6594ddf (program)
+>>>>>>> 15227bc (program)
     pub prize_pool: u64,
 
     /// Number of players in this round
