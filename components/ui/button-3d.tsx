@@ -34,7 +34,7 @@ const button3DVariants = cva(
     },
     defaultVariants: {
       variant: "3d-green",
-      size: "3d-md",
+      size: "3d-tiny",
     },
   }
 );
