@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { OpponentPanda } from "@/lib/mock/battles";
 import { cn } from "@/lib/utils";
+import { useSound } from "@/hooks/use-sound";
 
 interface BattleStealSelectionProps {
   winner: OpponentPanda;
@@ -48,6 +49,12 @@ export function BattleStealSelection({
 }: BattleStealSelectionProps) {
   const [selectedAttribute, setSelectedAttribute] =
     useState<AttributeType | null>(null);
+  const { playUpHouse, playPropertyBuy, playButtonClick } = useSound();
+
+  const handleSelectAttribute = (type: AttributeType) => {
+    playButtonClick();
+    setSelectedAttribute(type);
+  };
 
   // Calculate steal amounts (10-20% of loser's attribute) - Requirement 4.2
   const calculateStealAmount = (value: number): number => {
@@ -134,6 +141,7 @@ export function BattleStealSelection({
     if (selectedAttribute) {
       const option = attributeOptions.find((o) => o.type === selectedAttribute);
       if (option) {
+        playUpHouse();
         onStealComplete(selectedAttribute, option.stealAmount);
       }
     }
@@ -164,7 +172,7 @@ export function BattleStealSelection({
                 selectedAttribute === option.type &&
                   "ring-2 ring-yellow-500 shadow-2xl"
               )}
-              onClick={() => setSelectedAttribute(option.type)}
+              onClick={() => handleSelectAttribute(option.type)}
             >
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between">
@@ -262,6 +270,7 @@ export function BattleStealSelection({
             className="flex-1"
             onClick={handleConfirmSteal}
             disabled={!selectedAttribute}
+            disableSound
           >
             <span className="text-xl mr-2">✨</span>
             {selectedAttribute

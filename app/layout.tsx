@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
-import { Rubik } from "next/font/google";
+import { Space_Grotesk, Chakra_Petch } from "next/font/google";
 import "@/styles/globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AppBackground } from "@/components/background/app-background";
 import { AppProviders } from "@/components/providers/app-provider";
 
-const rubik = Rubik({
-  variable: "--font-rubik",
-  subsets: ["latin"],
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-space-grotesk',
+});
+
+const chakraPetch = Chakra_Petch({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-chakra-petch',
 });
 
 export const metadata: Metadata = {
@@ -27,7 +34,8 @@ export default function RootLayout({
       className="flex h-full flex-col items-center overscroll-none"
     >
       <body
-        className={`flex h-full min-h-0 w-full max-w-lg flex-col ${rubik.variable}  antialiased`}
+        className={`flex h-full min-h-0 w-full max-w-lg flex-col ${spaceGrotesk.variable} ${chakraPetch.variable} antialiased`}
+        style={{ fontFamily: 'var(--font-space-grotesk)' }}
       >
         <AppProviders>
           <AppBackground />

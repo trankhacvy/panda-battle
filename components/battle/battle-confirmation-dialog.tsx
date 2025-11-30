@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { OpponentPanda } from "@/lib/mock/battles";
+import { useSound } from "@/hooks/use-sound";
 
 interface BattleConfirmationDialogProps {
   opponent: OpponentPanda | null;
@@ -31,6 +32,14 @@ export function BattleConfirmationDialog({
   if (!opponent) return null;
 
   const canBattle = playerTurns >= 1;
+  const { playGameStart } = useSound();
+
+  const handleConfirm = () => {
+    if (canBattle) {
+      playGameStart();
+    }
+    onConfirm();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
@@ -136,8 +145,9 @@ export function BattleConfirmationDialog({
               variant="game"
               size="lg"
               className="flex-1"
-              onClick={onConfirm}
+              onClick={handleConfirm}
               disabled={!canBattle}
+              disableSound
             >
               <span className="text-xl mr-2">⚔️</span>
               {canBattle ? "Start Battle" : "No Turns"}

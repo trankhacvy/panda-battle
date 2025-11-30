@@ -1,11 +1,13 @@
 "use client";
 
+import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { OpponentPanda } from "@/lib/mock/battles";
 import { cn } from "@/lib/utils";
+import { useSound } from "@/hooks/use-sound";
 
 interface BattleResultsProps {
   playerPanda: OpponentPanda;
@@ -41,6 +43,16 @@ export function BattleResults({
   onComplete,
 }: BattleResultsProps) {
   const isVictory = winner === "player";
+  const { playWin, playLose, playButtonClick } = useSound();
+
+  // Play win/lose sound when results are shown
+  useEffect(() => {
+    if (isVictory) {
+      playWin();
+    } else {
+      playLose();
+    }
+  }, [isVictory, playWin, playLose]);
 
   // Calculate new attributes if steal occurred
   const getNewPlayerAttributes = () => {
@@ -374,7 +386,10 @@ export function BattleResults({
             variant="outline"
             size="lg"
             className="flex-1"
-            onClick={onComplete}
+            onClick={() => {
+              playButtonClick();
+              onComplete();
+            }}
           >
             <span className="text-xl mr-2">🏠</span>
             Return Home
@@ -383,7 +398,10 @@ export function BattleResults({
             variant="game"
             size="lg"
             className="flex-1"
-            onClick={onComplete}
+            onClick={() => {
+              playButtonClick();
+              onComplete();
+            }}
           >
             <span className="text-xl mr-2">⚔️</span>
             Battle Again

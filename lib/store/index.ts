@@ -14,3 +14,13 @@ export {
   usePlayerRank,
   useIsTop20,
 } from "./game-store";
+
+export {
+  useSoundStore,
+  useVolumeSettings,
+  useMuteSettings,
+  usePlaySound,
+  useMusicControl,
+  type SoundType,
+  type MusicType,
+} from "./sound-store";

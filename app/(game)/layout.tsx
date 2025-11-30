@@ -1,7 +1,7 @@
 import "@/styles/globals.css";
-// import { SolanaProvider } from "@/components/providers/solana-provider";
 import { Navigation } from "@/components/navigation";
 import Header from "@/components/header";
+import { SoundInitializer } from "@/components/sound-initializer";
 
 export default function RootLayout({
   children,
@@ -15,6 +15,7 @@ export default function RootLayout({
         {children}
       </main>
       <Navigation />
+      <SoundInitializer />
     </div>
   );
 }
