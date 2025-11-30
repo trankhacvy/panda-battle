@@ -178,7 +178,7 @@
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
 
-  --max-layout-width: 768px;
+  --max-layout-width: 512px;
 }
 
 @layer base {
