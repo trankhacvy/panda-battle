@@ -1,8 +1,3 @@
-/**
- * Custom hook for sound management
- * Provides convenient methods to play sounds throughout the app
- */
-
 import { useCallback, useEffect } from "react";
 import { useSoundStore, SoundType, MusicType } from "@/lib/store/sound-store";
 
@@ -13,22 +8,13 @@ export const useSound = () => {
   const stopAllSounds = useSoundStore((state) => state.stopAllSounds);
   const preloadSounds = useSoundStore((state) => state.preloadSounds);
 
-  // Preload sounds on mount
   useEffect(() => {
     preloadSounds();
   }, [preloadSounds]);
 
-  // ============================================================================
-  // UI Sounds
-  // ============================================================================
-
   const playButtonClick = useCallback(() => {
     playSound("button-click");
   }, [playSound]);
-
-  // ============================================================================
-  // Game Sounds
-  // ============================================================================
 
   const playDiceRoll = useCallback(() => {
     playSound("dice-roll");
@@ -86,10 +72,6 @@ export const useSound = () => {
     playSound("up-house");
   }, [playSound]);
 
-  // ============================================================================
-  // Music Control
-  // ============================================================================
-
   const startBackgroundMusic = useCallback(() => {
     playMusic("background-music", true);
   }, [playMusic]);
@@ -97,10 +79,6 @@ export const useSound = () => {
   const stopBackgroundMusic = useCallback(() => {
     stopMusic();
   }, [stopMusic]);
-
-  // ============================================================================
-  // Generic play function
-  // ============================================================================
 
   const play = useCallback(
     (sound: SoundType, volume?: number) => {
@@ -110,15 +88,10 @@ export const useSound = () => {
   );
 
   return {
-    // Generic
     play,
     playSound,
     stopAllSounds,
-
-    // UI
     playButtonClick,
-
-    // Game
     playDiceRoll,
     playDiceLand,
     playDiceShort,
@@ -133,8 +106,6 @@ export const useSound = () => {
     playUserOff,
     playGlassBreak,
     playUpHouse,
-
-    // Music
     startBackgroundMusic,
     stopBackgroundMusic,
   };

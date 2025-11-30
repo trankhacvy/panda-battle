@@ -13,16 +13,6 @@ interface BattleConfirmationDialogProps {
   onCancel: () => void;
 }
 
-/**
- * BattleConfirmationDialog - Confirmation dialog before battle
- *
- * Task 8.2: Add battle initiation UI
- * - Show turn cost indicator
- * - Add confirmation dialog before battle
- * - Display warning if challenging Top 20 player
- *
- * Requirements: 3.1, 9.4
- */
 export function BattleConfirmationDialog({
   opponent,
   playerTurns,

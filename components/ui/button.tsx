@@ -70,12 +70,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const playSound = useSoundStore((state) => state.playSound);
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      // Play click sound if not disabled
       if (!disableSound && !props.disabled) {
         playSound("button-click");
       }
-      
-      // Call original onClick if provided
       onClick?.(e);
     };
 

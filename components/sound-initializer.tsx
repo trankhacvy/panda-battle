@@ -9,10 +9,6 @@ import {
 import { Button } from "./ui/button";
 import { Volume2 } from "lucide-react";
 
-/**
- * Sound Initializer Component
- * Handles background music initialization and user interaction requirement
- */
 export const SoundInitializer = () => {
   const [showPrompt, setShowPrompt] = useState(false);
   const playMusic = useSoundStore((state) => state.playMusic);
@@ -20,14 +16,11 @@ export const SoundInitializer = () => {
   const isMasterMuted = useSoundStore(selectIsMasterMuted);
 
   useEffect(() => {
-    // Try to play background music after a short delay
     const timer = setTimeout(() => {
       if (!isMusicMuted && !isMasterMuted) {
-        // Try to autoplay, but handle if browser blocks it
         try {
           playMusic("background-music", true);
         } catch (error) {
-          // If autoplay is blocked, show prompt
           setShowPrompt(true);
         }
       }

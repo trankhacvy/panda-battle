@@ -30,17 +30,6 @@ interface AttributeOption {
   variant: "strength" | "speed" | "endurance" | "luck";
 }
 
-/**
- * BattleStealSelection - Attribute steal selection UI
- *
- * Task 9.3: Create attribute steal selection
- * - Show steal selection UI after battle win
- * - Display loser's attributes with steal percentages
- * - Allow winner to select attribute to steal
- * - Show before/after attribute comparison
- *
- * Requirements: 4.1, 4.2
- */
 export function BattleStealSelection({
   winner,
   loser,
@@ -56,13 +45,11 @@ export function BattleStealSelection({
     setSelectedAttribute(type);
   };
 
-  // Calculate steal amounts (10-20% of loser's attribute) - Requirement 4.2
   const calculateStealAmount = (value: number): number => {
     const percentage = 0.1 + Math.random() * 0.1; // 10-20%
     return Math.floor(value * percentage);
   };
 
-  // Generate attribute options
   const attributeOptions: AttributeOption[] = [
     {
       type: "strength",

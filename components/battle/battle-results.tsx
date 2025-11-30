@@ -22,17 +22,6 @@ interface BattleResultsProps {
   onComplete: () => void;
 }
 
-/**
- * BattleResults - Battle results display screen
- *
- * Task 9.4: Add battle results screen
- * - Display final battle outcome
- * - Show attribute changes for both players
- * - Display updated rank/position
- * - Add "Battle Again" and "Return Home" buttons
- *
- * Requirements: 3.5, 4.4
- */
 export function BattleResults({
   playerPanda,
   opponentPanda,
@@ -45,7 +34,6 @@ export function BattleResults({
   const isVictory = winner === "player";
   const { playWin, playLose, playButtonClick } = useSound();
 
-  // Play win/lose sound when results are shown
   useEffect(() => {
     if (isVictory) {
       playWin();
@@ -54,7 +42,6 @@ export function BattleResults({
     }
   }, [isVictory, playWin, playLose]);
 
-  // Calculate new attributes if steal occurred
   const getNewPlayerAttributes = () => {
     if (!stolenAttribute) return playerPanda.attributes;
 
@@ -82,7 +69,6 @@ export function BattleResults({
   const newPlayerAttributes = getNewPlayerAttributes();
   const newOpponentAttributes = getNewOpponentAttributes();
 
-  // Calculate new ranks (mock calculation)
   const newPlayerRank = isVictory
     ? Math.max(1, playerPanda.rank - 1)
     : Math.min(1000, playerPanda.rank + 1);
