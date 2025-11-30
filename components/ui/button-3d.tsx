@@ -24,6 +24,8 @@ const button3DVariants = cva(
           "bg-[#FF9500] hover:bg-[#FFA500] shadow-[0_8px_0_#CC7700] active:shadow-none active:translate-y-[8px]",
         "3d-yellow":
           "bg-[#FFD700] hover:bg-[#FFE700] shadow-[0_8px_0_#CCB000] active:shadow-none active:translate-y-[8px]",
+        "header-action":
+          "bg-[#A855F7] hover:bg-[#B865F7] shadow-[0_8px_0_#7E3FB8] active:shadow-none active:translate-y-[8px] size-10 aspect-square",
       },
       size: {
         "3d-tiny": "h-10 px-2.5 text-sm",

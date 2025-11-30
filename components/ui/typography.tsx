@@ -35,6 +35,7 @@ const typographyVariants = cva("", {
         "text-xs sm:text-sm text-muted-foreground uppercase tracking-wider",
       "game-label":
         "text-sm font-semibold text-foreground uppercase tracking-wider",
+      "page-title": "scroll-m-20 text-2xl font-semibold tracking-tight",
     },
     size: {
       xs: "text-xs",
@@ -69,6 +70,7 @@ const typographyVariants = cva("", {
       secondary: "text-secondary-foreground",
       destructive: "text-destructive",
       accent: "text-accent-foreground",
+      yellow: "text-yellow-500",
     },
   },
   defaultVariants: {
@@ -155,6 +157,9 @@ const Typography = React.forwardRef<HTMLElement, TypographyProps>(
         case "game-caption":
           Component = "p";
           break;
+        case "page-title":
+          Component = "h3";
+          break;
         default:
           Component = "p";
           break;
@@ -166,7 +171,7 @@ const Typography = React.forwardRef<HTMLElement, TypographyProps>(
     return (
       <Comp
         className={cn(
-          typographyVariants({ variant, size, weight, align }),
+          typographyVariants({ variant, size, weight, align, color }),
           className
         )}
         {...props}
