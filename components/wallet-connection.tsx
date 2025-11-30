@@ -49,11 +49,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChevronDown, Wallet, LogOut } from "lucide-react";
 import { SimpleProgress } from "./ui/progress";
-
-
-function truncateAddress(address: string): string {
-  return `${address.slice(0, 4)}...${address.slice(-4)}`;
-}
+import { formatAddress } from "@/lib/utils";
 
 function WalletIcon({
   wallet,
@@ -158,7 +154,7 @@ export function WalletConnectButton() {
               <div className="flex items-center gap-2">
                 <WalletIcon wallet={selectedWallet} className="h-4 w-4" />
                 <span className="font-mono text-sm">
-                  {truncateAddress(selectedAccount.address)}
+                  {formatAddress(selectedAccount.address, 4)}
                 </span>
               </div>
               <ChevronDown className="ml-2 h-4 w-4" />
@@ -206,7 +202,7 @@ export function WalletConnectButton() {
                           {selectedWallet.name}
                         </span>
                         <span className="text-xs text-muted-foreground font-mono">
-                          {truncateAddress(selectedAccount.address)}
+                          {formatAddress(selectedAccount.address, 4)}
                         </span>
                       </div>
                     </div>

@@ -34,8 +34,7 @@ export default function RootLayout({
       className="flex h-full flex-col items-center overscroll-none"
     >
       <body
-        className={`flex h-full min-h-0 w-full max-w-lg flex-col ${spaceGrotesk.variable} ${chakraPetch.variable} antialiased`}
-        style={{ fontFamily: 'var(--font-space-grotesk)' }}
+        className={`flex h-full min-h-0 w-full max-w-(--max-layout-width) flex-col ${rubik.variable}  antialiased`}
       >
         <AppProviders>
           <AppBackground />
