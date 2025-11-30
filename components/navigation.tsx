@@ -10,14 +10,7 @@ interface NavItem {
   id: string;
   label: string;
   path: string;
-  icon: React.ReactNode;
-  variant:
-    | "3d-green"
-    | "3d-blue"
-    | "3d-red"
-    | "3d-purple"
-    | "3d-orange"
-    | "3d-yellow";
+  icon: string;
 }
 
 const navItems: NavItem[] = [
@@ -25,22 +18,19 @@ const navItems: NavItem[] = [
     id: "home",
     label: "Home",
     path: "/home",
-    icon: <Home className="size-15" />,
-    variant: "3d-blue",
+    icon: "/images/home-icon.png",
   },
   {
     id: "battle",
     label: "Battle",
     path: "/battle",
-    icon: <Swords className="size-15" />,
-    variant: "3d-red",
+    icon: "/images/battle-icon.png",
   },
   {
     id: "leaderboard",
     label: "Leaderboard",
     path: "/leaderboard",
-    icon: <Trophy className="size-15" />,
-    variant: "3d-orange",
+    icon: "/images/leaderboard-icon.png",
   },
   // {
   //   id: "profile",
@@ -65,7 +55,7 @@ export function Navigation() {
 
   return (
     <nav
-      className="flex items-center justify-center gap-4 px-4 pb-3 pt-2 bg-background"
+      className="h-20 flex items-center justify-center border-t-2 border-[#030911] bg-[#030911]"
       role="navigation"
       aria-label="Main navigation"
     >
@@ -73,27 +63,32 @@ export function Navigation() {
         const active = isActive(item.path);
 
         return (
-          <Button3D
+          <button
             key={item.id}
-            variant={item.variant}
-            size="3d-sm"
             onClick={() => router.push(item.path)}
             className={cn(
-              "transition-all duration-200 size-14 rounded-lg flex-1",
-              active && "scale-105"
+              "transition-all duration-200 flex flex-col items-center justify-center w-full h-full flex-1",
+              active && "bg-[#1a3a5c]"
             )}
             aria-label={item.label}
             aria-current={active ? "page" : undefined}
           >
+            <img
+              src={item.icon}
+              width={32}
+              height={32}
+              alt={item.label}
+              className="object-cover"
+            />
             <span
               className={cn(
-                "transition-colors duration-200",
+                "transition-colors duration-200 text-sm font-bold",
                 active ? "text-white" : "text-white/90"
               )}
             >
-              {item.icon}
+              {item.label}
             </span>
-          </Button3D>
+          </button>
         );
       })}
     </nav>

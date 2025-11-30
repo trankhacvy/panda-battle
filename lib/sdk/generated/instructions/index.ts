@@ -7,12 +7,13 @@
  */
 
 export * from './applyIdleDecay';
+export * from './callbackJoinRound';
 export * from './claimReward';
 export * from './createRound';
 export * from './endRound';
 export * from './initializeGame';
 export * from './initiateBattle';
-export * from './joinRound';
 export * from './purchaseTurns';
 export * from './regenerateTurns';
+export * from './requestJoinRound';
 export * from './updateConfig';

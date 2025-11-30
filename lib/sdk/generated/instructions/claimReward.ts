@@ -55,9 +55,12 @@ export type ClaimRewardInstruction<
   TAccountGameConfig extends string | AccountMeta<string> = string,
   TAccountGameRound extends string | AccountMeta<string> = string,
   TAccountPlayerState extends string | AccountMeta<string> = string,
+  TAccountPlayerTokenAccount extends string | AccountMeta<string> = string,
   TAccountVault extends string | AccountMeta<string> = string,
   TAccountSystemProgram extends string | AccountMeta<string> =
     '11111111111111111111111111111111',
+  TAccountTokenProgram extends string | AccountMeta<string> =
+    'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
   InstructionWithData<ReadonlyUint8Array> &
@@ -71,17 +74,23 @@ export type ClaimRewardInstruction<
         ? ReadonlyAccount<TAccountGameConfig>
         : TAccountGameConfig,
       TAccountGameRound extends string
-        ? ReadonlyAccount<TAccountGameRound>
+        ? WritableAccount<TAccountGameRound>
         : TAccountGameRound,
       TAccountPlayerState extends string
         ? WritableAccount<TAccountPlayerState>
         : TAccountPlayerState,
+      TAccountPlayerTokenAccount extends string
+        ? WritableAccount<TAccountPlayerTokenAccount>
+        : TAccountPlayerTokenAccount,
       TAccountVault extends string
         ? WritableAccount<TAccountVault>
         : TAccountVault,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
+      TAccountTokenProgram extends string
+        ? ReadonlyAccount<TAccountTokenProgram>
+        : TAccountTokenProgram,
       ...TRemainingAccounts,
     ]
   >;
@@ -118,15 +127,21 @@ export type ClaimRewardAsyncInput<
   TAccountGameConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
+  TAccountPlayerTokenAccount extends string = string,
   TAccountVault extends string = string,
   TAccountSystemProgram extends string = string,
+  TAccountTokenProgram extends string = string,
 > = {
   player: TransactionSigner<TAccountPlayer>;
   gameConfig?: Address<TAccountGameConfig>;
   gameRound: Address<TAccountGameRound>;
   playerState?: Address<TAccountPlayerState>;
-  vault?: Address<TAccountVault>;
+  /** Player's token account */
+  playerTokenAccount: Address<TAccountPlayerTokenAccount>;
+  /** Vault token account for this round (ATA owned by game_round) */
+  vault: Address<TAccountVault>;
   systemProgram?: Address<TAccountSystemProgram>;
+  tokenProgram?: Address<TAccountTokenProgram>;
 };
 
 export async function getClaimRewardInstructionAsync<
@@ -134,8 +149,10 @@ export async function getClaimRewardInstructionAsync<
   TAccountGameConfig extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
+  TAccountPlayerTokenAccount extends string,
   TAccountVault extends string,
   TAccountSystemProgram extends string,
+  TAccountTokenProgram extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
   input: ClaimRewardAsyncInput<
@@ -143,8 +160,10 @@ export async function getClaimRewardInstructionAsync<
     TAccountGameConfig,
     TAccountGameRound,
     TAccountPlayerState,
+    TAccountPlayerTokenAccount,
     TAccountVault,
-    TAccountSystemProgram
+    TAccountSystemProgram,
+    TAccountTokenProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): Promise<
@@ -154,8 +173,10 @@ export async function getClaimRewardInstructionAsync<
     TAccountGameConfig,
     TAccountGameRound,
     TAccountPlayerState,
+    TAccountPlayerTokenAccount,
     TAccountVault,
-    TAccountSystemProgram
+    TAccountSystemProgram,
+    TAccountTokenProgram
   >
 > {
   // Program address.
@@ -165,10 +186,15 @@ export async function getClaimRewardInstructionAsync<
   const originalAccounts = {
     player: { value: input.player ?? null, isWritable: true },
     gameConfig: { value: input.gameConfig ?? null, isWritable: false },
-    gameRound: { value: input.gameRound ?? null, isWritable: false },
+    gameRound: { value: input.gameRound ?? null, isWritable: true },
     playerState: { value: input.playerState ?? null, isWritable: true },
+    playerTokenAccount: {
+      value: input.playerTokenAccount ?? null,
+      isWritable: true,
+    },
     vault: { value: input.vault ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
+    tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -200,18 +226,13 @@ export async function getClaimRewardInstructionAsync<
       ],
     });
   }
-  if (!accounts.vault.value) {
-    accounts.vault.value = await getProgramDerivedAddress({
-      programAddress,
-      seeds: [
-        getBytesEncoder().encode(new Uint8Array([118, 97, 117, 108, 116])),
-        getAddressEncoder().encode(expectAddress(accounts.gameConfig.value)),
-      ],
-    });
-  }
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
+  }
+  if (!accounts.tokenProgram.value) {
+    accounts.tokenProgram.value =
+      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
   }
 
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
@@ -221,8 +242,10 @@ export async function getClaimRewardInstructionAsync<
       getAccountMeta(accounts.gameConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
+      getAccountMeta(accounts.playerTokenAccount),
       getAccountMeta(accounts.vault),
       getAccountMeta(accounts.systemProgram),
+      getAccountMeta(accounts.tokenProgram),
     ],
     data: getClaimRewardInstructionDataEncoder().encode({}),
     programAddress,
@@ -232,8 +255,10 @@ export async function getClaimRewardInstructionAsync<
     TAccountGameConfig,
     TAccountGameRound,
     TAccountPlayerState,
+    TAccountPlayerTokenAccount,
     TAccountVault,
-    TAccountSystemProgram
+    TAccountSystemProgram,
+    TAccountTokenProgram
   >);
 }
 
@@ -242,15 +267,21 @@ export type ClaimRewardInput<
   TAccountGameConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
+  TAccountPlayerTokenAccount extends string = string,
   TAccountVault extends string = string,
   TAccountSystemProgram extends string = string,
+  TAccountTokenProgram extends string = string,
 > = {
   player: TransactionSigner<TAccountPlayer>;
   gameConfig: Address<TAccountGameConfig>;
   gameRound: Address<TAccountGameRound>;
   playerState: Address<TAccountPlayerState>;
+  /** Player's token account */
+  playerTokenAccount: Address<TAccountPlayerTokenAccount>;
+  /** Vault token account for this round (ATA owned by game_round) */
   vault: Address<TAccountVault>;
   systemProgram?: Address<TAccountSystemProgram>;
+  tokenProgram?: Address<TAccountTokenProgram>;
 };
 
 export function getClaimRewardInstruction<
@@ -258,8 +289,10 @@ export function getClaimRewardInstruction<
   TAccountGameConfig extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
+  TAccountPlayerTokenAccount extends string,
   TAccountVault extends string,
   TAccountSystemProgram extends string,
+  TAccountTokenProgram extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
   input: ClaimRewardInput<
@@ -267,8 +300,10 @@ export function getClaimRewardInstruction<
     TAccountGameConfig,
     TAccountGameRound,
     TAccountPlayerState,
+    TAccountPlayerTokenAccount,
     TAccountVault,
-    TAccountSystemProgram
+    TAccountSystemProgram,
+    TAccountTokenProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): ClaimRewardInstruction<
@@ -277,8 +312,10 @@ export function getClaimRewardInstruction<
   TAccountGameConfig,
   TAccountGameRound,
   TAccountPlayerState,
+  TAccountPlayerTokenAccount,
   TAccountVault,
-  TAccountSystemProgram
+  TAccountSystemProgram,
+  TAccountTokenProgram
 > {
   // Program address.
   const programAddress = config?.programAddress ?? PANDA_BATTLE_PROGRAM_ADDRESS;
@@ -287,10 +324,15 @@ export function getClaimRewardInstruction<
   const originalAccounts = {
     player: { value: input.player ?? null, isWritable: true },
     gameConfig: { value: input.gameConfig ?? null, isWritable: false },
-    gameRound: { value: input.gameRound ?? null, isWritable: false },
+    gameRound: { value: input.gameRound ?? null, isWritable: true },
     playerState: { value: input.playerState ?? null, isWritable: true },
+    playerTokenAccount: {
+      value: input.playerTokenAccount ?? null,
+      isWritable: true,
+    },
     vault: { value: input.vault ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
+    tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -302,6 +344,10 @@ export function getClaimRewardInstruction<
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
   }
+  if (!accounts.tokenProgram.value) {
+    accounts.tokenProgram.value =
+      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
+  }
 
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   return Object.freeze({
@@ -310,8 +356,10 @@ export function getClaimRewardInstruction<
       getAccountMeta(accounts.gameConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
+      getAccountMeta(accounts.playerTokenAccount),
       getAccountMeta(accounts.vault),
       getAccountMeta(accounts.systemProgram),
+      getAccountMeta(accounts.tokenProgram),
     ],
     data: getClaimRewardInstructionDataEncoder().encode({}),
     programAddress,
@@ -321,8 +369,10 @@ export function getClaimRewardInstruction<
     TAccountGameConfig,
     TAccountGameRound,
     TAccountPlayerState,
+    TAccountPlayerTokenAccount,
     TAccountVault,
-    TAccountSystemProgram
+    TAccountSystemProgram,
+    TAccountTokenProgram
   >);
 }
 
@@ -336,8 +386,12 @@ export type ParsedClaimRewardInstruction<
     gameConfig: TAccountMetas[1];
     gameRound: TAccountMetas[2];
     playerState: TAccountMetas[3];
-    vault: TAccountMetas[4];
-    systemProgram: TAccountMetas[5];
+    /** Player's token account */
+    playerTokenAccount: TAccountMetas[4];
+    /** Vault token account for this round (ATA owned by game_round) */
+    vault: TAccountMetas[5];
+    systemProgram: TAccountMetas[6];
+    tokenProgram: TAccountMetas[7];
   };
   data: ClaimRewardInstructionData;
 };
@@ -350,7 +404,7 @@ export function parseClaimRewardInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedClaimRewardInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 6) {
+  if (instruction.accounts.length < 8) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -367,8 +421,10 @@ export function parseClaimRewardInstruction<
       gameConfig: getNextAccount(),
       gameRound: getNextAccount(),
       playerState: getNextAccount(),
+      playerTokenAccount: getNextAccount(),
       vault: getNextAccount(),
       systemProgram: getNextAccount(),
+      tokenProgram: getNextAccount(),
     },
     data: getClaimRewardInstructionDataDecoder().decode(instruction.data),
   };

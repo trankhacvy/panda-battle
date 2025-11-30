@@ -15,14 +15,15 @@ import {
 } from '@solana/kit';
 import {
   type ParsedApplyIdleDecayInstruction,
+  type ParsedCallbackJoinRoundInstruction,
   type ParsedClaimRewardInstruction,
   type ParsedCreateRoundInstruction,
   type ParsedEndRoundInstruction,
   type ParsedInitializeGameInstruction,
   type ParsedInitiateBattleInstruction,
-  type ParsedJoinRoundInstruction,
   type ParsedPurchaseTurnsInstruction,
   type ParsedRegenerateTurnsInstruction,
+  type ParsedRequestJoinRoundInstruction,
   type ParsedUpdateConfigInstruction,
 } from '../instructions';
 
@@ -79,14 +80,15 @@ export function identifyPandaBattleAccount(
 
 export enum PandaBattleInstruction {
   ApplyIdleDecay,
+  CallbackJoinRound,
   ClaimReward,
   CreateRound,
   EndRound,
   InitializeGame,
   InitiateBattle,
-  JoinRound,
   PurchaseTurns,
   RegenerateTurns,
+  RequestJoinRound,
   UpdateConfig,
 }
 
@@ -104,6 +106,17 @@ export function identifyPandaBattleInstruction(
     )
   ) {
     return PandaBattleInstruction.ApplyIdleDecay;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([25, 254, 139, 110, 218, 156, 72, 160])
+      ),
+      0
+    )
+  ) {
+    return PandaBattleInstruction.CallbackJoinRound;
   }
   if (
     containsBytes(
@@ -164,17 +177,6 @@ export function identifyPandaBattleInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([191, 222, 86, 25, 234, 174, 157, 249])
-      ),
-      0
-    )
-  ) {
-    return PandaBattleInstruction.JoinRound;
-  }
-  if (
-    containsBytes(
-      data,
-      fixEncoderSize(getBytesEncoder(), 8).encode(
         new Uint8Array([8, 119, 199, 7, 15, 206, 50, 10])
       ),
       0
@@ -192,6 +194,17 @@ export function identifyPandaBattleInstruction(
     )
   ) {
     return PandaBattleInstruction.RegenerateTurns;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([169, 134, 51, 77, 169, 224, 171, 197])
+      ),
+      0
+    )
+  ) {
+    return PandaBattleInstruction.RequestJoinRound;
   }
   if (
     containsBytes(
@@ -216,6 +229,9 @@ export type ParsedPandaBattleInstruction<
       instructionType: PandaBattleInstruction.ApplyIdleDecay;
     } & ParsedApplyIdleDecayInstruction<TProgram>)
   | ({
+      instructionType: PandaBattleInstruction.CallbackJoinRound;
+    } & ParsedCallbackJoinRoundInstruction<TProgram>)
+  | ({
       instructionType: PandaBattleInstruction.ClaimReward;
     } & ParsedClaimRewardInstruction<TProgram>)
   | ({
@@ -231,14 +247,14 @@ export type ParsedPandaBattleInstruction<
       instructionType: PandaBattleInstruction.InitiateBattle;
     } & ParsedInitiateBattleInstruction<TProgram>)
   | ({
-      instructionType: PandaBattleInstruction.JoinRound;
-    } & ParsedJoinRoundInstruction<TProgram>)
-  | ({
       instructionType: PandaBattleInstruction.PurchaseTurns;
     } & ParsedPurchaseTurnsInstruction<TProgram>)
   | ({
       instructionType: PandaBattleInstruction.RegenerateTurns;
     } & ParsedRegenerateTurnsInstruction<TProgram>)
+  | ({
+      instructionType: PandaBattleInstruction.RequestJoinRound;
+    } & ParsedRequestJoinRoundInstruction<TProgram>)
   | ({
       instructionType: PandaBattleInstruction.UpdateConfig;
     } & ParsedUpdateConfigInstruction<TProgram>);

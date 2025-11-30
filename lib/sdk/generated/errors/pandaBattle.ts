@@ -62,6 +62,8 @@ export const PANDA_BATTLE_ERROR__DECAY_ALREADY_APPLIED = 0x1785; // 6021
 export const PANDA_BATTLE_ERROR__OVERFLOW = 0x1786; // 6022
 /** Underflow: Numerical underflow */
 export const PANDA_BATTLE_ERROR__UNDERFLOW = 0x1787; // 6023
+/** InvalidMint: Invalid token mint for this round */
+export const PANDA_BATTLE_ERROR__INVALID_MINT = 0x1788; // 6024
 
 export type PandaBattleError =
   | typeof PANDA_BATTLE_ERROR__ALREADY_CLAIMED
@@ -73,6 +75,7 @@ export type PandaBattleError =
   | typeof PANDA_BATTLE_ERROR__INSUFFICIENT_TURNS
   | typeof PANDA_BATTLE_ERROR__INVALID_ATTRIBUTE
   | typeof PANDA_BATTLE_ERROR__INVALID_CONFIG
+  | typeof PANDA_BATTLE_ERROR__INVALID_MINT
   | typeof PANDA_BATTLE_ERROR__NO_REWARDS_AVAILABLE
   | typeof PANDA_BATTLE_ERROR__NOT_ELIGIBLE_FOR_REWARDS
   | typeof PANDA_BATTLE_ERROR__NOT_JOINED
@@ -101,6 +104,7 @@ if (process.env.NODE_ENV !== 'production') {
     [PANDA_BATTLE_ERROR__INSUFFICIENT_TURNS]: `Insufficient turns to perform this action`,
     [PANDA_BATTLE_ERROR__INVALID_ATTRIBUTE]: `Invalid attribute type`,
     [PANDA_BATTLE_ERROR__INVALID_CONFIG]: `Invalid configuration parameter`,
+    [PANDA_BATTLE_ERROR__INVALID_MINT]: `Invalid token mint for this round`,
     [PANDA_BATTLE_ERROR__NO_REWARDS_AVAILABLE]: `No rewards available`,
     [PANDA_BATTLE_ERROR__NOT_ELIGIBLE_FOR_REWARDS]: `Not eligible for rewards (minimum battles not met)`,
     [PANDA_BATTLE_ERROR__NOT_JOINED]: `Player has not joined this round`,

@@ -10,7 +10,6 @@ import {
   combineCodec,
   fixDecoderSize,
   fixEncoderSize,
-  getAddressEncoder,
   getBytesDecoder,
   getBytesEncoder,
   getI64Decoder,
@@ -39,11 +38,7 @@ import {
   type WritableSignerAccount,
 } from '@solana/kit';
 import { PANDA_BATTLE_PROGRAM_ADDRESS } from '../programs';
-import {
-  expectAddress,
-  getAccountMetaFactory,
-  type ResolvedAccount,
-} from '../shared';
+import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
 export const INITIALIZE_GAME_DISCRIMINATOR = new Uint8Array([
   44, 62, 102, 247, 126, 208, 130, 215,
@@ -59,7 +54,6 @@ export type InitializeGameInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountAdmin extends string | AccountMeta<string> = string,
   TAccountGameConfig extends string | AccountMeta<string> = string,
-  TAccountVault extends string | AccountMeta<string> = string,
   TAccountSystemProgram extends string | AccountMeta<string> =
     '11111111111111111111111111111111',
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
@@ -74,9 +68,6 @@ export type InitializeGameInstruction<
       TAccountGameConfig extends string
         ? WritableAccount<TAccountGameConfig>
         : TAccountGameConfig,
-      TAccountVault extends string
-        ? ReadonlyAccount<TAccountVault>
-        : TAccountVault,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
@@ -139,12 +130,10 @@ export function getInitializeGameInstructionDataCodec(): FixedSizeCodec<
 export type InitializeGameAsyncInput<
   TAccountAdmin extends string = string,
   TAccountGameConfig extends string = string,
-  TAccountVault extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
   admin: TransactionSigner<TAccountAdmin>;
   gameConfig?: Address<TAccountGameConfig>;
-  vault?: Address<TAccountVault>;
   systemProgram?: Address<TAccountSystemProgram>;
   entryFee: InitializeGameInstructionDataArgs['entryFee'];
   turnBasePrice: InitializeGameInstructionDataArgs['turnBasePrice'];
@@ -156,14 +145,12 @@ export type InitializeGameAsyncInput<
 export async function getInitializeGameInstructionAsync<
   TAccountAdmin extends string,
   TAccountGameConfig extends string,
-  TAccountVault extends string,
   TAccountSystemProgram extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
   input: InitializeGameAsyncInput<
     TAccountAdmin,
     TAccountGameConfig,
-    TAccountVault,
     TAccountSystemProgram
   >,
   config?: { programAddress?: TProgramAddress }
@@ -172,7 +159,6 @@ export async function getInitializeGameInstructionAsync<
     TProgramAddress,
     TAccountAdmin,
     TAccountGameConfig,
-    TAccountVault,
     TAccountSystemProgram
   >
 > {
@@ -183,7 +169,6 @@ export async function getInitializeGameInstructionAsync<
   const originalAccounts = {
     admin: { value: input.admin ?? null, isWritable: true },
     gameConfig: { value: input.gameConfig ?? null, isWritable: true },
-    vault: { value: input.vault ?? null, isWritable: false },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
@@ -205,15 +190,6 @@ export async function getInitializeGameInstructionAsync<
       ],
     });
   }
-  if (!accounts.vault.value) {
-    accounts.vault.value = await getProgramDerivedAddress({
-      programAddress,
-      seeds: [
-        getBytesEncoder().encode(new Uint8Array([118, 97, 117, 108, 116])),
-        getAddressEncoder().encode(expectAddress(accounts.gameConfig.value)),
-      ],
-    });
-  }
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
@@ -224,7 +200,6 @@ export async function getInitializeGameInstructionAsync<
     accounts: [
       getAccountMeta(accounts.admin),
       getAccountMeta(accounts.gameConfig),
-      getAccountMeta(accounts.vault),
       getAccountMeta(accounts.systemProgram),
     ],
     data: getInitializeGameInstructionDataEncoder().encode(
@@ -235,7 +210,6 @@ export async function getInitializeGameInstructionAsync<
     TProgramAddress,
     TAccountAdmin,
     TAccountGameConfig,
-    TAccountVault,
     TAccountSystemProgram
   >);
 }
@@ -243,12 +217,10 @@ export async function getInitializeGameInstructionAsync<
 export type InitializeGameInput<
   TAccountAdmin extends string = string,
   TAccountGameConfig extends string = string,
-  TAccountVault extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
   admin: TransactionSigner<TAccountAdmin>;
   gameConfig: Address<TAccountGameConfig>;
-  vault: Address<TAccountVault>;
   systemProgram?: Address<TAccountSystemProgram>;
   entryFee: InitializeGameInstructionDataArgs['entryFee'];
   turnBasePrice: InitializeGameInstructionDataArgs['turnBasePrice'];
@@ -260,14 +232,12 @@ export type InitializeGameInput<
 export function getInitializeGameInstruction<
   TAccountAdmin extends string,
   TAccountGameConfig extends string,
-  TAccountVault extends string,
   TAccountSystemProgram extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
   input: InitializeGameInput<
     TAccountAdmin,
     TAccountGameConfig,
-    TAccountVault,
     TAccountSystemProgram
   >,
   config?: { programAddress?: TProgramAddress }
@@ -275,7 +245,6 @@ export function getInitializeGameInstruction<
   TProgramAddress,
   TAccountAdmin,
   TAccountGameConfig,
-  TAccountVault,
   TAccountSystemProgram
 > {
   // Program address.
@@ -285,7 +254,6 @@ export function getInitializeGameInstruction<
   const originalAccounts = {
     admin: { value: input.admin ?? null, isWritable: true },
     gameConfig: { value: input.gameConfig ?? null, isWritable: true },
-    vault: { value: input.vault ?? null, isWritable: false },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
@@ -307,7 +275,6 @@ export function getInitializeGameInstruction<
     accounts: [
       getAccountMeta(accounts.admin),
       getAccountMeta(accounts.gameConfig),
-      getAccountMeta(accounts.vault),
       getAccountMeta(accounts.systemProgram),
     ],
     data: getInitializeGameInstructionDataEncoder().encode(
@@ -318,7 +285,6 @@ export function getInitializeGameInstruction<
     TProgramAddress,
     TAccountAdmin,
     TAccountGameConfig,
-    TAccountVault,
     TAccountSystemProgram
   >);
 }
@@ -331,8 +297,7 @@ export type ParsedInitializeGameInstruction<
   accounts: {
     admin: TAccountMetas[0];
     gameConfig: TAccountMetas[1];
-    vault: TAccountMetas[2];
-    systemProgram: TAccountMetas[3];
+    systemProgram: TAccountMetas[2];
   };
   data: InitializeGameInstructionData;
 };
@@ -345,7 +310,7 @@ export function parseInitializeGameInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedInitializeGameInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 4) {
+  if (instruction.accounts.length < 3) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -360,7 +325,6 @@ export function parseInitializeGameInstruction<
     accounts: {
       admin: getNextAccount(),
       gameConfig: getNextAccount(),
-      vault: getNextAccount(),
       systemProgram: getNextAccount(),
     },
     data: getInitializeGameInstructionDataDecoder().decode(instruction.data),

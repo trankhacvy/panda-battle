@@ -127,7 +127,7 @@ export function mapGameConfig(
     currentRound: Number(generated.currentRound),
     totalRounds: Number(generated.totalRounds),
     bump: generated.bump,
-    vaultBump: generated.vaultBump,
+    vaultBump: 0 //generated.vaultBump,
   };
 }
 

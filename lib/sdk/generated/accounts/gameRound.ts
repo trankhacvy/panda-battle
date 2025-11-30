@@ -57,13 +57,15 @@ export type GameRound = {
   discriminator: ReadonlyUint8Array;
   /** Reference to game config */
   gameConfig: Address;
+  /** Token mint for this round */
+  mint: Address;
   /** Round number */
   roundNumber: bigint;
   /** Round start timestamp */
   startTime: bigint;
   /** Round end timestamp */
   endTime: bigint;
-  /** Total prize pool in lamports */
+  /** Total prize pool in tokens */
   prizePool: bigint;
   /** Number of players in this round */
   playerCount: number;
@@ -80,13 +82,15 @@ export type GameRound = {
 export type GameRoundArgs = {
   /** Reference to game config */
   gameConfig: Address;
+  /** Token mint for this round */
+  mint: Address;
   /** Round number */
   roundNumber: number | bigint;
   /** Round start timestamp */
   startTime: number | bigint;
   /** Round end timestamp */
   endTime: number | bigint;
-  /** Total prize pool in lamports */
+  /** Total prize pool in tokens */
   prizePool: number | bigint;
   /** Number of players in this round */
   playerCount: number;
@@ -106,6 +110,7 @@ export function getGameRoundEncoder(): FixedSizeEncoder<GameRoundArgs> {
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
       ['gameConfig', getAddressEncoder()],
+      ['mint', getAddressEncoder()],
       ['roundNumber', getU64Encoder()],
       ['startTime', getI64Encoder()],
       ['endTime', getI64Encoder()],
@@ -125,6 +130,7 @@ export function getGameRoundDecoder(): FixedSizeDecoder<GameRound> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
     ['gameConfig', getAddressDecoder()],
+    ['mint', getAddressDecoder()],
     ['roundNumber', getU64Decoder()],
     ['startTime', getI64Decoder()],
     ['endTime', getI64Decoder()],
@@ -196,5 +202,5 @@ export async function fetchAllMaybeGameRound(
 }
 
 export function getGameRoundSize(): number {
-  return 83;
+  return 115;
 }

@@ -80,8 +80,8 @@ export function BattleTab() {
   }, [sortBy, filterBy]);
 
   const handleChallenge = (opponent: OpponentPanda) => {
-    setSelectedOpponent(opponent);
-    setShowConfirmation(true);
+    // setSelectedOpponent(opponent);
+    // setShowConfirmation(true);
   };
 
   const handleConfirmBattle = () => {
@@ -299,7 +299,8 @@ export function BattleTab() {
                 <OpponentCard
                   key={opponent.id}
                   opponent={opponent}
-                  onChallenge={handleChallenge}
+                  // @ts-expect-error
+                  onBattle={handleChallenge}
                   playerTurns={player.turns}
                 />
               ))}

@@ -53,9 +53,9 @@ export type GameConfig = {
   discriminator: ReadonlyUint8Array;
   /** Admin authority */
   admin: Address;
-  /** Entry fee in lamports */
+  /** Entry fee in tokens */
   entryFee: bigint;
-  /** Base price for purchasing turns (in lamports) */
+  /** Base price for purchasing turns (in tokens) */
   turnBasePrice: bigint;
   /** Round duration in seconds */
   roundDuration: bigint;
@@ -69,16 +69,14 @@ export type GameConfig = {
   totalRounds: bigint;
   /** Bump seed for PDA */
   bump: number;
-  /** Vault bump seed */
-  vaultBump: number;
 };
 
 export type GameConfigArgs = {
   /** Admin authority */
   admin: Address;
-  /** Entry fee in lamports */
+  /** Entry fee in tokens */
   entryFee: number | bigint;
-  /** Base price for purchasing turns (in lamports) */
+  /** Base price for purchasing turns (in tokens) */
   turnBasePrice: number | bigint;
   /** Round duration in seconds */
   roundDuration: number | bigint;
@@ -92,8 +90,6 @@ export type GameConfigArgs = {
   totalRounds: number | bigint;
   /** Bump seed for PDA */
   bump: number;
-  /** Vault bump seed */
-  vaultBump: number;
 };
 
 /** Gets the encoder for {@link GameConfigArgs} account data. */
@@ -110,7 +106,6 @@ export function getGameConfigEncoder(): FixedSizeEncoder<GameConfigArgs> {
       ['currentRound', getU64Encoder()],
       ['totalRounds', getU64Encoder()],
       ['bump', getU8Encoder()],
-      ['vaultBump', getU8Encoder()],
     ]),
     (value) => ({ ...value, discriminator: GAME_CONFIG_DISCRIMINATOR })
   );
@@ -129,7 +124,6 @@ export function getGameConfigDecoder(): FixedSizeDecoder<GameConfig> {
     ['currentRound', getU64Decoder()],
     ['totalRounds', getU64Decoder()],
     ['bump', getU8Decoder()],
-    ['vaultBump', getU8Decoder()],
   ]);
 }
 
@@ -195,5 +189,5 @@ export async function fetchAllMaybeGameConfig(
 }
 
 export function getGameConfigSize(): number {
-  return 84;
+  return 83;
 }
