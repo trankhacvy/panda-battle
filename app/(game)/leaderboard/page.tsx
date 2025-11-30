@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search, ArrowDownUp, Filter } from "lucide-react";
 import { PlayerCard } from "@/components/leaderboard/player-card";
+import { PrizePoolSphere } from "@/components/leaderboard/prize-pool-sphere";
 
 const players = [
   {
@@ -56,7 +57,8 @@ export default function LeaderboardPage() {
 
   return (
     <div className="flex-1 px-4 py-2 space-y-3 overflow-auto relative z-10">
-      {/* Search and Filters */}
+      <PrizePoolSphere totalPrize={50000} currency="SOL" />
+
       <div className="flex gap-2">
         <div className="flex-1 bg-[#0f2a4a]/80 border border-cyan-500/20 rounded-lg flex items-center px-3 py-2">
           <Search className="w-5 h-5 text-white/50 mr-2" />
@@ -78,9 +80,8 @@ export default function LeaderboardPage() {
         </button>
       </div>
 
-      {/* Player List */}
-      <div className="space-y-3">
-        {filteredPlayers.map((player) => (
+      <div className="overflow-hidden">
+        {filteredPlayers.map((player, index) => (
           <PlayerCard
             key={player.rank}
             rank={player.rank}
@@ -88,6 +89,7 @@ export default function LeaderboardPage() {
             points={player.points}
             bgColor={player.bgColor}
             borderColor={player.borderColor}
+            index={index}
             onBattle={() => handleBattle(player.name)}
           />
         ))}

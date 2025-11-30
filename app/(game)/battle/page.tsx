@@ -4,14 +4,6 @@ import { ArrowDownUp, Filter } from "lucide-react";
 import { mockOpponents } from "@/lib/mock/battles";
 import { OpponentCard } from "@/components/battle/opponent-card";
 
-const bgColors = [
-  "bg-red-900/60",
-  "bg-green-900/60",
-  "bg-purple-900/60",
-  "bg-slate-700/60",
-  "bg-teal-900/60",
-];
-
 export default function BattlePage() {
   const displayOpponents = mockOpponents.slice(0, 5);
 
@@ -22,7 +14,6 @@ export default function BattlePage() {
 
   return (
     <div className="flex-1 px-4 pb-6 relative z-10">
-      {/* Title and filters */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-white font-bold text-xl">Battle Opponent List</h1>
         <div className="flex gap-2">
@@ -37,13 +28,13 @@ export default function BattlePage() {
         </div>
       </div>
 
-      {/* Opponent List */}
-      <div className="space-y-3">
+      <div className="overflow-hidden">
         {displayOpponents.map((opponent, index) => (
           <OpponentCard
             key={opponent.id}
             opponent={opponent}
-            bgColor={bgColors[index % bgColors.length]}
+            bgColor=""
+            index={index}
             onBattle={() => handleBattle(opponent.id)}
           />
         ))}

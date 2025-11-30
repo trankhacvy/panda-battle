@@ -46,6 +46,7 @@ export default function HomePage() {
 
   return (
     <div className="h-full flex flex-col p-4 gap-3 max-w-2xl mx-auto overflow-hidden">
+
       {/* Header Section */}
       <div className="flex items-center justify-between flex-shrink-0">
         <div>
@@ -61,6 +62,7 @@ export default function HomePage() {
       </div>
 
       {/* Panda Display */}
+
       <div
         className="relative rounded-3xl overflow-hidden flex-shrink-0 shadow-lg border-4 border-primary/40"
         style={{
