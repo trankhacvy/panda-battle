@@ -8,7 +8,23 @@ use crate::constants::*;
 use crate::errors::PandaBattleError;
 use crate::state::*;
 
-/// Initialize the global game configuration
+#[derive(Accounts)]
+pub struct InitializeGame<'info> {
+    #[account(mut)]
+    pub admin: Signer<'info>,
+
+    #[account(
+        init,
+        payer = admin,
+        space = 8 + GlobalConfig::INIT_SPACE,
+        seeds = [GLOBAL_CONFIG_SEED],
+        bump
+    )]
+    pub global_config: Account<'info, GlobalConfig>,
+
+    pub system_program: Program<'info, System>,
+}
+
 pub fn initialize_game(ctx: Context<InitializeGame>, token_mint: Pubkey) -> Result<()> {
     let global_config = &mut ctx.accounts.global_config;
 
@@ -25,114 +41,6 @@ pub fn initialize_game(ctx: Context<InitializeGame>, token_mint: Pubkey) -> Resu
     );
 
     Ok(())
-}
-
-/// Create a new game round with dedicated vault
-pub fn create_round(
-    ctx: Context<CreateRound>,
-    entry_fee: u64,
-    attack_pack_price: u64,
-    duration_secs: i64,
-    entry_hourly_inc_pct: u8,
-) -> Result<()> {
-    let global_config = &mut ctx.accounts.global_config;
-    let game_round = &mut ctx.accounts.game_round;
-    let clock = Clock::get()?;
-
-    require!(duration_secs > 0, PandaBattleError::InvalidConfig);
-
-    // Increment round counter
-    global_config.current_round = global_config.total_rounds + 1;
-    global_config.total_rounds += 1;
-
-    // Initialize round
-    game_round.global_config = global_config.key();
-    game_round.round_number = global_config.current_round;
-    game_round.entry_fee = entry_fee;
-    game_round.attack_pack_price = attack_pack_price;
-    game_round.duration_secs = duration_secs;
-    game_round.entry_hourly_inc_pct = entry_hourly_inc_pct;
-    game_round.start_time = clock.unix_timestamp;
-    game_round.end_time = clock.unix_timestamp + duration_secs;
-    game_round.leaderboard_reveal_ts = clock.unix_timestamp + (duration_secs / 2); // 12 hours for 24h round
-    game_round.prize_pool = 0;
-    game_round.player_count = 0;
-    game_round.total_battles = 0;
-    game_round.is_active = true;
-    game_round.payouts_processed = false;
-    game_round.bump = ctx.bumps.game_round;
-
-    msg!(
-        "Round {} created. Entry: {}, Pack: {}, Duration: {}s. Starts: {}, Ends: {}, Reveal: {}",
-        game_round.round_number,
-        entry_fee,
-        attack_pack_price,
-        duration_secs,
-        game_round.start_time,
-        game_round.end_time,
-        game_round.leaderboard_reveal_ts
-    );
-
-    Ok(())
-}
-
-/// End the current round
-pub fn end_round(ctx: Context<EndRound>) -> Result<()> {
-    let game_round = &mut ctx.accounts.game_round;
-    let clock = Clock::get()?;
-
-    require!(game_round.is_active, PandaBattleError::RoundAlreadyEnded);
-
-    // Allow early end by admin or auto-end after duration
-    let is_admin = ctx.accounts.admin.key() == ctx.accounts.global_config.admin;
-    let is_expired = clock.unix_timestamp >= game_round.end_time;
-
-    require!(is_admin || is_expired, PandaBattleError::Unauthorized);
-
-    game_round.is_active = false;
-    game_round.end_time = clock.unix_timestamp;
-
-    msg!(
-        "Round {} ended. Total prize pool: {}, Players: {}, Battles: {}",
-        game_round.round_number,
-        game_round.prize_pool,
-        game_round.player_count,
-        game_round.total_battles
-    );
-
-    Ok(())
-}
-
-/// Update global configuration
-pub fn update_config(ctx: Context<UpdateConfig>, token_mint: Option<Pubkey>) -> Result<()> {
-    let global_config = &mut ctx.accounts.global_config;
-
-    if let Some(mint) = token_mint {
-        global_config.token_mint = mint;
-    }
-
-    msg!("Global config updated");
-
-    Ok(())
-}
-
-// ============== CONTEXTS ==============
-
-#[derive(Accounts)]
-pub struct InitializeGame<'info> {
-    #[account(mut)]
-    pub admin: Signer<'info>,
-
-    #[account(
-        init,
-        payer = admin,
-        space = 8 + GlobalConfig::INIT_SPACE,
-        seeds = [GLOBAL_CONFIG_SEED],
-        bump
-    )]
-    pub global_config: Account<'info, GlobalConfig>,
-
-    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -166,7 +74,6 @@ pub struct CreateRound<'info> {
     )]
     pub game_round: Account<'info, GameRound>,
 
-    /// Vault for this round (ATA owned by game_round PDA)
     #[account(
         init,
         payer = admin,
@@ -178,6 +85,95 @@ pub struct CreateRound<'info> {
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
+}
+
+pub fn create_round(
+    ctx: Context<CreateRound>,
+    entry_fee: u64,
+    attack_pack_price: u64,
+    duration_secs: i64,
+    entry_hourly_inc_pct: u8,
+) -> Result<()> {
+    let global_config = &mut ctx.accounts.global_config;
+    let game_round = &mut ctx.accounts.game_round;
+    let clock = Clock::get()?;
+
+    require!(duration_secs > 0, PandaBattleError::InvalidConfig);
+
+    global_config.current_round = global_config.total_rounds + 1;
+    global_config.total_rounds += 1;
+
+    game_round.global_config = global_config.key();
+    game_round.round_number = global_config.current_round;
+    game_round.entry_fee = entry_fee;
+    game_round.attack_pack_price = attack_pack_price;
+    game_round.duration_secs = duration_secs;
+    game_round.entry_hourly_inc_pct = entry_hourly_inc_pct;
+    game_round.start_time = clock.unix_timestamp;
+    game_round.end_time = clock.unix_timestamp + duration_secs;
+    game_round.leaderboard_reveal_ts = clock.unix_timestamp + (duration_secs / 2); // 12 hours for 24h round
+    game_round.prize_pool = 0;
+    game_round.player_count = 0;
+    game_round.total_battles = 0;
+    game_round.is_active = true;
+    game_round.payouts_processed = false;
+    game_round.bump = ctx.bumps.game_round;
+
+    msg!(
+        "Round {} created. Entry: {}, Pack: {}, Duration: {}s. Starts: {}, Ends: {}, Reveal: {}",
+        game_round.round_number,
+        entry_fee,
+        attack_pack_price,
+        duration_secs,
+        game_round.start_time,
+        game_round.end_time,
+        game_round.leaderboard_reveal_ts
+    );
+
+    Ok(())
+}
+
+#[delegate]
+#[derive(Accounts)]
+pub struct DelegateRound<'info> {
+    pub admin: Signer<'info>,
+    /// CHECK: Checked by the delegate program
+    pub validator: Option<AccountInfo<'info>>,
+    #[account(
+        mut,
+        seeds = [
+            GAME_ROUND_SEED,
+            game_round.global_config.as_ref(),
+            game_round.round_number.to_le_bytes().as_ref()
+        ],
+        bump = game_round.bump,
+        del
+    )]
+    pub game_round: Account<'info, GameRound>,
+}
+
+pub fn delegate_round(ctx: Context<DelegateRound>) -> Result<()> {
+    // seeds = [
+    //         GAME_ROUND_SEED,
+    //         global_config.key().as_ref(),
+    //         (global_config.total_rounds + 1).to_le_bytes().as_ref()
+    //     ],
+
+    let game_round = &ctx.accounts.game_round;
+
+    ctx.accounts.delegate_pda(
+        &ctx.accounts.admin,
+        &[
+            GAME_ROUND_SEED,
+            game_round.global_config.as_ref(),
+            game_round.round_number.to_le_bytes().as_ref(),
+        ],
+        DelegateConfig {
+            validator: ctx.remaining_accounts.first().map(|acc| acc.key()),
+            ..Default::default()
+        },
+    )?;
+    Ok(())
 }
 
 #[derive(Accounts)]
@@ -204,6 +200,32 @@ pub struct EndRound<'info> {
     pub game_round: Account<'info, GameRound>,
 }
 
+pub fn end_round(ctx: Context<EndRound>) -> Result<()> {
+    let game_round = &mut ctx.accounts.game_round;
+    let clock = Clock::get()?;
+
+    require!(game_round.is_active, PandaBattleError::RoundAlreadyEnded);
+
+    // Allow early end by admin or auto-end after duration
+    let is_admin = ctx.accounts.admin.key() == ctx.accounts.global_config.admin;
+    let is_expired = clock.unix_timestamp >= game_round.end_time;
+
+    require!(is_admin || is_expired, PandaBattleError::Unauthorized);
+
+    game_round.is_active = false;
+    game_round.end_time = clock.unix_timestamp;
+
+    msg!(
+        "Round {} ended. Total prize pool: {}, Players: {}, Battles: {}",
+        game_round.round_number,
+        game_round.prize_pool,
+        game_round.player_count,
+        game_round.total_battles
+    );
+
+    Ok(())
+}
+
 #[derive(Accounts)]
 pub struct UpdateConfig<'info> {
     #[account(
@@ -219,9 +241,20 @@ pub struct UpdateConfig<'info> {
     pub global_config: Account<'info, GlobalConfig>,
 }
 
+pub fn update_config(ctx: Context<UpdateConfig>, token_mint: Option<Pubkey>) -> Result<()> {
+    let global_config = &mut ctx.accounts.global_config;
+
+    if let Some(mint) = token_mint {
+        global_config.token_mint = mint;
+    }
+
+    msg!("Global config updated");
+
+    Ok(())
+}
+
 // ============== UTILITY FUNCTIONS ==============
 
-/// Transfer tokens from user to vault
 pub fn transfer_to_vault<'info>(
     from: &Account<'info, TokenAccount>,
     to: &Account<'info, TokenAccount>,
@@ -242,7 +275,6 @@ pub fn transfer_to_vault<'info>(
     Ok(())
 }
 
-/// Transfer tokens from vault to user (requires PDA signer)
 pub fn transfer_from_vault<'info>(
     from: &Account<'info, TokenAccount>,
     to: &Account<'info, TokenAccount>,
@@ -265,9 +297,6 @@ pub fn transfer_from_vault<'info>(
     Ok(())
 }
 
-// ============== UTILITY FUNCTIONS ==============
-
-/// Transfer tokens from user to vault
 pub fn transfer_to_vault<'info>(
     from: &Account<'info, TokenAccount>,
     to: &Account<'info, TokenAccount>,
@@ -288,7 +317,6 @@ pub fn transfer_to_vault<'info>(
     Ok(())
 }
 
-/// Transfer tokens from vault to user (requires PDA signer)
 pub fn transfer_from_vault<'info>(
     from: &Account<'info, TokenAccount>,
     to: &Account<'info, TokenAccount>,
