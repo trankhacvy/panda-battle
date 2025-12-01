@@ -40,10 +40,16 @@ export function SplashScreen({ onComplete, duration = 3000 }: SplashScreenProps)
   if (!isVisible) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-linear-to-b from-[#0a1c3d] via-[#0f2849] to-[#1a3a5f] transition-opacity duration-500"
-      style={{ opacity: isVisible ? 1 : 0 }}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
+      {/* Mobile container with max width */}
+      <div 
+        className="relative w-full max-w-lg h-full flex flex-col items-center justify-center transition-opacity duration-500 bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: "url(/images/game-bg.png)",
+          opacity: isVisible ? 1 : 0 
+        }}
+      >
+
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-10 left-10 w-2 h-2 bg-yellow-400 rounded-full animate-ping" style={{ animationDelay: "0s" }}></div>
@@ -53,10 +59,6 @@ export function SplashScreen({ onComplete, duration = 3000 }: SplashScreenProps)
         <div className="absolute top-1/3 left-1/4 w-1 h-1 bg-white rounded-full animate-pulse"></div>
         <div className="absolute top-2/3 right-1/4 w-1 h-1 bg-white rounded-full animate-pulse" style={{ animationDelay: "0.5s" }}></div>
       </div>
-
-      {/* Bamboo silhouette on sides */}
-      <div className="absolute left-0 top-0 bottom-0 w-32 opacity-10 bg-linear-to-r from-green-900/50 to-transparent"></div>
-      <div className="absolute right-0 top-0 bottom-0 w-32 opacity-10 bg-linear-to-l from-green-900/50 to-transparent"></div>
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center space-y-8 px-4">
@@ -143,6 +145,7 @@ export function SplashScreen({ onComplete, duration = 3000 }: SplashScreenProps)
           animation: bounce-slow 2s ease-in-out infinite;
         }
       `}</style>
+      </div>
     </div>
   );
 }

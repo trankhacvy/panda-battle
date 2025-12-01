@@ -103,36 +103,6 @@ export function PandaFighterCreator() {
         </h2>
       </div>
 
-      {/* Attributes Display - Only show when panda is created */}
-      {isCreated && attributes && (
-        <div className="w-full max-w-md grid grid-cols-2 gap-3 mb-6 relative z-10">
-          <AttributeCard
-            label="STA"
-            value={attributes.sta}
-            icon={Flame}
-            color="red"
-          />
-          <AttributeCard
-            label="STR"
-            value={attributes.str}
-            icon={Dumbbell}
-            color="orange"
-          />
-          <AttributeCard
-            label="AGI"
-            value={attributes.agi}
-            icon={Zap}
-            color="green"
-          />
-          <AttributeCard
-            label="INT"
-            value={attributes.int}
-            icon={Brain}
-            color="blue"
-          />
-        </div>
-      )}
-
       {/* Panda Image */}
       <div className="w-full max-w-md aspect-square rounded-2xl overflow-hidden relative z-10 mb-6 border-4 border-[#3a7a5a]/50">
         {!isCreated ? (
@@ -156,6 +126,30 @@ export function PandaFighterCreator() {
           </div>
         )}
       </div>
+
+      {/* Attributes Display - Only show when panda is created (3 attributes only) */}
+      {isCreated && attributes && (
+        <div className="w-full max-w-md grid grid-cols-3 gap-3 mb-6 relative z-10">
+          <AttributeCard
+            label="STR"
+            value={attributes.str}
+            icon="/images/attributes/str-att.png"
+            color="orange"
+          />
+          <AttributeCard
+            label="AGI"
+            value={attributes.agi}
+            icon="/images/attributes/agt-att.png"
+            color="green"
+          />
+          <AttributeCard
+            label="INT"
+            value={attributes.int}
+            icon="/images/attributes/int-att.png"
+            color="blue"
+          />
+        </div>
+      )}
 
       {/* Buttons */}
       {!isCreated ? (

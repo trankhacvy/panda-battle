@@ -126,12 +126,6 @@ export default function HomePage() {
           color="bg-[#007aff]"
         />
       </div>
-
-      {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-3">
-        <Button3D>Upgrade</Button3D>
-        <Button3D variant="3d-purple">Equip</Button3D>
-      </div>
     </div>
   );
 }

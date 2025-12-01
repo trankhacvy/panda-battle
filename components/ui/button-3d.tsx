@@ -11,19 +11,19 @@ const button3DVariants = cva(
     variants: {
       variant: {
         "3d-green":
-          "bg-[#74D700] hover:bg-[#7ce006] shadow-[0_8px_0_#4ca600] active:shadow-none active:translate-y-[8px]",
+          "bg-[#74D700] hover:bg-[#7ce006] shadow-[0_8px_0_#4ca600,0_12px_20px_rgba(116,215,0,0.4)] active:shadow-none active:translate-y-[8px]",
         "3d-blue":
-          "bg-[#00A3FF] hover:bg-[#00B3FF] shadow-[0_8px_0_#0073B3] active:shadow-none active:translate-y-[8px]",
+          "bg-[#00A3FF] hover:bg-[#00B3FF] shadow-[0_8px_0_#0073B3,0_12px_20px_rgba(0,163,255,0.4)] active:shadow-none active:translate-y-[8px]",
         "3d-red":
-          "bg-[#FF4757] hover:bg-[#FF5767] shadow-[0_8px_0_#CC3946] active:shadow-none active:translate-y-[8px]",
+          "bg-[#FF4757] hover:bg-[#FF5767] shadow-[0_8px_0_#CC3946,0_12px_20px_rgba(255,71,87,0.4)] active:shadow-none active:translate-y-[8px]",
         "3d-purple":
-          "bg-[#A855F7] hover:bg-[#B865F7] shadow-[0_8px_0_#7E3FB8] active:shadow-none active:translate-y-[8px]",
+          "bg-[#A855F7] hover:bg-[#B865F7] shadow-[0_8px_0_#7E3FB8,0_12px_20px_rgba(168,85,247,0.4)] active:shadow-none active:translate-y-[8px]",
         "3d-orange":
-          "bg-[#FF9500] hover:bg-[#FFA500] shadow-[0_8px_0_#CC7700] active:shadow-none active:translate-y-[8px]",
+          "bg-[#FF9500] hover:bg-[#FFA500] shadow-[0_8px_0_#CC7700,0_12px_20px_rgba(255,149,0,0.4)] active:shadow-none active:translate-y-[8px]",
         "3d-yellow":
-          "bg-[#FFD700] hover:bg-[#FFE700] shadow-[0_8px_0_#CCB000] active:shadow-none active:translate-y-[8px]",
+          "bg-[#FFD700] hover:bg-[#FFE700] shadow-[0_8px_0_#CCB000,0_12px_20px_rgba(255,215,0,0.4)] active:shadow-none active:translate-y-[8px]",
         "header-action":
-          "bg-[#A855F7] hover:bg-[#B865F7] shadow-[0_8px_0_#7E3FB8] active:shadow-none active:translate-y-[8px] size-10 aspect-square",
+          "bg-[#A855F7] hover:bg-[#B865F7] shadow-[0_8px_0_#7E3FB8,0_12px_20px_rgba(168,85,247,0.4)] active:shadow-none active:translate-y-[8px] size-10 aspect-square",
       },
       size: {
         "3d-tiny": "h-10 px-2.5 text-sm",

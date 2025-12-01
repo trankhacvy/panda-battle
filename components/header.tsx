@@ -74,14 +74,14 @@ export default function Header() {
       default:
         return (
           <div className="flex items-center gap-2">
-            <div className="bg-[#1a3a5c]/80 border-2 border-[#2a5a8c] rounded-xl px-4 py-2 flex items-center gap-2">
+            {/* <div className="bg-[#1a3a5c]/80 border-2 border-[#2a5a8c] rounded-xl px-4 py-2 flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-linear-to-b from-[#ffd700] to-[#daa520] flex items-center justify-center">
                 <span className="text-[#8b6914] font-bold text-lg">C</span>
               </div>
               <div className="text-white">
                 <p className="text-xl font-bold text-[#ffd700]">500</p>
               </div>
-            </div>
+            </div> */}
             <SettingsDropdown />
           </div>
         );
@@ -89,15 +89,26 @@ export default function Header() {
   };
 
   return (
-    <div className="flex items-center justify-between p-4 h-20">
-      {/* Left */}
-      {renderLeft()}
+    <div 
+      className="flex items-center justify-between p-4 h-20 bg-cover bg-center relative"
+      // style={{
+      //   backgroundImage: "url(/images/bg-nav.png)",
+      // }}
+    >
+      {/* Dark overlay for better contrast */}
+      <div className="absolute inset-0 bg-linear-to-b from-black/40 to-black/10"></div>
+      
+      {/* Content wrapper */}
+      <div className="relative z-10 flex items-center justify-between w-full">
+        {/* Left */}
+        {renderLeft()}
 
-      {/* Middle */}
-      {renderMiddle()}
+        {/* Middle */}
+        {renderMiddle()}
 
-      {/* Right */}
-      {renderRight()}
+        {/* Right */}
+        {renderRight()}
+      </div>
     </div>
   );
 }
