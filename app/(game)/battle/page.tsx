@@ -3,6 +3,7 @@
 import { ArrowDownUp, Filter } from "lucide-react";
 import { mockOpponents } from "@/lib/mock/battles";
 import { OpponentCard } from "@/components/battle/opponent-card";
+import { useSound } from "@/hooks/use-sound";
 
 const bgColors = [
   "bg-red-900/60",
@@ -14,10 +15,22 @@ const bgColors = [
 
 export default function BattlePage() {
   const displayOpponents = mockOpponents.slice(0, 5);
+  const { play, SOUNDS } = useSound();
 
   const handleBattle = (opponentId: string) => {
+    play(SOUNDS.GAME_START);
     console.log("Battle with opponent:", opponentId);
     // TODO: Navigate to battle screen or start battle
+  };
+
+  const handleSort = () => {
+    play(SOUNDS.BUTTON_CLICK);
+    console.log("Sort opponents");
+  };
+
+  const handleFilter = () => {
+    play(SOUNDS.BUTTON_CLICK);
+    console.log("Filter opponents");
   };
 
   return (
@@ -26,11 +39,17 @@ export default function BattlePage() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-white font-bold text-xl">Battle Opponent List</h1>
         <div className="flex gap-2">
-          <button className="bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg p-2 flex flex-col items-center transition-colors">
+          <button
+            onClick={handleSort}
+            className="bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg p-2 flex flex-col items-center transition-colors"
+          >
             <ArrowDownUp className="w-5 h-5" />
             <span className="text-xs sr-only">Sort</span>
           </button>
-          <button className="bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg p-2 flex flex-col items-center transition-colors">
+          <button
+            onClick={handleFilter}
+            className="bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg p-2 flex flex-col items-center transition-colors"
+          >
             <Filter className="w-5 h-5" />
             <span className="text-xs sr-only">Filter</span>
           </button>

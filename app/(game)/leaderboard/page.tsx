@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search, ArrowDownUp, Filter } from "lucide-react";
 import { PlayerCard } from "@/components/leaderboard/player-card";
+import { useSound } from "@/hooks/use-sound";
 
 const players = [
   {
@@ -44,14 +45,26 @@ const players = [
 
 export default function LeaderboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { play, SOUNDS } = useSound();
 
   const filteredPlayers = players.filter((player) =>
     player.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleBattle = (playerName: string) => {
+    play(SOUNDS.GAME_START);
     console.log("Battle with player:", playerName);
     // TODO: Navigate to battle screen
+  };
+
+  const handleSort = () => {
+    play(SOUNDS.BUTTON_CLICK);
+    console.log("Sort players");
+  };
+
+  const handleFilter = () => {
+    play(SOUNDS.BUTTON_CLICK);
+    console.log("Filter players");
   };
 
   return (
@@ -68,11 +81,17 @@ export default function LeaderboardPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-2 flex flex-col items-center justify-center min-w-[50px] transition-colors">
+        <button
+          onClick={handleSort}
+          className="bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-2 flex flex-col items-center justify-center min-w-[50px] transition-colors"
+        >
           <ArrowDownUp className="w-4 h-4 text-white" />
           <span className="text-white text-xs sr-only">Sort</span>
         </button>
-        <button className="bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-2 flex flex-col items-center justify-center min-w-[50px] transition-colors">
+        <button
+          onClick={handleFilter}
+          className="bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-2 flex flex-col items-center justify-center min-w-[50px] transition-colors"
+        >
           <Filter className="w-4 h-4 text-white" />
           <span className="text-white text-xs sr-only">Filter</span>
         </button>

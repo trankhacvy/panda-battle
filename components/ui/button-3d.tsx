@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
+import { useSound } from "@/hooks/use-sound";
 
 const button3DVariants = cva(
   "relative inline-flex items-center justify-center gap-2 whitespace-nowrap font-black rounded-lg text-white transition-all duration-150 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
@@ -43,6 +44,7 @@ export interface Button3DProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof button3DVariants> {
   asChild?: boolean;
+  disableSound?: boolean;
 }
 
 const Button3D = React.forwardRef<HTMLButtonElement, Button3DProps>(
@@ -52,16 +54,27 @@ const Button3D = React.forwardRef<HTMLButtonElement, Button3DProps>(
       variant = "3d-green",
       size = "3d-md",
       asChild = false,
+      disableSound = false,
+      onClick,
       ...props
     },
     ref
   ) => {
     const Comp = asChild ? Slot : "button";
+    const { play, SOUNDS } = useSound();
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (!disableSound) {
+        play(SOUNDS.BUTTON_CLICK);
+      }
+      onClick?.(e);
+    };
 
     return (
       <Comp
         className={cn(button3DVariants({ variant, size, className }))}
         ref={ref}
+        onClick={handleClick}
         {...props}
       >
         {/* Glossy Top Highlight */}

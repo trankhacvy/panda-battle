@@ -8,6 +8,7 @@ import React from "react";
 import { Button3D } from "./ui/button-3d";
 import { ArrowLeft, EllipsisVertical } from "lucide-react";
 import { Typography } from "./ui/typography";
+import { SettingsDropdown } from "./settings-dropdown";
 
 export default function Header() {
   const embeddedAddress = useEmbeddedAddress();
@@ -72,13 +73,16 @@ export default function Header() {
         );
       default:
         return (
-          <div className="bg-[#1a3a5c]/80 border-2 border-[#2a5a8c] rounded-xl px-4 py-2 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-linear-to-b from-[#ffd700] to-[#daa520] flex items-center justify-center">
-              <span className="text-[#8b6914] font-bold text-lg">C</span>
+          <div className="flex items-center gap-2">
+            <div className="bg-[#1a3a5c]/80 border-2 border-[#2a5a8c] rounded-xl px-4 py-2 flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-linear-to-b from-[#ffd700] to-[#daa520] flex items-center justify-center">
+                <span className="text-[#8b6914] font-bold text-lg">C</span>
+              </div>
+              <div className="text-white">
+                <p className="text-xl font-bold text-[#ffd700]">500</p>
+              </div>
             </div>
-            <div className="text-white">
-              <p className="text-xl font-bold text-[#ffd700]">500</p>
-            </div>
+            <SettingsDropdown />
           </div>
         );
     }
