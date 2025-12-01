@@ -35,4 +35,3 @@ export function useSound() {
     SOUNDS,
   };
 }
-

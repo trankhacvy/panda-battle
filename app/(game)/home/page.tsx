@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 import { Typography } from "@/components/ui/typography";
 import { Button3D } from "@/components/ui/button-3d";
 import { useWallet } from "@/hooks/use-wallet";
-import { Brain, Dumbbell, Flame, Zap } from "lucide-react";
 
 export default function HomePage() {
   const { logout } = useWallet();
@@ -50,7 +49,8 @@ export default function HomePage() {
       : 0;
 
   return (
-    <div className="p-4">
+    <div className="p-4 pb-24">
+      {/* Panda Image */}
       <div
         className="rounded-xl flex items-center justify-center aspect-video overflow-hidden mb-4"
         style={{
@@ -67,28 +67,60 @@ export default function HomePage() {
         />
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-3 mb-10">
+      {/* Level and XP Section */}
+      <div
+        className="backdrop-blur-sm rounded-2xl p-6 mb-4 border border-cyan-500/30 relative overflow-hidden"
+        style={{
+          backgroundImage: "url(/images/attributes/lv-bg.png)",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="absolute inset-0 bg-[#0a1628]/60"></div>
+        <div className="relative z-10">
+          <h2 className="text-3xl font-bold text-white text-center mb-4">
+            Level: {player.level}
+          </h2>
+
+          {/* XP Progress Bar */}
+          <div className="mb-3">
+            <div className="relative bg-gray-700/50 rounded-full h-10 overflow-hidden border-2 border-white/20">
+              <div
+                className="absolute inset-0 bg-linear-to-r from-blue-500 to-blue-400 transition-all duration-300 flex items-center justify-center"
+                style={{ width: `${(player.experience / player.experienceToNextLevel) * 100}%` }}
+              >
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-white font-bold text-sm drop-shadow-lg">
+                  XP: {player.experience.toLocaleString()} / {player.experienceToNextLevel.toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-center text-gray-300 text-sm">
+            Higher levels increase attribute power.
+          </p>
+        </div>
+      </div>
+
+      {/* Stats Grid - 3 Attributes */}
+      <div className="grid grid-cols-3 gap-3 mb-6">
         <StatBadge
-          icon={<Flame className="w-5 h-5" />}
-          label="STA"
-          value={85}
-          color="bg-[#ff6b35]"
-        />
-        <StatBadge
-          icon={<Dumbbell className="w-5 h-5" />}
+          icon="/images/attributes/str-att.png"
           label="STR"
           value={92}
           color="bg-[#ff9500]"
         />
         <StatBadge
-          icon={<Zap className="w-5 h-5" />}
+          icon="/images/attributes/agt-att.png"
           label="AGI"
           value={78}
           color="bg-[#34c759]"
         />
         <StatBadge
-          icon={<Brain className="w-5 h-5" />}
+          icon="/images/attributes/int-att.png"
           label="INT"
           value={64}
           color="bg-[#007aff]"
@@ -110,15 +142,17 @@ function StatBadge({
   value,
   color,
 }: {
-  icon: React.ReactNode;
+  icon: string;
   label: string;
   value: number;
   color: string;
 }) {
   return (
-    <div className="bg-white/95 rounded-xl px-2 py-1.5 flex items-center gap-2 shadow-md">
-      <div className={`${color} text-white p-1.5 rounded-lg`}>{icon}</div>
-      <span className="font-bold text-gray-800 text-sm">
+    <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-2xl px-3 py-3 flex items-center justify-center gap-2 border border-white/10">
+      <div className="rounded-xl shrink-0 overflow-hidden w-12 h-12">
+        <img src={icon} alt={label} className="w-full h-full object-cover" />
+      </div>
+      <span className="font-bold text-white text-base whitespace-nowrap">
         {label}: {value}
       </span>
     </div>
