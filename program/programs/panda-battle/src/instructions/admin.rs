@@ -3,6 +3,8 @@ use anchor_spl::{
     associated_token::AssociatedToken,
     token::{transfer, Mint, Token, TokenAccount, Transfer},
 };
+use ephemeral_rollups_sdk::anchor::delegate;
+use ephemeral_rollups_sdk::cpi::DelegateConfig;
 
 use crate::constants::*;
 use crate::errors::PandaBattleError;
@@ -153,25 +155,28 @@ pub struct DelegateRound<'info> {
 }
 
 pub fn delegate_round(ctx: Context<DelegateRound>) -> Result<()> {
-    // seeds = [
-    //         GAME_ROUND_SEED,
-    //         global_config.key().as_ref(),
-    //         (global_config.total_rounds + 1).to_le_bytes().as_ref()
-    //     ],
-
     let game_round = &ctx.accounts.game_round;
+    let round_number_bytes = game_round.round_number.to_le_bytes();
 
-    ctx.accounts.delegate_pda(
+    let seeds = &[
+        GAME_ROUND_SEED,
+        game_round.global_config.as_ref(),
+        round_number_bytes.as_ref(),
+    ];
+
+    game_round.exit(&crate::ID)?;
+
+    msg!("Delegating round {} to validator", game_round.round_number);
+
+    ctx.accounts.delegate_game_round(
         &ctx.accounts.admin,
-        &[
-            GAME_ROUND_SEED,
-            game_round.global_config.as_ref(),
-            game_round.round_number.to_le_bytes().as_ref(),
-        ],
-        DelegateConfig {
-            validator: ctx.remaining_accounts.first().map(|acc| acc.key()),
-            ..Default::default()
-        },
+        seeds,
+        // &[
+        //     GAME_ROUND_SEED,
+        //     game_round.global_config.as_ref(),
+        //     game_round.round_number.to_le_bytes().as_ref(),
+        // ],
+        DelegateConfig::default(),
     )?;
     Ok(())
 }
@@ -254,48 +259,6 @@ pub fn update_config(ctx: Context<UpdateConfig>, token_mint: Option<Pubkey>) -> 
 }
 
 // ============== UTILITY FUNCTIONS ==============
-
-pub fn transfer_to_vault<'info>(
-    from: &Account<'info, TokenAccount>,
-    to: &Account<'info, TokenAccount>,
-    authority: &Signer<'info>,
-    token_program: &Program<'info, Token>,
-    amount: u64,
-) -> Result<()> {
-    let cpi_accounts = Transfer {
-        from: from.to_account_info(),
-        to: to.to_account_info(),
-        authority: authority.to_account_info(),
-    };
-
-    let cpi_ctx = CpiContext::new(token_program.to_account_info(), cpi_accounts);
-    transfer(cpi_ctx, amount)?;
-
-    msg!("Transferred {} tokens to vault", amount);
-    Ok(())
-}
-
-pub fn transfer_from_vault<'info>(
-    from: &Account<'info, TokenAccount>,
-    to: &Account<'info, TokenAccount>,
-    authority: &AccountInfo<'info>,
-    token_program: &Program<'info, Token>,
-    amount: u64,
-    signer_seeds: &[&[&[u8]]],
-) -> Result<()> {
-    let cpi_accounts = Transfer {
-        from: from.to_account_info(),
-        to: to.to_account_info(),
-        authority: authority.to_account_info(),
-    };
-
-    let cpi_ctx =
-        CpiContext::new_with_signer(token_program.to_account_info(), cpi_accounts, signer_seeds);
-    transfer(cpi_ctx, amount)?;
-
-    msg!("Transferred {} tokens from vault", amount);
-    Ok(())
-}
 
 pub fn transfer_to_vault<'info>(
     from: &Account<'info, TokenAccount>,

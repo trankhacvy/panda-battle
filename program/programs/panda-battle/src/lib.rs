@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use ephemeral_rollups_sdk::anchor::ephemeral;
 
 pub mod constants;
 pub mod errors;
@@ -7,8 +8,9 @@ pub mod state;
 
 use instructions::*;
 
-declare_id!("2U6NvgpGn779fBKMziM88UxQqWwstTgQm4LLHyt7JqyG");
+declare_id!("H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP");
 
+#[ephemeral]
 #[program]
 pub mod panda_battle {
     use super::*;
@@ -51,13 +53,6 @@ pub mod panda_battle {
 
     pub fn request_join_round(ctx: Context<RequestJoinRound>, client_seed: u8) -> Result<()> {
         instructions::player::request_join_round(ctx, client_seed)
-    }
-
-    pub fn callback_join_round(
-        ctx: Context<CallbackJoinRound>,
-        randomness: [u8; 32],
-    ) -> Result<()> {
-        instructions::player::callback_join_round(ctx, randomness)
     }
 
     pub fn callback_join_round(

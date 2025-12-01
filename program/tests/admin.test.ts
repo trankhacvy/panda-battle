@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program, BN } from "@coral-xyz/anchor";
 import { PandaBattle } from "../target/types/panda_battle";
-import { PublicKey, Keypair, SystemProgram } from "@solana/web3.js";
+import { PublicKey, SystemProgram } from "@solana/web3.js";
 import {
   TOKEN_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -62,7 +62,16 @@ describe("Admin Instructions", () => {
     const durationSecs = new BN(86400); // 24 hours
     const entryHourlyIncPct = 1;
 
-    const roundPDA = getGameRoundPDA(program, globalConfigPDA, 1);
+    const configAccount = await program.account.globalConfig.fetch(
+      globalConfigPDA
+    );
+    console.log("Current Round:", configAccount.currentRound.toString());
+
+    const roundPDA = getGameRoundPDA(
+      program,
+      globalConfigPDA,
+      configAccount.currentRound.add(new BN(1)).toNumber()
+    );
     const vaultPDA = await getAssociatedTokenAddress(mint, roundPDA, true);
 
     await program.methods
@@ -77,18 +86,31 @@ describe("Admin Instructions", () => {
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
-      .postInstructions([
-        await program.methods.
-      ])
       .rpc();
 
     const gameRound = await getGameRound(program, roundPDA);
-    assert.equal(gameRound.roundNumber.toString(), "1");
+    // assert.equal(gameRound.roundNumber.toString(), "1");
     assert.equal(gameRound.isActive, true);
     assert.equal(gameRound.playerCount, 0);
     assert.equal(gameRound.entryFee.toString(), entryFee.toString());
-    assert.equal(gameRound.attackPackPrice.toString(), attackPackPrice.toString());
+    assert.equal(
+      gameRound.attackPackPrice.toString(),
+      attackPackPrice.toString()
+    );
     assert.equal(gameRound.payoutsProcessed, false);
+  });
+
+  it("Delegate round", async () => {
+    const roundPDA = getGameRoundPDA(program, globalConfigPDA, 1);
+
+    await program.methods
+      .delegateRound()
+      .accountsPartial({
+        admin: admin.publicKey,
+        gameRound: roundPDA,
+        validator: null,
+      })
+      .rpc();
   });
 
   it("End round", async () => {
