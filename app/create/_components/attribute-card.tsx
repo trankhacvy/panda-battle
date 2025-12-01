@@ -46,12 +46,12 @@ export function AttributeCard({
     <div
       className={`bg-linear-to-br ${styles.gradient} rounded-xl p-2 flex items-center gap-2 border-2 ${styles.border} ${styles.shadow}`}
     >
-      <div className="rounded-lg shrink-0 overflow-hidden w-10 h-10">
+      <div className="rounded-lg shrink-0 overflow-hidden size-8">
         <img src={icon} alt={label} className="w-full h-full object-cover" />
       </div>
       <div className="flex-1">
         <div className="text-white/80 text-sm font-semibold">{label}:</div>
-        <div className="text-white text-2xl font-bold">{value}</div>
+        <div className="text-white text-xl font-bold">{value}</div>
       </div>
     </div>
   );

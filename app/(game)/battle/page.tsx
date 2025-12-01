@@ -4,6 +4,7 @@ import { ArrowDownUp, Filter } from "lucide-react";
 import { mockOpponents } from "@/lib/mock/battles";
 import { OpponentCard } from "@/components/battle/opponent-card";
 import { useSound } from "@/hooks/use-sound";
+import { Button3D } from "@/components/ui/button-3d";
 
 const bgColors = [
   "bg-red-900/60",
@@ -39,20 +40,22 @@ export default function BattlePage() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-white font-bold text-xl">Battle Opponent List</h1>
         <div className="flex gap-2">
-          <button
+          <Button3D
+            className="size-8"
+            variant="3d-green"
+            size="3d-tiny"
             onClick={handleSort}
-            className="bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg p-2 flex flex-col items-center transition-colors"
           >
-            <ArrowDownUp className="w-5 h-5" />
-            <span className="text-xs sr-only">Sort</span>
-          </button>
-          <button
+            <ArrowDownUp />
+          </Button3D>
+          <Button3D
+            variant="3d-green"
+            className="size-8"
+            size="3d-tiny"
             onClick={handleFilter}
-            className="bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg p-2 flex flex-col items-center transition-colors"
           >
-            <Filter className="w-5 h-5" />
-            <span className="text-xs sr-only">Filter</span>
-          </button>
+            <Filter />
+          </Button3D>
         </div>
       </div>
 

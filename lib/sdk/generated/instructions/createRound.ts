@@ -13,9 +13,15 @@ import {
   getAddressEncoder,
   getBytesDecoder,
   getBytesEncoder,
+  getI64Decoder,
+  getI64Encoder,
   getProgramDerivedAddress,
   getStructDecoder,
   getStructEncoder,
+  getU64Decoder,
+  getU64Encoder,
+  getU8Decoder,
+  getU8Encoder,
   transformEncoder,
   type AccountMeta,
   type AccountSignerMeta,
@@ -53,7 +59,7 @@ export type CreateRoundInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountAdmin extends string | AccountMeta<string> = string,
   TAccountMint extends string | AccountMeta<string> = string,
-  TAccountGameConfig extends string | AccountMeta<string> = string,
+  TAccountGlobalConfig extends string | AccountMeta<string> = string,
   TAccountGameRound extends string | AccountMeta<string> = string,
   TAccountVault extends string | AccountMeta<string> = string,
   TAccountSystemProgram extends string | AccountMeta<string> =
@@ -62,6 +68,14 @@ export type CreateRoundInstruction<
     'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
   TAccountAssociatedTokenProgram extends string | AccountMeta<string> =
     'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+  TAccountBufferAccount extends string | AccountMeta<string> = string,
+  TAccountDelegationRecordAccount extends string | AccountMeta<string> = string,
+  TAccountDelegationMetadataAccount extends string | AccountMeta<string> =
+    string,
+  TAccountOwnerProgram extends string | AccountMeta<string> =
+    'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP',
+  TAccountDelegationProgram extends string | AccountMeta<string> =
+    'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh',
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
   InstructionWithData<ReadonlyUint8Array> &
@@ -74,9 +88,9 @@ export type CreateRoundInstruction<
       TAccountMint extends string
         ? ReadonlyAccount<TAccountMint>
         : TAccountMint,
-      TAccountGameConfig extends string
-        ? WritableAccount<TAccountGameConfig>
-        : TAccountGameConfig,
+      TAccountGlobalConfig extends string
+        ? WritableAccount<TAccountGlobalConfig>
+        : TAccountGlobalConfig,
       TAccountGameRound extends string
         ? WritableAccount<TAccountGameRound>
         : TAccountGameRound,
@@ -92,17 +106,49 @@ export type CreateRoundInstruction<
       TAccountAssociatedTokenProgram extends string
         ? ReadonlyAccount<TAccountAssociatedTokenProgram>
         : TAccountAssociatedTokenProgram,
+      TAccountBufferAccount extends string
+        ? WritableAccount<TAccountBufferAccount>
+        : TAccountBufferAccount,
+      TAccountDelegationRecordAccount extends string
+        ? WritableAccount<TAccountDelegationRecordAccount>
+        : TAccountDelegationRecordAccount,
+      TAccountDelegationMetadataAccount extends string
+        ? WritableAccount<TAccountDelegationMetadataAccount>
+        : TAccountDelegationMetadataAccount,
+      TAccountOwnerProgram extends string
+        ? ReadonlyAccount<TAccountOwnerProgram>
+        : TAccountOwnerProgram,
+      TAccountDelegationProgram extends string
+        ? ReadonlyAccount<TAccountDelegationProgram>
+        : TAccountDelegationProgram,
       ...TRemainingAccounts,
     ]
   >;
 
-export type CreateRoundInstructionData = { discriminator: ReadonlyUint8Array };
+export type CreateRoundInstructionData = {
+  discriminator: ReadonlyUint8Array;
+  entryFee: bigint;
+  attackPackPrice: bigint;
+  durationSecs: bigint;
+  entryHourlyIncPct: number;
+};
 
-export type CreateRoundInstructionDataArgs = {};
+export type CreateRoundInstructionDataArgs = {
+  entryFee: number | bigint;
+  attackPackPrice: number | bigint;
+  durationSecs: number | bigint;
+  entryHourlyIncPct: number;
+};
 
 export function getCreateRoundInstructionDataEncoder(): FixedSizeEncoder<CreateRoundInstructionDataArgs> {
   return transformEncoder(
-    getStructEncoder([['discriminator', fixEncoderSize(getBytesEncoder(), 8)]]),
+    getStructEncoder([
+      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
+      ['entryFee', getU64Encoder()],
+      ['attackPackPrice', getU64Encoder()],
+      ['durationSecs', getI64Encoder()],
+      ['entryHourlyIncPct', getU8Encoder()],
+    ]),
     (value) => ({ ...value, discriminator: CREATE_ROUND_DISCRIMINATOR })
   );
 }
@@ -110,6 +156,10 @@ export function getCreateRoundInstructionDataEncoder(): FixedSizeEncoder<CreateR
 export function getCreateRoundInstructionDataDecoder(): FixedSizeDecoder<CreateRoundInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
+    ['entryFee', getU64Decoder()],
+    ['attackPackPrice', getU64Decoder()],
+    ['durationSecs', getI64Decoder()],
+    ['entryHourlyIncPct', getU8Decoder()],
   ]);
 }
 
@@ -126,45 +176,68 @@ export function getCreateRoundInstructionDataCodec(): FixedSizeCodec<
 export type CreateRoundAsyncInput<
   TAccountAdmin extends string = string,
   TAccountMint extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountVault extends string = string,
   TAccountSystemProgram extends string = string,
   TAccountTokenProgram extends string = string,
   TAccountAssociatedTokenProgram extends string = string,
+  TAccountBufferAccount extends string = string,
+  TAccountDelegationRecordAccount extends string = string,
+  TAccountDelegationMetadataAccount extends string = string,
+  TAccountOwnerProgram extends string = string,
+  TAccountDelegationProgram extends string = string,
 > = {
   admin: TransactionSigner<TAccountAdmin>;
   /** Token mint for this round */
   mint: Address<TAccountMint>;
-  gameConfig?: Address<TAccountGameConfig>;
+  globalConfig?: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
-  /** Vault for this round (ATA owned by game_round PDA) */
   vault?: Address<TAccountVault>;
   systemProgram?: Address<TAccountSystemProgram>;
   tokenProgram?: Address<TAccountTokenProgram>;
   associatedTokenProgram?: Address<TAccountAssociatedTokenProgram>;
+  bufferAccount?: Address<TAccountBufferAccount>;
+  delegationRecordAccount?: Address<TAccountDelegationRecordAccount>;
+  delegationMetadataAccount?: Address<TAccountDelegationMetadataAccount>;
+  ownerProgram?: Address<TAccountOwnerProgram>;
+  delegationProgram?: Address<TAccountDelegationProgram>;
+  entryFee: CreateRoundInstructionDataArgs['entryFee'];
+  attackPackPrice: CreateRoundInstructionDataArgs['attackPackPrice'];
+  durationSecs: CreateRoundInstructionDataArgs['durationSecs'];
+  entryHourlyIncPct: CreateRoundInstructionDataArgs['entryHourlyIncPct'];
 };
 
 export async function getCreateRoundInstructionAsync<
   TAccountAdmin extends string,
   TAccountMint extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TAccountVault extends string,
   TAccountSystemProgram extends string,
   TAccountTokenProgram extends string,
   TAccountAssociatedTokenProgram extends string,
+  TAccountBufferAccount extends string,
+  TAccountDelegationRecordAccount extends string,
+  TAccountDelegationMetadataAccount extends string,
+  TAccountOwnerProgram extends string,
+  TAccountDelegationProgram extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
   input: CreateRoundAsyncInput<
     TAccountAdmin,
     TAccountMint,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountVault,
     TAccountSystemProgram,
     TAccountTokenProgram,
-    TAccountAssociatedTokenProgram
+    TAccountAssociatedTokenProgram,
+    TAccountBufferAccount,
+    TAccountDelegationRecordAccount,
+    TAccountDelegationMetadataAccount,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): Promise<
@@ -172,12 +245,17 @@ export async function getCreateRoundInstructionAsync<
     TProgramAddress,
     TAccountAdmin,
     TAccountMint,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountVault,
     TAccountSystemProgram,
     TAccountTokenProgram,
-    TAccountAssociatedTokenProgram
+    TAccountAssociatedTokenProgram,
+    TAccountBufferAccount,
+    TAccountDelegationRecordAccount,
+    TAccountDelegationMetadataAccount,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram
   >
 > {
   // Program address.
@@ -187,7 +265,7 @@ export async function getCreateRoundInstructionAsync<
   const originalAccounts = {
     admin: { value: input.admin ?? null, isWritable: true },
     mint: { value: input.mint ?? null, isWritable: false },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: true },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: true },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
     vault: { value: input.vault ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
@@ -196,19 +274,38 @@ export async function getCreateRoundInstructionAsync<
       value: input.associatedTokenProgram ?? null,
       isWritable: false,
     },
+    bufferAccount: { value: input.bufferAccount ?? null, isWritable: true },
+    delegationRecordAccount: {
+      value: input.delegationRecordAccount ?? null,
+      isWritable: true,
+    },
+    delegationMetadataAccount: {
+      value: input.delegationMetadataAccount ?? null,
+      isWritable: true,
+    },
+    ownerProgram: { value: input.ownerProgram ?? null, isWritable: false },
+    delegationProgram: {
+      value: input.delegationProgram ?? null,
+      isWritable: false,
+    },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
     ResolvedAccount
   >;
 
+  // Original args.
+  const args = { ...input };
+
   // Resolve default values.
-  if (!accounts.gameConfig.value) {
-    accounts.gameConfig.value = await getProgramDerivedAddress({
+  if (!accounts.globalConfig.value) {
+    accounts.globalConfig.value = await getProgramDerivedAddress({
       programAddress,
       seeds: [
         getBytesEncoder().encode(
-          new Uint8Array([103, 97, 109, 101, 95, 99, 111, 110, 102, 105, 103])
+          new Uint8Array([
+            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
+          ])
         ),
       ],
     });
@@ -242,88 +339,171 @@ export async function getCreateRoundInstructionAsync<
     accounts.associatedTokenProgram.value =
       'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL' as Address<'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'>;
   }
+  if (!accounts.bufferAccount.value) {
+    accounts.bufferAccount.value = await getProgramDerivedAddress({
+      programAddress:
+        'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP' as Address<'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP'>,
+      seeds: [
+        getBytesEncoder().encode(new Uint8Array([98, 117, 102, 102, 101, 114])),
+        getAddressEncoder().encode(expectAddress(accounts.gameRound.value)),
+      ],
+    });
+  }
+  if (!accounts.delegationRecordAccount.value) {
+    accounts.delegationRecordAccount.value = await getProgramDerivedAddress({
+      programAddress,
+      seeds: [
+        getBytesEncoder().encode(
+          new Uint8Array([100, 101, 108, 101, 103, 97, 116, 105, 111, 110])
+        ),
+        getAddressEncoder().encode(expectAddress(accounts.gameRound.value)),
+      ],
+    });
+  }
+  if (!accounts.delegationMetadataAccount.value) {
+    accounts.delegationMetadataAccount.value = await getProgramDerivedAddress({
+      programAddress,
+      seeds: [
+        getBytesEncoder().encode(
+          new Uint8Array([
+            100, 101, 108, 101, 103, 97, 116, 105, 111, 110, 45, 109, 101, 116,
+            97, 100, 97, 116, 97,
+          ])
+        ),
+        getAddressEncoder().encode(expectAddress(accounts.gameRound.value)),
+      ],
+    });
+  }
+  if (!accounts.ownerProgram.value) {
+    accounts.ownerProgram.value =
+      'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP' as Address<'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP'>;
+  }
+  if (!accounts.delegationProgram.value) {
+    accounts.delegationProgram.value =
+      'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh' as Address<'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh'>;
+  }
 
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.admin),
       getAccountMeta(accounts.mint),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.vault),
       getAccountMeta(accounts.systemProgram),
       getAccountMeta(accounts.tokenProgram),
       getAccountMeta(accounts.associatedTokenProgram),
+      getAccountMeta(accounts.bufferAccount),
+      getAccountMeta(accounts.delegationRecordAccount),
+      getAccountMeta(accounts.delegationMetadataAccount),
+      getAccountMeta(accounts.ownerProgram),
+      getAccountMeta(accounts.delegationProgram),
     ],
-    data: getCreateRoundInstructionDataEncoder().encode({}),
+    data: getCreateRoundInstructionDataEncoder().encode(
+      args as CreateRoundInstructionDataArgs
+    ),
     programAddress,
   } as CreateRoundInstruction<
     TProgramAddress,
     TAccountAdmin,
     TAccountMint,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountVault,
     TAccountSystemProgram,
     TAccountTokenProgram,
-    TAccountAssociatedTokenProgram
+    TAccountAssociatedTokenProgram,
+    TAccountBufferAccount,
+    TAccountDelegationRecordAccount,
+    TAccountDelegationMetadataAccount,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram
   >);
 }
 
 export type CreateRoundInput<
   TAccountAdmin extends string = string,
   TAccountMint extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountVault extends string = string,
   TAccountSystemProgram extends string = string,
   TAccountTokenProgram extends string = string,
   TAccountAssociatedTokenProgram extends string = string,
+  TAccountBufferAccount extends string = string,
+  TAccountDelegationRecordAccount extends string = string,
+  TAccountDelegationMetadataAccount extends string = string,
+  TAccountOwnerProgram extends string = string,
+  TAccountDelegationProgram extends string = string,
 > = {
   admin: TransactionSigner<TAccountAdmin>;
   /** Token mint for this round */
   mint: Address<TAccountMint>;
-  gameConfig: Address<TAccountGameConfig>;
+  globalConfig: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
-  /** Vault for this round (ATA owned by game_round PDA) */
   vault: Address<TAccountVault>;
   systemProgram?: Address<TAccountSystemProgram>;
   tokenProgram?: Address<TAccountTokenProgram>;
   associatedTokenProgram?: Address<TAccountAssociatedTokenProgram>;
+  bufferAccount: Address<TAccountBufferAccount>;
+  delegationRecordAccount: Address<TAccountDelegationRecordAccount>;
+  delegationMetadataAccount: Address<TAccountDelegationMetadataAccount>;
+  ownerProgram?: Address<TAccountOwnerProgram>;
+  delegationProgram?: Address<TAccountDelegationProgram>;
+  entryFee: CreateRoundInstructionDataArgs['entryFee'];
+  attackPackPrice: CreateRoundInstructionDataArgs['attackPackPrice'];
+  durationSecs: CreateRoundInstructionDataArgs['durationSecs'];
+  entryHourlyIncPct: CreateRoundInstructionDataArgs['entryHourlyIncPct'];
 };
 
 export function getCreateRoundInstruction<
   TAccountAdmin extends string,
   TAccountMint extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TAccountVault extends string,
   TAccountSystemProgram extends string,
   TAccountTokenProgram extends string,
   TAccountAssociatedTokenProgram extends string,
+  TAccountBufferAccount extends string,
+  TAccountDelegationRecordAccount extends string,
+  TAccountDelegationMetadataAccount extends string,
+  TAccountOwnerProgram extends string,
+  TAccountDelegationProgram extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
   input: CreateRoundInput<
     TAccountAdmin,
     TAccountMint,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountVault,
     TAccountSystemProgram,
     TAccountTokenProgram,
-    TAccountAssociatedTokenProgram
+    TAccountAssociatedTokenProgram,
+    TAccountBufferAccount,
+    TAccountDelegationRecordAccount,
+    TAccountDelegationMetadataAccount,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): CreateRoundInstruction<
   TProgramAddress,
   TAccountAdmin,
   TAccountMint,
-  TAccountGameConfig,
+  TAccountGlobalConfig,
   TAccountGameRound,
   TAccountVault,
   TAccountSystemProgram,
   TAccountTokenProgram,
-  TAccountAssociatedTokenProgram
+  TAccountAssociatedTokenProgram,
+  TAccountBufferAccount,
+  TAccountDelegationRecordAccount,
+  TAccountDelegationMetadataAccount,
+  TAccountOwnerProgram,
+  TAccountDelegationProgram
 > {
   // Program address.
   const programAddress = config?.programAddress ?? PANDA_BATTLE_PROGRAM_ADDRESS;
@@ -332,7 +512,7 @@ export function getCreateRoundInstruction<
   const originalAccounts = {
     admin: { value: input.admin ?? null, isWritable: true },
     mint: { value: input.mint ?? null, isWritable: false },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: true },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: true },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
     vault: { value: input.vault ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
@@ -341,11 +521,28 @@ export function getCreateRoundInstruction<
       value: input.associatedTokenProgram ?? null,
       isWritable: false,
     },
+    bufferAccount: { value: input.bufferAccount ?? null, isWritable: true },
+    delegationRecordAccount: {
+      value: input.delegationRecordAccount ?? null,
+      isWritable: true,
+    },
+    delegationMetadataAccount: {
+      value: input.delegationMetadataAccount ?? null,
+      isWritable: true,
+    },
+    ownerProgram: { value: input.ownerProgram ?? null, isWritable: false },
+    delegationProgram: {
+      value: input.delegationProgram ?? null,
+      isWritable: false,
+    },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
     ResolvedAccount
   >;
+
+  // Original args.
+  const args = { ...input };
 
   // Resolve default values.
   if (!accounts.systemProgram.value) {
@@ -360,31 +557,51 @@ export function getCreateRoundInstruction<
     accounts.associatedTokenProgram.value =
       'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL' as Address<'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'>;
   }
+  if (!accounts.ownerProgram.value) {
+    accounts.ownerProgram.value =
+      'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP' as Address<'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP'>;
+  }
+  if (!accounts.delegationProgram.value) {
+    accounts.delegationProgram.value =
+      'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh' as Address<'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh'>;
+  }
 
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.admin),
       getAccountMeta(accounts.mint),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.vault),
       getAccountMeta(accounts.systemProgram),
       getAccountMeta(accounts.tokenProgram),
       getAccountMeta(accounts.associatedTokenProgram),
+      getAccountMeta(accounts.bufferAccount),
+      getAccountMeta(accounts.delegationRecordAccount),
+      getAccountMeta(accounts.delegationMetadataAccount),
+      getAccountMeta(accounts.ownerProgram),
+      getAccountMeta(accounts.delegationProgram),
     ],
-    data: getCreateRoundInstructionDataEncoder().encode({}),
+    data: getCreateRoundInstructionDataEncoder().encode(
+      args as CreateRoundInstructionDataArgs
+    ),
     programAddress,
   } as CreateRoundInstruction<
     TProgramAddress,
     TAccountAdmin,
     TAccountMint,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountVault,
     TAccountSystemProgram,
     TAccountTokenProgram,
-    TAccountAssociatedTokenProgram
+    TAccountAssociatedTokenProgram,
+    TAccountBufferAccount,
+    TAccountDelegationRecordAccount,
+    TAccountDelegationMetadataAccount,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram
   >);
 }
 
@@ -397,13 +614,17 @@ export type ParsedCreateRoundInstruction<
     admin: TAccountMetas[0];
     /** Token mint for this round */
     mint: TAccountMetas[1];
-    gameConfig: TAccountMetas[2];
+    globalConfig: TAccountMetas[2];
     gameRound: TAccountMetas[3];
-    /** Vault for this round (ATA owned by game_round PDA) */
     vault: TAccountMetas[4];
     systemProgram: TAccountMetas[5];
     tokenProgram: TAccountMetas[6];
     associatedTokenProgram: TAccountMetas[7];
+    bufferAccount: TAccountMetas[8];
+    delegationRecordAccount: TAccountMetas[9];
+    delegationMetadataAccount: TAccountMetas[10];
+    ownerProgram: TAccountMetas[11];
+    delegationProgram: TAccountMetas[12];
   };
   data: CreateRoundInstructionData;
 };
@@ -416,7 +637,7 @@ export function parseCreateRoundInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedCreateRoundInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 8) {
+  if (instruction.accounts.length < 13) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -431,12 +652,17 @@ export function parseCreateRoundInstruction<
     accounts: {
       admin: getNextAccount(),
       mint: getNextAccount(),
-      gameConfig: getNextAccount(),
+      globalConfig: getNextAccount(),
       gameRound: getNextAccount(),
       vault: getNextAccount(),
       systemProgram: getNextAccount(),
       tokenProgram: getNextAccount(),
       associatedTokenProgram: getNextAccount(),
+      bufferAccount: getNextAccount(),
+      delegationRecordAccount: getNextAccount(),
+      delegationMetadataAccount: getNextAccount(),
+      ownerProgram: getNextAccount(),
+      delegationProgram: getNextAccount(),
     },
     data: getCreateRoundInstructionDataDecoder().decode(instruction.data),
   };

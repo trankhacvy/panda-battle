@@ -4,6 +4,7 @@
  */
 
 import type { Address } from "@solana/kit";
+import { GlobalConfig } from "./generated";
 
 /**
  * Attribute type enum for steal selection
@@ -22,15 +23,15 @@ export interface GameConfig {
   /** Admin authority address */
   admin: string;
   /** Entry fee in SOL */
-  entryFee: number;
+  // entryFee: number;
   /** Base price for purchasing turns in SOL */
-  turnBasePrice: number;
+  // turnBasePrice: number;
   /** Round duration in seconds */
-  roundDuration: number;
+  // roundDuration: number;
   /** Percentage of attribute stolen on win (0-25) */
-  stealPercentage: number;
+  // stealPercentage: number;
   /** Percentage of attribute decay per hour when idle (0-10) */
-  idleDecayPercentage: number;
+  // idleDecayPercentage: number;
   /** Current active round number */
   currentRound: number;
   /** Total rounds played */
@@ -115,15 +116,15 @@ export interface PlayerState {
  * Convert generated GameConfig to frontend-friendly format
  */
 export function mapGameConfig(
-  generated: import("./generated/accounts/gameConfig").GameConfig
+  generated: GlobalConfig
 ): GameConfig {
   return {
     admin: generated.admin,
-    entryFee: Number(generated.entryFee) / 1e9,
-    turnBasePrice: Number(generated.turnBasePrice) / 1e9,
-    roundDuration: Number(generated.roundDuration),
-    stealPercentage: generated.stealPercentage,
-    idleDecayPercentage: generated.idleDecayPercentage,
+    // entryFee: Number(generated.entryFee) / 1e9,
+    // turnBasePrice: Number(generated.turnBasePrice) / 1e9,
+    // roundDuration: Number(generated.roundDuration),
+    // stealPercentage: generated.stealPercentage,
+    // idleDecayPercentage: generated.idleDecayPercentage,
     currentRound: Number(generated.currentRound),
     totalRounds: Number(generated.totalRounds),
     bump: generated.bump,
@@ -138,7 +139,7 @@ export function mapGameRound(
   generated: import("./generated/accounts/gameRound").GameRound
 ): GameRound {
   return {
-    gameConfig: generated.gameConfig,
+    gameConfig: generated.globalConfig,
     roundNumber: Number(generated.roundNumber),
     startTime: Number(generated.startTime),
     endTime: Number(generated.endTime),
@@ -160,10 +161,10 @@ export function mapPlayerState(
   return {
     player: generated.player,
     round: generated.round,
-    strength: generated.strength,
-    speed: generated.speed,
-    endurance: generated.endurance,
-    luck: generated.luck,
+    strength: generated.str,
+    speed: generated.str,
+    endurance: generated.str,
+    luck: generated.str,
     turns: generated.turns,
     maxTurns: generated.maxTurns,
     lastTurnRegen: Number(generated.lastTurnRegen),
@@ -171,10 +172,10 @@ export function mapPlayerState(
     battlesFought: generated.battlesFought,
     wins: generated.wins,
     losses: generated.losses,
-    rewardsEarned: Number(generated.rewardsEarned) / 1e9,
-    rewardsClaimed: generated.rewardsClaimed,
+    rewardsEarned: Number(generated.rerollsUsed) / 1e9,
+    rewardsClaimed: generated.rerollsUsed as any,
     joinedAt: Number(generated.joinedAt),
-    lastDecay: Number(generated.lastDecay),
+    lastDecay: Number(generated.joinedAt),
     entryFeePaid: Number(generated.entryFeePaid) / 1e9,
     bump: generated.bump,
   };

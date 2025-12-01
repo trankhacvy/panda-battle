@@ -38,49 +38,55 @@ export const PANDA_BATTLE_ERROR__TOO_MANY_TURNS = 0x1779; // 6009
 export const PANDA_BATTLE_ERROR__TURN_STORAGE_FULL = 0x177a; // 6010
 /** InsufficientFunds: Insufficient funds */
 export const PANDA_BATTLE_ERROR__INSUFFICIENT_FUNDS = 0x177b; // 6011
+/** MaxRerollsReached: Maximum rerolls reached (3 max) */
+export const PANDA_BATTLE_ERROR__MAX_REROLLS_REACHED = 0x177c; // 6012
 /** CannotBattleSelf: Cannot battle yourself */
-export const PANDA_BATTLE_ERROR__CANNOT_BATTLE_SELF = 0x177c; // 6012
+export const PANDA_BATTLE_ERROR__CANNOT_BATTLE_SELF = 0x177d; // 6013
 /** TargetNotFound: Target player not found in this round */
-export const PANDA_BATTLE_ERROR__TARGET_NOT_FOUND = 0x177d; // 6013
+export const PANDA_BATTLE_ERROR__TARGET_NOT_FOUND = 0x177e; // 6014
 /** BattleOverflow: Battle calculation overflow */
-export const PANDA_BATTLE_ERROR__BATTLE_OVERFLOW = 0x177e; // 6014
-/** InvalidAttribute: Invalid attribute type */
-export const PANDA_BATTLE_ERROR__INVALID_ATTRIBUTE = 0x177f; // 6015
+export const PANDA_BATTLE_ERROR__BATTLE_OVERFLOW = 0x177f; // 6015
 /** AlreadyClaimed: Rewards already claimed */
 export const PANDA_BATTLE_ERROR__ALREADY_CLAIMED = 0x1780; // 6016
-/** NotEligibleForRewards: Not eligible for rewards (minimum battles not met) */
-export const PANDA_BATTLE_ERROR__NOT_ELIGIBLE_FOR_REWARDS = 0x1781; // 6017
 /** NoRewardsAvailable: No rewards available */
-export const PANDA_BATTLE_ERROR__NO_REWARDS_AVAILABLE = 0x1782; // 6018
+export const PANDA_BATTLE_ERROR__NO_REWARDS_AVAILABLE = 0x1781; // 6017
 /** RegenNotReady: Turn regeneration not ready yet */
-export const PANDA_BATTLE_ERROR__REGEN_NOT_READY = 0x1783; // 6019
-/** PlayerNotIdle: Player is not idle */
-export const PANDA_BATTLE_ERROR__PLAYER_NOT_IDLE = 0x1784; // 6020
-/** DecayAlreadyApplied: Decay already applied recently */
-export const PANDA_BATTLE_ERROR__DECAY_ALREADY_APPLIED = 0x1785; // 6021
+export const PANDA_BATTLE_ERROR__REGEN_NOT_READY = 0x1782; // 6018
+/** LeaderboardNotReady: Leaderboard reveal time has not been reached yet */
+export const PANDA_BATTLE_ERROR__LEADERBOARD_NOT_READY = 0x1783; // 6019
+/** LeaderboardAlreadyRevealed: Leaderboard has already been revealed */
+export const PANDA_BATTLE_ERROR__LEADERBOARD_ALREADY_REVEALED = 0x1784; // 6020
+/** LeaderboardNotRevealed: Leaderboard has not been revealed yet */
+export const PANDA_BATTLE_ERROR__LEADERBOARD_NOT_REVEALED = 0x1785; // 6021
+/** EmptyLeaderboard: Leaderboard is empty */
+export const PANDA_BATTLE_ERROR__EMPTY_LEADERBOARD = 0x1786; // 6022
+/** InvalidRound: Invalid round for player state */
+export const PANDA_BATTLE_ERROR__INVALID_ROUND = 0x1787; // 6023
 /** Overflow: Numerical overflow */
-export const PANDA_BATTLE_ERROR__OVERFLOW = 0x1786; // 6022
+export const PANDA_BATTLE_ERROR__OVERFLOW = 0x1788; // 6024
 /** Underflow: Numerical underflow */
-export const PANDA_BATTLE_ERROR__UNDERFLOW = 0x1787; // 6023
+export const PANDA_BATTLE_ERROR__UNDERFLOW = 0x1789; // 6025
 /** InvalidMint: Invalid token mint for this round */
-export const PANDA_BATTLE_ERROR__INVALID_MINT = 0x1788; // 6024
+export const PANDA_BATTLE_ERROR__INVALID_MINT = 0x178a; // 6026
 
 export type PandaBattleError =
   | typeof PANDA_BATTLE_ERROR__ALREADY_CLAIMED
   | typeof PANDA_BATTLE_ERROR__ALREADY_JOINED
   | typeof PANDA_BATTLE_ERROR__BATTLE_OVERFLOW
   | typeof PANDA_BATTLE_ERROR__CANNOT_BATTLE_SELF
-  | typeof PANDA_BATTLE_ERROR__DECAY_ALREADY_APPLIED
+  | typeof PANDA_BATTLE_ERROR__EMPTY_LEADERBOARD
   | typeof PANDA_BATTLE_ERROR__INSUFFICIENT_FUNDS
   | typeof PANDA_BATTLE_ERROR__INSUFFICIENT_TURNS
-  | typeof PANDA_BATTLE_ERROR__INVALID_ATTRIBUTE
   | typeof PANDA_BATTLE_ERROR__INVALID_CONFIG
   | typeof PANDA_BATTLE_ERROR__INVALID_MINT
+  | typeof PANDA_BATTLE_ERROR__INVALID_ROUND
+  | typeof PANDA_BATTLE_ERROR__LEADERBOARD_ALREADY_REVEALED
+  | typeof PANDA_BATTLE_ERROR__LEADERBOARD_NOT_READY
+  | typeof PANDA_BATTLE_ERROR__LEADERBOARD_NOT_REVEALED
+  | typeof PANDA_BATTLE_ERROR__MAX_REROLLS_REACHED
   | typeof PANDA_BATTLE_ERROR__NO_REWARDS_AVAILABLE
-  | typeof PANDA_BATTLE_ERROR__NOT_ELIGIBLE_FOR_REWARDS
   | typeof PANDA_BATTLE_ERROR__NOT_JOINED
   | typeof PANDA_BATTLE_ERROR__OVERFLOW
-  | typeof PANDA_BATTLE_ERROR__PLAYER_NOT_IDLE
   | typeof PANDA_BATTLE_ERROR__REGEN_NOT_READY
   | typeof PANDA_BATTLE_ERROR__ROUND_ALREADY_ENDED
   | typeof PANDA_BATTLE_ERROR__ROUND_NOT_ACTIVE
@@ -99,17 +105,19 @@ if (process.env.NODE_ENV !== 'production') {
     [PANDA_BATTLE_ERROR__ALREADY_JOINED]: `Player has already joined this round`,
     [PANDA_BATTLE_ERROR__BATTLE_OVERFLOW]: `Battle calculation overflow`,
     [PANDA_BATTLE_ERROR__CANNOT_BATTLE_SELF]: `Cannot battle yourself`,
-    [PANDA_BATTLE_ERROR__DECAY_ALREADY_APPLIED]: `Decay already applied recently`,
+    [PANDA_BATTLE_ERROR__EMPTY_LEADERBOARD]: `Leaderboard is empty`,
     [PANDA_BATTLE_ERROR__INSUFFICIENT_FUNDS]: `Insufficient funds`,
     [PANDA_BATTLE_ERROR__INSUFFICIENT_TURNS]: `Insufficient turns to perform this action`,
-    [PANDA_BATTLE_ERROR__INVALID_ATTRIBUTE]: `Invalid attribute type`,
     [PANDA_BATTLE_ERROR__INVALID_CONFIG]: `Invalid configuration parameter`,
     [PANDA_BATTLE_ERROR__INVALID_MINT]: `Invalid token mint for this round`,
+    [PANDA_BATTLE_ERROR__INVALID_ROUND]: `Invalid round for player state`,
+    [PANDA_BATTLE_ERROR__LEADERBOARD_ALREADY_REVEALED]: `Leaderboard has already been revealed`,
+    [PANDA_BATTLE_ERROR__LEADERBOARD_NOT_READY]: `Leaderboard reveal time has not been reached yet`,
+    [PANDA_BATTLE_ERROR__LEADERBOARD_NOT_REVEALED]: `Leaderboard has not been revealed yet`,
+    [PANDA_BATTLE_ERROR__MAX_REROLLS_REACHED]: `Maximum rerolls reached (3 max)`,
     [PANDA_BATTLE_ERROR__NO_REWARDS_AVAILABLE]: `No rewards available`,
-    [PANDA_BATTLE_ERROR__NOT_ELIGIBLE_FOR_REWARDS]: `Not eligible for rewards (minimum battles not met)`,
     [PANDA_BATTLE_ERROR__NOT_JOINED]: `Player has not joined this round`,
     [PANDA_BATTLE_ERROR__OVERFLOW]: `Numerical overflow`,
-    [PANDA_BATTLE_ERROR__PLAYER_NOT_IDLE]: `Player is not idle`,
     [PANDA_BATTLE_ERROR__REGEN_NOT_READY]: `Turn regeneration not ready yet`,
     [PANDA_BATTLE_ERROR__ROUND_ALREADY_ENDED]: `Round has already ended`,
     [PANDA_BATTLE_ERROR__ROUND_NOT_ACTIVE]: `Round is not active`,

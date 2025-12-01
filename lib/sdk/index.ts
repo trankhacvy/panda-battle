@@ -8,24 +8,25 @@ import {
   type SolanaRpcApi,
   type Instruction,
   type TransactionSigner,
+  address,
 } from "@solana/kit";
 import {
   getInitializeGameInstructionAsync,
   getCreateRoundInstructionAsync,
   // getJoinRoundInstructionAsync,
-  getPurchaseTurnsInstructionAsync,
+  // getPurchaseTurnsInstructionAsync,
   getInitiateBattleInstructionAsync,
-  getClaimRewardInstructionAsync,
+  // getClaimRewardInstructionAsync,
   getRegenerateTurnsInstructionAsync,
-  getApplyIdleDecayInstructionAsync,
+  // getApplyIdleDecayInstructionAsync,
   getEndRoundInstructionAsync,
   getUpdateConfigInstructionAsync,
 } from "./generated";
 import {
-  fetchGameConfig,
+  fetchGlobalConfig,
   fetchGameRound,
   fetchPlayerState,
-  type GameConfig as GeneratedGameConfig,
+  type GlobalConfig as GeneratedGameConfig,
   type GameRound as GeneratedGameRound,
   type PlayerState as GeneratedPlayerState,
 } from "./generated/accounts";
@@ -123,13 +124,14 @@ export class PandaBattleSDK {
 
     return await getInitializeGameInstructionAsync({
       admin: params.admin,
-      gameConfig: gameConfigPDA,
+      globalConfig: gameConfigPDA,
+      tokenMint: address("0x0"),
       // vault: vaultPDA,
-      entryFee: BigInt(Math.floor(params.entryFee * 1e9)),
-      turnBasePrice: BigInt(Math.floor(params.turnBasePrice * 1e9)),
-      roundDuration: BigInt(params.roundDuration),
-      stealPercentage: params.stealPercentage,
-      idleDecayPercentage: params.idleDecayPercentage,
+      // entryFee: BigInt(Math.floor(params.entryFee * 1e9)),
+      // turnBasePrice: BigInt(Math.floor(params.turnBasePrice * 1e9)),
+      // roundDuration: BigInt(params.roundDuration),
+      // stealPercentage: params.stealPercentage,
+      // idleDecayPercentage: params.idleDecayPercentage,
     });
   }
 
@@ -164,7 +166,7 @@ export class PandaBattleSDK {
 
     return await getEndRoundInstructionAsync({
       admin: params.admin,
-      gameConfig: gameConfigPDA,
+      globalConfig: gameConfigPDA,
       gameRound: gameRoundPDA,
     });
   }
@@ -346,7 +348,7 @@ export class PandaBattleSDK {
    */
   async getGameConfig(): Promise<GameConfig> {
     const [gameConfigPDA] = await getGameConfigPDA();
-    const account = await fetchGameConfig(this.rpc, gameConfigPDA);
+    const account = await fetchGlobalConfig(this.rpc, gameConfigPDA);
     return mapGameConfig(account.data);
   }
 

@@ -10,8 +10,10 @@ import {
   combineCodec,
   fixDecoderSize,
   fixEncoderSize,
+  getAddressEncoder,
   getBytesDecoder,
   getBytesEncoder,
+  getProgramDerivedAddress,
   getStructDecoder,
   getStructEncoder,
   transformEncoder,
@@ -25,13 +27,17 @@ import {
   type InstructionWithAccounts,
   type InstructionWithData,
   type ReadonlyAccount,
-  type ReadonlySignerAccount,
   type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
+  type WritableSignerAccount,
 } from '@solana/kit';
 import { PANDA_BATTLE_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import {
+  expectAddress,
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared';
 
 export const CALLBACK_JOIN_ROUND_DISCRIMINATOR = new Uint8Array([
   25, 254, 139, 110, 218, 156, 72, 160,
@@ -49,13 +55,22 @@ export type CallbackJoinRoundInstruction<
     '9irBy75QS2BN81FUgXuHcjqceJJRuc9oDkAe8TKVvvAw',
   TAccountPlayerState extends string | AccountMeta<string> = string,
   TAccountGameRound extends string | AccountMeta<string> = string,
+  TAccountBuffer extends string | AccountMeta<string> = string,
+  TAccountDelegationRecord extends string | AccountMeta<string> = string,
+  TAccountDelegationMetadata extends string | AccountMeta<string> = string,
+  TAccountOwnerProgram extends string | AccountMeta<string> =
+    'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP',
+  TAccountDelegationProgram extends string | AccountMeta<string> =
+    'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh',
+  TAccountSystemProgram extends string | AccountMeta<string> =
+    '11111111111111111111111111111111',
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
   InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<
     [
       TAccountVrfProgramIdentity extends string
-        ? ReadonlySignerAccount<TAccountVrfProgramIdentity> &
+        ? WritableSignerAccount<TAccountVrfProgramIdentity> &
             AccountSignerMeta<TAccountVrfProgramIdentity>
         : TAccountVrfProgramIdentity,
       TAccountPlayerState extends string
@@ -64,6 +79,24 @@ export type CallbackJoinRoundInstruction<
       TAccountGameRound extends string
         ? ReadonlyAccount<TAccountGameRound>
         : TAccountGameRound,
+      TAccountBuffer extends string
+        ? WritableAccount<TAccountBuffer>
+        : TAccountBuffer,
+      TAccountDelegationRecord extends string
+        ? WritableAccount<TAccountDelegationRecord>
+        : TAccountDelegationRecord,
+      TAccountDelegationMetadata extends string
+        ? WritableAccount<TAccountDelegationMetadata>
+        : TAccountDelegationMetadata,
+      TAccountOwnerProgram extends string
+        ? ReadonlyAccount<TAccountOwnerProgram>
+        : TAccountOwnerProgram,
+      TAccountDelegationProgram extends string
+        ? ReadonlyAccount<TAccountDelegationProgram>
+        : TAccountDelegationProgram,
+      TAccountSystemProgram extends string
+        ? ReadonlyAccount<TAccountSystemProgram>
+        : TAccountSystemProgram,
       ...TRemainingAccounts,
     ]
   >;
@@ -104,35 +137,67 @@ export function getCallbackJoinRoundInstructionDataCodec(): FixedSizeCodec<
   );
 }
 
-export type CallbackJoinRoundInput<
+export type CallbackJoinRoundAsyncInput<
   TAccountVrfProgramIdentity extends string = string,
   TAccountPlayerState extends string = string,
   TAccountGameRound extends string = string,
+  TAccountBuffer extends string = string,
+  TAccountDelegationRecord extends string = string,
+  TAccountDelegationMetadata extends string = string,
+  TAccountOwnerProgram extends string = string,
+  TAccountDelegationProgram extends string = string,
+  TAccountSystemProgram extends string = string,
 > = {
   /** VRF program identity ensures callback is from VRF program */
   vrfProgramIdentity?: TransactionSigner<TAccountVrfProgramIdentity>;
   playerState: Address<TAccountPlayerState>;
   gameRound: Address<TAccountGameRound>;
+  buffer?: Address<TAccountBuffer>;
+  delegationRecord?: Address<TAccountDelegationRecord>;
+  delegationMetadata?: Address<TAccountDelegationMetadata>;
+  ownerProgram?: Address<TAccountOwnerProgram>;
+  delegationProgram?: Address<TAccountDelegationProgram>;
+  systemProgram?: Address<TAccountSystemProgram>;
   randomness: CallbackJoinRoundInstructionDataArgs['randomness'];
 };
 
-export function getCallbackJoinRoundInstruction<
+export async function getCallbackJoinRoundInstructionAsync<
   TAccountVrfProgramIdentity extends string,
   TAccountPlayerState extends string,
   TAccountGameRound extends string,
+  TAccountBuffer extends string,
+  TAccountDelegationRecord extends string,
+  TAccountDelegationMetadata extends string,
+  TAccountOwnerProgram extends string,
+  TAccountDelegationProgram extends string,
+  TAccountSystemProgram extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
-  input: CallbackJoinRoundInput<
+  input: CallbackJoinRoundAsyncInput<
     TAccountVrfProgramIdentity,
     TAccountPlayerState,
-    TAccountGameRound
+    TAccountGameRound,
+    TAccountBuffer,
+    TAccountDelegationRecord,
+    TAccountDelegationMetadata,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram,
+    TAccountSystemProgram
   >,
   config?: { programAddress?: TProgramAddress }
-): CallbackJoinRoundInstruction<
-  TProgramAddress,
-  TAccountVrfProgramIdentity,
-  TAccountPlayerState,
-  TAccountGameRound
+): Promise<
+  CallbackJoinRoundInstruction<
+    TProgramAddress,
+    TAccountVrfProgramIdentity,
+    TAccountPlayerState,
+    TAccountGameRound,
+    TAccountBuffer,
+    TAccountDelegationRecord,
+    TAccountDelegationMetadata,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram,
+    TAccountSystemProgram
+  >
 > {
   // Program address.
   const programAddress = config?.programAddress ?? PANDA_BATTLE_PROGRAM_ADDRESS;
@@ -141,10 +206,25 @@ export function getCallbackJoinRoundInstruction<
   const originalAccounts = {
     vrfProgramIdentity: {
       value: input.vrfProgramIdentity ?? null,
-      isWritable: false,
+      isWritable: true,
     },
     playerState: { value: input.playerState ?? null, isWritable: true },
     gameRound: { value: input.gameRound ?? null, isWritable: false },
+    buffer: { value: input.buffer ?? null, isWritable: true },
+    delegationRecord: {
+      value: input.delegationRecord ?? null,
+      isWritable: true,
+    },
+    delegationMetadata: {
+      value: input.delegationMetadata ?? null,
+      isWritable: true,
+    },
+    ownerProgram: { value: input.ownerProgram ?? null, isWritable: false },
+    delegationProgram: {
+      value: input.delegationProgram ?? null,
+      isWritable: false,
+    },
+    systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -159,6 +239,53 @@ export function getCallbackJoinRoundInstruction<
     accounts.vrfProgramIdentity.value =
       '9irBy75QS2BN81FUgXuHcjqceJJRuc9oDkAe8TKVvvAw' as Address<'9irBy75QS2BN81FUgXuHcjqceJJRuc9oDkAe8TKVvvAw'>;
   }
+  if (!accounts.buffer.value) {
+    accounts.buffer.value = await getProgramDerivedAddress({
+      programAddress:
+        'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP' as Address<'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP'>,
+      seeds: [
+        getBytesEncoder().encode(new Uint8Array([98, 117, 102, 102, 101, 114])),
+        getAddressEncoder().encode(expectAddress(accounts.playerState.value)),
+      ],
+    });
+  }
+  if (!accounts.delegationRecord.value) {
+    accounts.delegationRecord.value = await getProgramDerivedAddress({
+      programAddress,
+      seeds: [
+        getBytesEncoder().encode(
+          new Uint8Array([100, 101, 108, 101, 103, 97, 116, 105, 111, 110])
+        ),
+        getAddressEncoder().encode(expectAddress(accounts.playerState.value)),
+      ],
+    });
+  }
+  if (!accounts.delegationMetadata.value) {
+    accounts.delegationMetadata.value = await getProgramDerivedAddress({
+      programAddress,
+      seeds: [
+        getBytesEncoder().encode(
+          new Uint8Array([
+            100, 101, 108, 101, 103, 97, 116, 105, 111, 110, 45, 109, 101, 116,
+            97, 100, 97, 116, 97,
+          ])
+        ),
+        getAddressEncoder().encode(expectAddress(accounts.playerState.value)),
+      ],
+    });
+  }
+  if (!accounts.ownerProgram.value) {
+    accounts.ownerProgram.value =
+      'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP' as Address<'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP'>;
+  }
+  if (!accounts.delegationProgram.value) {
+    accounts.delegationProgram.value =
+      'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh' as Address<'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh'>;
+  }
+  if (!accounts.systemProgram.value) {
+    accounts.systemProgram.value =
+      '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
+  }
 
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   return Object.freeze({
@@ -166,6 +293,12 @@ export function getCallbackJoinRoundInstruction<
       getAccountMeta(accounts.vrfProgramIdentity),
       getAccountMeta(accounts.playerState),
       getAccountMeta(accounts.gameRound),
+      getAccountMeta(accounts.buffer),
+      getAccountMeta(accounts.delegationRecord),
+      getAccountMeta(accounts.delegationMetadata),
+      getAccountMeta(accounts.ownerProgram),
+      getAccountMeta(accounts.delegationProgram),
+      getAccountMeta(accounts.systemProgram),
     ],
     data: getCallbackJoinRoundInstructionDataEncoder().encode(
       args as CallbackJoinRoundInstructionDataArgs
@@ -175,7 +308,157 @@ export function getCallbackJoinRoundInstruction<
     TProgramAddress,
     TAccountVrfProgramIdentity,
     TAccountPlayerState,
-    TAccountGameRound
+    TAccountGameRound,
+    TAccountBuffer,
+    TAccountDelegationRecord,
+    TAccountDelegationMetadata,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram,
+    TAccountSystemProgram
+  >);
+}
+
+export type CallbackJoinRoundInput<
+  TAccountVrfProgramIdentity extends string = string,
+  TAccountPlayerState extends string = string,
+  TAccountGameRound extends string = string,
+  TAccountBuffer extends string = string,
+  TAccountDelegationRecord extends string = string,
+  TAccountDelegationMetadata extends string = string,
+  TAccountOwnerProgram extends string = string,
+  TAccountDelegationProgram extends string = string,
+  TAccountSystemProgram extends string = string,
+> = {
+  /** VRF program identity ensures callback is from VRF program */
+  vrfProgramIdentity?: TransactionSigner<TAccountVrfProgramIdentity>;
+  playerState: Address<TAccountPlayerState>;
+  gameRound: Address<TAccountGameRound>;
+  buffer: Address<TAccountBuffer>;
+  delegationRecord: Address<TAccountDelegationRecord>;
+  delegationMetadata: Address<TAccountDelegationMetadata>;
+  ownerProgram?: Address<TAccountOwnerProgram>;
+  delegationProgram?: Address<TAccountDelegationProgram>;
+  systemProgram?: Address<TAccountSystemProgram>;
+  randomness: CallbackJoinRoundInstructionDataArgs['randomness'];
+};
+
+export function getCallbackJoinRoundInstruction<
+  TAccountVrfProgramIdentity extends string,
+  TAccountPlayerState extends string,
+  TAccountGameRound extends string,
+  TAccountBuffer extends string,
+  TAccountDelegationRecord extends string,
+  TAccountDelegationMetadata extends string,
+  TAccountOwnerProgram extends string,
+  TAccountDelegationProgram extends string,
+  TAccountSystemProgram extends string,
+  TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
+>(
+  input: CallbackJoinRoundInput<
+    TAccountVrfProgramIdentity,
+    TAccountPlayerState,
+    TAccountGameRound,
+    TAccountBuffer,
+    TAccountDelegationRecord,
+    TAccountDelegationMetadata,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram,
+    TAccountSystemProgram
+  >,
+  config?: { programAddress?: TProgramAddress }
+): CallbackJoinRoundInstruction<
+  TProgramAddress,
+  TAccountVrfProgramIdentity,
+  TAccountPlayerState,
+  TAccountGameRound,
+  TAccountBuffer,
+  TAccountDelegationRecord,
+  TAccountDelegationMetadata,
+  TAccountOwnerProgram,
+  TAccountDelegationProgram,
+  TAccountSystemProgram
+> {
+  // Program address.
+  const programAddress = config?.programAddress ?? PANDA_BATTLE_PROGRAM_ADDRESS;
+
+  // Original accounts.
+  const originalAccounts = {
+    vrfProgramIdentity: {
+      value: input.vrfProgramIdentity ?? null,
+      isWritable: true,
+    },
+    playerState: { value: input.playerState ?? null, isWritable: true },
+    gameRound: { value: input.gameRound ?? null, isWritable: false },
+    buffer: { value: input.buffer ?? null, isWritable: true },
+    delegationRecord: {
+      value: input.delegationRecord ?? null,
+      isWritable: true,
+    },
+    delegationMetadata: {
+      value: input.delegationMetadata ?? null,
+      isWritable: true,
+    },
+    ownerProgram: { value: input.ownerProgram ?? null, isWritable: false },
+    delegationProgram: {
+      value: input.delegationProgram ?? null,
+      isWritable: false,
+    },
+    systemProgram: { value: input.systemProgram ?? null, isWritable: false },
+  };
+  const accounts = originalAccounts as Record<
+    keyof typeof originalAccounts,
+    ResolvedAccount
+  >;
+
+  // Original args.
+  const args = { ...input };
+
+  // Resolve default values.
+  if (!accounts.vrfProgramIdentity.value) {
+    accounts.vrfProgramIdentity.value =
+      '9irBy75QS2BN81FUgXuHcjqceJJRuc9oDkAe8TKVvvAw' as Address<'9irBy75QS2BN81FUgXuHcjqceJJRuc9oDkAe8TKVvvAw'>;
+  }
+  if (!accounts.ownerProgram.value) {
+    accounts.ownerProgram.value =
+      'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP' as Address<'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP'>;
+  }
+  if (!accounts.delegationProgram.value) {
+    accounts.delegationProgram.value =
+      'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh' as Address<'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh'>;
+  }
+  if (!accounts.systemProgram.value) {
+    accounts.systemProgram.value =
+      '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
+  }
+
+  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  return Object.freeze({
+    accounts: [
+      getAccountMeta(accounts.vrfProgramIdentity),
+      getAccountMeta(accounts.playerState),
+      getAccountMeta(accounts.gameRound),
+      getAccountMeta(accounts.buffer),
+      getAccountMeta(accounts.delegationRecord),
+      getAccountMeta(accounts.delegationMetadata),
+      getAccountMeta(accounts.ownerProgram),
+      getAccountMeta(accounts.delegationProgram),
+      getAccountMeta(accounts.systemProgram),
+    ],
+    data: getCallbackJoinRoundInstructionDataEncoder().encode(
+      args as CallbackJoinRoundInstructionDataArgs
+    ),
+    programAddress,
+  } as CallbackJoinRoundInstruction<
+    TProgramAddress,
+    TAccountVrfProgramIdentity,
+    TAccountPlayerState,
+    TAccountGameRound,
+    TAccountBuffer,
+    TAccountDelegationRecord,
+    TAccountDelegationMetadata,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram,
+    TAccountSystemProgram
   >);
 }
 
@@ -189,6 +472,12 @@ export type ParsedCallbackJoinRoundInstruction<
     vrfProgramIdentity: TAccountMetas[0];
     playerState: TAccountMetas[1];
     gameRound: TAccountMetas[2];
+    buffer: TAccountMetas[3];
+    delegationRecord: TAccountMetas[4];
+    delegationMetadata: TAccountMetas[5];
+    ownerProgram: TAccountMetas[6];
+    delegationProgram: TAccountMetas[7];
+    systemProgram: TAccountMetas[8];
   };
   data: CallbackJoinRoundInstructionData;
 };
@@ -201,7 +490,7 @@ export function parseCallbackJoinRoundInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedCallbackJoinRoundInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 3) {
+  if (instruction.accounts.length < 9) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -217,6 +506,12 @@ export function parseCallbackJoinRoundInstruction<
       vrfProgramIdentity: getNextAccount(),
       playerState: getNextAccount(),
       gameRound: getNextAccount(),
+      buffer: getNextAccount(),
+      delegationRecord: getNextAccount(),
+      delegationMetadata: getNextAccount(),
+      ownerProgram: getNextAccount(),
+      delegationProgram: getNextAccount(),
+      systemProgram: getNextAccount(),
     },
     data: getCallbackJoinRoundInstructionDataDecoder().decode(instruction.data),
   };

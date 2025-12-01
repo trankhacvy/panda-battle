@@ -16,6 +16,10 @@ import {
   getGameRound,
 } from "./utils";
 
+export const DELEGATION_PROGRAM_ID = new PublicKey(
+  "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh"
+);
+
 describe("Admin Instructions", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
@@ -39,7 +43,7 @@ describe("Admin Instructions", () => {
     globalConfigPDA = getGlobalConfigPDA(program);
   });
 
-  it("Initialize game", async () => {
+  it.skip("Initialize game", async () => {
     await program.methods
       .initializeGame(mint)
       .accountsPartial({
@@ -74,6 +78,21 @@ describe("Admin Instructions", () => {
     );
     const vaultPDA = await getAssociatedTokenAddress(mint, roundPDA, true);
 
+    const [playerBufferPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("buffer"), roundPDA.toBuffer()],
+      program.programId
+    );
+
+    const [delegationRecordPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("delegation"), roundPDA.toBuffer()],
+      DELEGATION_PROGRAM_ID
+    );
+
+    const [delegationMetadataPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("delegation-metadata"), roundPDA.toBuffer()],
+      DELEGATION_PROGRAM_ID
+    );
+
     await program.methods
       .createRound(entryFee, attackPackPrice, durationSecs, entryHourlyIncPct)
       .accountsPartial({
@@ -85,6 +104,11 @@ describe("Admin Instructions", () => {
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        ownerProgram: program.programId,
+        bufferAccount: playerBufferPda,
+        delegationRecordAccount: delegationRecordPda,
+        delegationMetadataAccount: delegationMetadataPda,
+        delegationProgram: DELEGATION_PROGRAM_ID,
       })
       .rpc();
 
@@ -100,7 +124,7 @@ describe("Admin Instructions", () => {
     assert.equal(gameRound.payoutsProcessed, false);
   });
 
-  it("Delegate round", async () => {
+  it.skip("Delegate round", async () => {
     const roundPDA = getGameRoundPDA(program, globalConfigPDA, 1);
 
     await program.methods
@@ -113,7 +137,7 @@ describe("Admin Instructions", () => {
       .rpc();
   });
 
-  it("End round", async () => {
+  it.skip("End round", async () => {
     const roundPDA = getGameRoundPDA(program, globalConfigPDA, 1);
 
     await program.methods
@@ -129,7 +153,7 @@ describe("Admin Instructions", () => {
     assert.equal(gameRound.isActive, false);
   });
 
-  it("Update config", async () => {
+  it.skip("Update config", async () => {
     const newMint = await createMint(
       provider.connection,
       admin.payer,

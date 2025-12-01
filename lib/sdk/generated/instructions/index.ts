@@ -6,14 +6,22 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './applyIdleDecay';
+export * from './buyAttackPacks';
 export * from './callbackJoinRound';
-export * from './claimReward';
+export * from './callbackRerollAttributes';
+export * from './callbackResolveBattle';
+export * from './claimPrize';
 export * from './createRound';
+export * from './delegateRound';
+export * from './distributePrizes';
 export * from './endRound';
+export * from './hourlyJackpot';
 export * from './initializeGame';
 export * from './initiateBattle';
-export * from './purchaseTurns';
+export * from './processUndelegation';
 export * from './regenerateTurns';
 export * from './requestJoinRound';
+export * from './rerollAttributes';
+export * from './resetPacksIfNewHour';
+export * from './revealLeaderboard';
 export * from './updateConfig';
