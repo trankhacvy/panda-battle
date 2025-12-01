@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{transfer, Token, TokenAccount, Transfer};
+use ephemeral_rollups_sdk::cpi::DelegateConfig;
 use ephemeral_vrf_sdk::anchor::vrf;
 use ephemeral_vrf_sdk::instructions::{create_request_randomness_ix, RequestRandomnessParams};
 use ephemeral_vrf_sdk::types::SerializableAccountMeta;
@@ -69,6 +70,31 @@ pub fn request_join_round(ctx: Context<RequestJoinRound>, client_seed: u8) -> Re
                     is_signer: false,
                     is_writable: false,
                 },
+                SerializableAccountMeta {
+                    pubkey: ctx.accounts.buffer.key(),
+                    is_signer: false,
+                    is_writable: true,
+                },
+                SerializableAccountMeta {
+                    pubkey: ctx.accounts.delegation_record.key(),
+                    is_signer: false,
+                    is_writable: true,
+                },
+                SerializableAccountMeta {
+                    pubkey: ctx.accounts.delegation_metadata.key(),
+                    is_signer: false,
+                    is_writable: true,
+                },
+                SerializableAccountMeta {
+                    pubkey: ctx.accounts.owner_program.key(),
+                    is_signer: false,
+                    is_writable: false,
+                },
+                SerializableAccountMeta {
+                    pubkey: ctx.accounts.delegation_program.key(),
+                    is_signer: false,
+                    is_writable: false,
+                },
             ]),
             ..Default::default()
         });
@@ -88,51 +114,89 @@ pub fn request_join_round(ctx: Context<RequestJoinRound>, client_seed: u8) -> Re
 
 /// Callback to complete join round (Step 2: Consume VRF randomness)
 pub fn callback_join_round(ctx: Context<CallbackJoinRound>, randomness: [u8; 32]) -> Result<()> {
-    let player_state = &mut ctx.accounts.player_state;
-    let game_round = &ctx.accounts.game_round;
-    let clock = Clock::get()?;
+    {
+        let player_state = &mut ctx.accounts.player_state;
+        let game_round = &ctx.accounts.game_round;
+        let clock = Clock::get()?;
 
-    // Generate attributes using VRF randomness (3 * u8 % 11 + 5 = range 5-15)
-    let str_val = (randomness[0] % 11) + 5;
-    let agi_val = (randomness[1] % 11) + 5;
-    let int_val = (randomness[2] % 11) + 5;
+        // Generate attributes using VRF randomness (3 * u8 % 11 + 5 = range 5-15)
+        let str_val = (randomness[0] % 11) + 5;
+        let agi_val = (randomness[1] % 11) + 5;
+        let int_val = (randomness[2] % 11) + 5;
 
-    // Initialize player state
-    player_state.str = str_val;
-    player_state.agi = agi_val;
-    player_state.int = int_val;
-    player_state.level = 0;
-    player_state.xp = 0;
-    player_state.points = 0;
-    player_state.turns = STARTING_TURNS;
-    player_state.last_turn_regen = clock.unix_timestamp;
-    player_state.rerolls_used = 0;
-    player_state.packs_bought_hour = 0;
-    player_state.last_battle = clock.unix_timestamp;
-    player_state.battles_fought = 0;
-    player_state.wins = 0;
-    player_state.losses = 0;
-    player_state.prize_share = 0;
-    player_state.prize_claimed = false;
-    player_state.joined_at = clock.unix_timestamp;
+        // Initialize player state
+        player_state.str = str_val;
+        player_state.agi = agi_val;
+        player_state.int = int_val;
+        player_state.level = 0;
+        player_state.xp = 0;
+        player_state.points = 0;
+        player_state.turns = STARTING_TURNS;
+        player_state.last_turn_regen = clock.unix_timestamp;
+        player_state.rerolls_used = 0;
+        player_state.packs_bought_hour = 0;
+        player_state.last_battle = clock.unix_timestamp;
+        player_state.battles_fought = 0;
+        player_state.wins = 0;
+        player_state.losses = 0;
+        player_state.prize_share = 0;
+        player_state.prize_claimed = false;
+        player_state.joined_at = clock.unix_timestamp;
 
-    // Early bird bonus: +2 turns if joined within first 6 hours
-    let hours_since_start = (clock.unix_timestamp - game_round.start_time) / 3600;
-    if hours_since_start < 6 {
-        player_state.turns = player_state.turns.saturating_add(2);
-        if player_state.turns > player_state.max_turns {
-            player_state.turns = player_state.max_turns;
+        // Early bird bonus: +2 turns if joined within first 6 hours
+        let hours_since_start = (clock.unix_timestamp - game_round.start_time) / 3600;
+        if hours_since_start < 6 {
+            player_state.turns = player_state.turns.saturating_add(2);
+            if player_state.turns > player_state.max_turns {
+                player_state.turns = player_state.max_turns;
+            }
         }
+
+        msg!(
+            "Player {} joined round {} with VRF attributes: STR:{} AGI:{} INT:{}",
+            player_state.player,
+            game_round.round_number,
+            str_val,
+            agi_val,
+            int_val
+        );
     }
 
-    msg!(
-        "Player {} joined round {} with VRF attributes: STR:{} AGI:{} INT:{}",
-        player_state.player,
-        game_round.round_number,
-        str_val,
-        agi_val,
-        int_val
-    );
+    {
+        msg!("Delegating player_state to Ephemeral Rollups...");
+
+        let player_state = &ctx.accounts.player_state;
+        let game_round = &ctx.accounts.game_round;
+        let player_key = player_state.player;
+        let game_round_key = game_round.key();
+
+        let del_accounts = ephemeral_rollups_sdk::cpi::DelegateAccounts {
+            payer: &ctx.accounts.vrf_program_identity.to_account_info(),
+            pda: &player_state.to_account_info(),
+            owner_program: &ctx.accounts.owner_program.to_account_info(),
+            buffer: &ctx.accounts.buffer.to_account_info(),
+            delegation_record: &ctx.accounts.delegation_record.to_account_info(),
+            delegation_metadata: &ctx.accounts.delegation_metadata.to_account_info(),
+            delegation_program: &ctx.accounts.delegation_program.to_account_info(),
+            system_program: &ctx.accounts.system_program.to_account_info(),
+        };
+
+        let seeds = &[
+            PLAYER_STATE_SEED,
+            game_round_key.as_ref(),
+            player_key.as_ref(),
+        ];
+
+        let config = DelegateConfig {
+            commit_frequency_ms: 30_000,
+            validator: Some(pubkey!("MAS1Dt9qreoRMQ14YQuhg8UTZMMzDdKhmkZMECCzk57")),
+        };
+
+        player_state.exit(&crate::ID)?;
+        ephemeral_rollups_sdk::cpi::delegate_account(del_accounts, seeds, config)?;
+
+        msg!("Player state delegated successfully");
+    }
 
     Ok(())
 }
@@ -675,7 +739,7 @@ pub struct RequestJoinRound<'info> {
         seeds = [GLOBAL_CONFIG_SEED],
         bump = global_config.bump
     )]
-    pub global_config: Account<'info, GlobalConfig>,
+    pub global_config: Box<Account<'info, GlobalConfig>>,
 
     #[account(
         mut,
@@ -687,7 +751,7 @@ pub struct RequestJoinRound<'info> {
         bump = game_round.bump,
         constraint = game_round.is_active @ PandaBattleError::RoundNotActive
     )]
-    pub game_round: Account<'info, GameRound>,
+    pub game_round: Box<Account<'info, GameRound>>,
 
     #[account(
         init,
@@ -700,7 +764,7 @@ pub struct RequestJoinRound<'info> {
         ],
         bump
     )]
-    pub player_state: Account<'info, PlayerState>,
+    pub player_state: Box<Account<'info, PlayerState>>,
 
     /// Player's token account
     #[account(
@@ -708,7 +772,7 @@ pub struct RequestJoinRound<'info> {
         constraint = player_token_account.owner == player.key() @ PandaBattleError::Unauthorized,
         constraint = player_token_account.mint == global_config.token_mint @ PandaBattleError::InvalidMint
     )]
-    pub player_token_account: Account<'info, TokenAccount>,
+    pub player_token_account: Box<Account<'info, TokenAccount>>,
 
     /// Vault token account for this round (ATA owned by game_round)
     #[account(
@@ -716,11 +780,46 @@ pub struct RequestJoinRound<'info> {
         constraint = vault.owner == game_round.key() @ PandaBattleError::Unauthorized,
         constraint = vault.mint == global_config.token_mint @ PandaBattleError::InvalidMint
     )]
-    pub vault: Account<'info, TokenAccount>,
+    pub vault: Box<Account<'info, TokenAccount>>,
 
     /// CHECK: The oracle queue for VRF
     #[account(mut, address = ephemeral_vrf_sdk::consts::DEFAULT_QUEUE)]
     pub oracle_queue: AccountInfo<'info>,
+
+    /// CHECK: The buffer account for delegation
+    #[account(
+        mut,
+        seeds = [ephemeral_rollups_sdk::consts::BUFFER, player_state.key().as_ref()],
+        bump,
+        seeds::program = crate::id()
+    )]
+    pub buffer: UncheckedAccount<'info>,
+
+    /// CHECK: The delegation record account
+    #[account(
+        mut,
+        seeds = [ephemeral_rollups_sdk::consts::DELEGATION_RECORD, player_state.key().as_ref()],
+        bump,
+        seeds::program = delegation_program.key()
+    )]
+    pub delegation_record: UncheckedAccount<'info>,
+
+    /// CHECK: The delegation metadata account
+    #[account(
+        mut,
+        seeds = [ephemeral_rollups_sdk::consts::DELEGATION_METADATA, player_state.key().as_ref()],
+        bump,
+        seeds::program = delegation_program.key()
+    )]
+    pub delegation_metadata: UncheckedAccount<'info>,
+
+    /// CHECK: The owner program of the pda
+    #[account(address = crate::id())]
+    pub owner_program: UncheckedAccount<'info>,
+
+    /// CHECK: The delegation program
+    #[account(address = ::ephemeral_rollups_sdk::id())]
+    pub delegation_program: UncheckedAccount<'info>,
 
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
@@ -729,13 +828,50 @@ pub struct RequestJoinRound<'info> {
 #[derive(Accounts)]
 pub struct CallbackJoinRound<'info> {
     /// VRF program identity ensures callback is from VRF program
-    #[account(address = ephemeral_vrf_sdk::consts::VRF_PROGRAM_IDENTITY)]
+    #[account(mut, address = ephemeral_vrf_sdk::consts::VRF_PROGRAM_IDENTITY)]
     pub vrf_program_identity: Signer<'info>,
 
     #[account(mut)]
     pub player_state: Account<'info, PlayerState>,
 
     pub game_round: Account<'info, GameRound>,
+
+    /// CHECK: The buffer account
+    #[account(
+        mut,
+        seeds = [ephemeral_rollups_sdk::consts::BUFFER, player_state.key().as_ref()],
+        bump,
+        seeds::program = crate::id()
+    )]
+    pub buffer: UncheckedAccount<'info>,
+
+    /// CHECK: The delegation record account
+    #[account(
+        mut,
+        seeds = [ephemeral_rollups_sdk::consts::DELEGATION_RECORD, player_state.key().as_ref()],
+        bump,
+        seeds::program = delegation_program.key()
+    )]
+    pub delegation_record: UncheckedAccount<'info>,
+
+    /// CHECK: The delegation metadata account
+    #[account(
+        mut,
+        seeds = [ephemeral_rollups_sdk::consts::DELEGATION_METADATA, player_state.key().as_ref()],
+        bump,
+        seeds::program = delegation_program.key()
+    )]
+    pub delegation_metadata: UncheckedAccount<'info>,
+
+    /// CHECK: The owner program of the pda
+    #[account(address = crate::id())]
+    pub owner_program: UncheckedAccount<'info>,
+
+    /// CHECK: The delegation program
+    #[account(address = ::ephemeral_rollups_sdk::id())]
+    pub delegation_program: UncheckedAccount<'info>,
+
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]

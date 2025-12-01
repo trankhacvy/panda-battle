@@ -1,7 +1,6 @@
 "use client";
 
 import { useEmbeddedAddress } from "@/hooks/use-embedded-address";
-import { usePrivy } from "@privy-io/react-auth";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React from "react";
@@ -89,24 +88,12 @@ export default function Header() {
   };
 
   return (
-    <div 
-      className="flex items-center justify-between p-4 h-20 bg-cover bg-center relative"
-      // style={{
-      //   backgroundImage: "url(/images/bg-nav.png)",
-      // }}
-    >
-      {/* Dark overlay for better contrast */}
-      <div className="absolute inset-0 bg-linear-to-b from-black/40 to-black/10"></div>
-      
-      {/* Content wrapper */}
+    <div className="flex items-center justify-between p-4 h-20 bg-cover bg-center relative">
       <div className="relative z-10 flex items-center justify-between w-full">
-        {/* Left */}
         {renderLeft()}
 
-        {/* Middle */}
         {renderMiddle()}
 
-        {/* Right */}
         {renderRight()}
       </div>
     </div>

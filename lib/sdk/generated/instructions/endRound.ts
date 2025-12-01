@@ -45,7 +45,7 @@ export function getEndRoundDiscriminatorBytes() {
 export type EndRoundInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountAdmin extends string | AccountMeta<string> = string,
-  TAccountGameConfig extends string | AccountMeta<string> = string,
+  TAccountGlobalConfig extends string | AccountMeta<string> = string,
   TAccountGameRound extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
@@ -56,9 +56,9 @@ export type EndRoundInstruction<
         ? WritableSignerAccount<TAccountAdmin> &
             AccountSignerMeta<TAccountAdmin>
         : TAccountAdmin,
-      TAccountGameConfig extends string
-        ? ReadonlyAccount<TAccountGameConfig>
-        : TAccountGameConfig,
+      TAccountGlobalConfig extends string
+        ? ReadonlyAccount<TAccountGlobalConfig>
+        : TAccountGlobalConfig,
       TAccountGameRound extends string
         ? WritableAccount<TAccountGameRound>
         : TAccountGameRound,
@@ -95,23 +95,23 @@ export function getEndRoundInstructionDataCodec(): FixedSizeCodec<
 
 export type EndRoundAsyncInput<
   TAccountAdmin extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
 > = {
   admin: TransactionSigner<TAccountAdmin>;
-  gameConfig?: Address<TAccountGameConfig>;
+  globalConfig?: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
 };
 
 export async function getEndRoundInstructionAsync<
   TAccountAdmin extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
   input: EndRoundAsyncInput<
     TAccountAdmin,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound
   >,
   config?: { programAddress?: TProgramAddress }
@@ -119,7 +119,7 @@ export async function getEndRoundInstructionAsync<
   EndRoundInstruction<
     TProgramAddress,
     TAccountAdmin,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound
   >
 > {
@@ -129,7 +129,7 @@ export async function getEndRoundInstructionAsync<
   // Original accounts.
   const originalAccounts = {
     admin: { value: input.admin ?? null, isWritable: true },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: false },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
   };
   const accounts = originalAccounts as Record<
@@ -138,12 +138,14 @@ export async function getEndRoundInstructionAsync<
   >;
 
   // Resolve default values.
-  if (!accounts.gameConfig.value) {
-    accounts.gameConfig.value = await getProgramDerivedAddress({
+  if (!accounts.globalConfig.value) {
+    accounts.globalConfig.value = await getProgramDerivedAddress({
       programAddress,
       seeds: [
         getBytesEncoder().encode(
-          new Uint8Array([103, 97, 109, 101, 95, 99, 111, 110, 102, 105, 103])
+          new Uint8Array([
+            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
+          ])
         ),
       ],
     });
@@ -153,7 +155,7 @@ export async function getEndRoundInstructionAsync<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.admin),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
     ],
     data: getEndRoundInstructionDataEncoder().encode({}),
@@ -161,33 +163,33 @@ export async function getEndRoundInstructionAsync<
   } as EndRoundInstruction<
     TProgramAddress,
     TAccountAdmin,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound
   >);
 }
 
 export type EndRoundInput<
   TAccountAdmin extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
 > = {
   admin: TransactionSigner<TAccountAdmin>;
-  gameConfig: Address<TAccountGameConfig>;
+  globalConfig: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
 };
 
 export function getEndRoundInstruction<
   TAccountAdmin extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
-  input: EndRoundInput<TAccountAdmin, TAccountGameConfig, TAccountGameRound>,
+  input: EndRoundInput<TAccountAdmin, TAccountGlobalConfig, TAccountGameRound>,
   config?: { programAddress?: TProgramAddress }
 ): EndRoundInstruction<
   TProgramAddress,
   TAccountAdmin,
-  TAccountGameConfig,
+  TAccountGlobalConfig,
   TAccountGameRound
 > {
   // Program address.
@@ -196,7 +198,7 @@ export function getEndRoundInstruction<
   // Original accounts.
   const originalAccounts = {
     admin: { value: input.admin ?? null, isWritable: true },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: false },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
   };
   const accounts = originalAccounts as Record<
@@ -208,7 +210,7 @@ export function getEndRoundInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.admin),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
     ],
     data: getEndRoundInstructionDataEncoder().encode({}),
@@ -216,7 +218,7 @@ export function getEndRoundInstruction<
   } as EndRoundInstruction<
     TProgramAddress,
     TAccountAdmin,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound
   >);
 }
@@ -228,7 +230,7 @@ export type ParsedEndRoundInstruction<
   programAddress: Address<TProgram>;
   accounts: {
     admin: TAccountMetas[0];
-    gameConfig: TAccountMetas[1];
+    globalConfig: TAccountMetas[1];
     gameRound: TAccountMetas[2];
   };
   data: EndRoundInstructionData;
@@ -256,7 +258,7 @@ export function parseEndRoundInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       admin: getNextAccount(),
-      gameConfig: getNextAccount(),
+      globalConfig: getNextAccount(),
       gameRound: getNextAccount(),
     },
     data: getEndRoundInstructionDataDecoder().decode(instruction.data),

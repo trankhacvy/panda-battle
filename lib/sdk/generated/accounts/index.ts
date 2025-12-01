@@ -6,6 +6,7 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './gameConfig';
 export * from './gameRound';
+export * from './globalConfig';
+export * from './leaderboard';
 export * from './playerState';

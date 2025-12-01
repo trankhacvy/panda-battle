@@ -27,6 +27,8 @@ import {
   getStructEncoder,
   getU16Decoder,
   getU16Encoder,
+  getU32Decoder,
+  getU32Encoder,
   getU64Decoder,
   getU64Encoder,
   getU8Decoder,
@@ -62,19 +64,29 @@ export type PlayerState = {
   /** Reference to the game round */
   round: Address;
   /** Strength attribute (damage output) */
-  strength: number;
-  /** Speed attribute (turn order, dodge chance) */
-  speed: number;
-  /** Endurance attribute (HP, damage absorption) */
-  endurance: number;
-  /** Luck attribute (crit chance, steal success) */
-  luck: number;
+  str: number;
+  /** Agility attribute (turn order, dodge chance, crit chance) */
+  agi: number;
+  /** Intelligence attribute (damage mitigation) */
+  int: number;
+  /** Current level (0-10, starts at 0) */
+  level: number;
+  /** Current experience points */
+  xp: number;
+  /** Leaderboard points (wins = +1 point) */
+  points: number;
   /** Current available turns */
   turns: number;
-  /** Maximum turn storage */
+  /** Maximum turn storage (default 50) */
   maxTurns: number;
   /** Last turn regeneration timestamp */
   lastTurnRegen: bigint;
+  /** Number of rerolls used (max 3) */
+  rerollsUsed: number;
+  /** Number of attack packs bought in current hour */
+  packsBoughtHour: number;
+  /** Last hour when pack was bought (unix timestamp) */
+  lastPackHour: bigint;
   /** Last battle/action timestamp */
   lastBattle: bigint;
   /** Total battles fought */
@@ -83,15 +95,13 @@ export type PlayerState = {
   wins: number;
   /** Battles lost */
   losses: number;
-  /** Rewards earned this round */
-  rewardsEarned: bigint;
-  /** Whether rewards have been claimed */
-  rewardsClaimed: boolean;
+  /** Prize share for this round (calculated at end) */
+  prizeShare: bigint;
+  /** Whether prize has been claimed */
+  prizeClaimed: boolean;
   /** When player joined the round */
   joinedAt: bigint;
-  /** Last idle decay application */
-  lastDecay: bigint;
-  /** Entry fee paid (for late join tracking) */
+  /** Entry fee paid (for tracking) */
   entryFeePaid: bigint;
   /** Bump seed for PDA */
   bump: number;
@@ -103,19 +113,29 @@ export type PlayerStateArgs = {
   /** Reference to the game round */
   round: Address;
   /** Strength attribute (damage output) */
-  strength: number;
-  /** Speed attribute (turn order, dodge chance) */
-  speed: number;
-  /** Endurance attribute (HP, damage absorption) */
-  endurance: number;
-  /** Luck attribute (crit chance, steal success) */
-  luck: number;
+  str: number;
+  /** Agility attribute (turn order, dodge chance, crit chance) */
+  agi: number;
+  /** Intelligence attribute (damage mitigation) */
+  int: number;
+  /** Current level (0-10, starts at 0) */
+  level: number;
+  /** Current experience points */
+  xp: number;
+  /** Leaderboard points (wins = +1 point) */
+  points: number;
   /** Current available turns */
   turns: number;
-  /** Maximum turn storage */
+  /** Maximum turn storage (default 50) */
   maxTurns: number;
   /** Last turn regeneration timestamp */
   lastTurnRegen: number | bigint;
+  /** Number of rerolls used (max 3) */
+  rerollsUsed: number;
+  /** Number of attack packs bought in current hour */
+  packsBoughtHour: number;
+  /** Last hour when pack was bought (unix timestamp) */
+  lastPackHour: number | bigint;
   /** Last battle/action timestamp */
   lastBattle: number | bigint;
   /** Total battles fought */
@@ -124,15 +144,13 @@ export type PlayerStateArgs = {
   wins: number;
   /** Battles lost */
   losses: number;
-  /** Rewards earned this round */
-  rewardsEarned: number | bigint;
-  /** Whether rewards have been claimed */
-  rewardsClaimed: boolean;
+  /** Prize share for this round (calculated at end) */
+  prizeShare: number | bigint;
+  /** Whether prize has been claimed */
+  prizeClaimed: boolean;
   /** When player joined the round */
   joinedAt: number | bigint;
-  /** Last idle decay application */
-  lastDecay: number | bigint;
-  /** Entry fee paid (for late join tracking) */
+  /** Entry fee paid (for tracking) */
   entryFeePaid: number | bigint;
   /** Bump seed for PDA */
   bump: number;
@@ -145,21 +163,25 @@ export function getPlayerStateEncoder(): FixedSizeEncoder<PlayerStateArgs> {
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
       ['player', getAddressEncoder()],
       ['round', getAddressEncoder()],
-      ['strength', getU16Encoder()],
-      ['speed', getU16Encoder()],
-      ['endurance', getU16Encoder()],
-      ['luck', getU16Encoder()],
+      ['str', getU8Encoder()],
+      ['agi', getU8Encoder()],
+      ['int', getU8Encoder()],
+      ['level', getU8Encoder()],
+      ['xp', getU32Encoder()],
+      ['points', getU16Encoder()],
       ['turns', getU8Encoder()],
       ['maxTurns', getU8Encoder()],
       ['lastTurnRegen', getI64Encoder()],
+      ['rerollsUsed', getU8Encoder()],
+      ['packsBoughtHour', getU8Encoder()],
+      ['lastPackHour', getI64Encoder()],
       ['lastBattle', getI64Encoder()],
       ['battlesFought', getU16Encoder()],
       ['wins', getU16Encoder()],
       ['losses', getU16Encoder()],
-      ['rewardsEarned', getU64Encoder()],
-      ['rewardsClaimed', getBooleanEncoder()],
+      ['prizeShare', getU64Encoder()],
+      ['prizeClaimed', getBooleanEncoder()],
       ['joinedAt', getI64Encoder()],
-      ['lastDecay', getI64Encoder()],
       ['entryFeePaid', getU64Encoder()],
       ['bump', getU8Encoder()],
     ]),
@@ -173,21 +195,25 @@ export function getPlayerStateDecoder(): FixedSizeDecoder<PlayerState> {
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
     ['player', getAddressDecoder()],
     ['round', getAddressDecoder()],
-    ['strength', getU16Decoder()],
-    ['speed', getU16Decoder()],
-    ['endurance', getU16Decoder()],
-    ['luck', getU16Decoder()],
+    ['str', getU8Decoder()],
+    ['agi', getU8Decoder()],
+    ['int', getU8Decoder()],
+    ['level', getU8Decoder()],
+    ['xp', getU32Decoder()],
+    ['points', getU16Decoder()],
     ['turns', getU8Decoder()],
     ['maxTurns', getU8Decoder()],
     ['lastTurnRegen', getI64Decoder()],
+    ['rerollsUsed', getU8Decoder()],
+    ['packsBoughtHour', getU8Decoder()],
+    ['lastPackHour', getI64Decoder()],
     ['lastBattle', getI64Decoder()],
     ['battlesFought', getU16Decoder()],
     ['wins', getU16Decoder()],
     ['losses', getU16Decoder()],
-    ['rewardsEarned', getU64Decoder()],
-    ['rewardsClaimed', getBooleanDecoder()],
+    ['prizeShare', getU64Decoder()],
+    ['prizeClaimed', getBooleanDecoder()],
     ['joinedAt', getI64Decoder()],
-    ['lastDecay', getI64Decoder()],
     ['entryFeePaid', getU64Decoder()],
     ['bump', getU8Decoder()],
   ]);
@@ -255,5 +281,5 @@ export async function fetchAllMaybePlayerState(
 }
 
 export function getPlayerStateSize(): number {
-  return 138;
+  return 142;
 }

@@ -55,16 +55,24 @@ export function getGameRoundDiscriminatorBytes() {
 
 export type GameRound = {
   discriminator: ReadonlyUint8Array;
-  /** Reference to game config */
-  gameConfig: Address;
-  /** Token mint for this round */
-  mint: Address;
+  /** Reference to global config */
+  globalConfig: Address;
   /** Round number */
   roundNumber: bigint;
+  /** Entry fee in tokens (e.g., $1.99 worth) */
+  entryFee: bigint;
+  /** Attack pack base price in tokens (e.g., $0.10 worth) */
+  attackPackPrice: bigint;
+  /** Round duration in seconds (e.g., 24 hours = 86400) */
+  durationSecs: bigint;
+  /** Entry fee hourly increase percentage (default: 1%) */
+  entryHourlyIncPct: number;
   /** Round start timestamp */
   startTime: bigint;
   /** Round end timestamp */
   endTime: bigint;
+  /** Leaderboard reveal timestamp (12 hours after start) */
+  leaderboardRevealTs: bigint;
   /** Total prize pool in tokens */
   prizePool: bigint;
   /** Number of players in this round */
@@ -80,16 +88,24 @@ export type GameRound = {
 };
 
 export type GameRoundArgs = {
-  /** Reference to game config */
-  gameConfig: Address;
-  /** Token mint for this round */
-  mint: Address;
+  /** Reference to global config */
+  globalConfig: Address;
   /** Round number */
   roundNumber: number | bigint;
+  /** Entry fee in tokens (e.g., $1.99 worth) */
+  entryFee: number | bigint;
+  /** Attack pack base price in tokens (e.g., $0.10 worth) */
+  attackPackPrice: number | bigint;
+  /** Round duration in seconds (e.g., 24 hours = 86400) */
+  durationSecs: number | bigint;
+  /** Entry fee hourly increase percentage (default: 1%) */
+  entryHourlyIncPct: number;
   /** Round start timestamp */
   startTime: number | bigint;
   /** Round end timestamp */
   endTime: number | bigint;
+  /** Leaderboard reveal timestamp (12 hours after start) */
+  leaderboardRevealTs: number | bigint;
   /** Total prize pool in tokens */
   prizePool: number | bigint;
   /** Number of players in this round */
@@ -109,11 +125,15 @@ export function getGameRoundEncoder(): FixedSizeEncoder<GameRoundArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['gameConfig', getAddressEncoder()],
-      ['mint', getAddressEncoder()],
+      ['globalConfig', getAddressEncoder()],
       ['roundNumber', getU64Encoder()],
+      ['entryFee', getU64Encoder()],
+      ['attackPackPrice', getU64Encoder()],
+      ['durationSecs', getI64Encoder()],
+      ['entryHourlyIncPct', getU8Encoder()],
       ['startTime', getI64Encoder()],
       ['endTime', getI64Encoder()],
+      ['leaderboardRevealTs', getI64Encoder()],
       ['prizePool', getU64Encoder()],
       ['playerCount', getU32Encoder()],
       ['totalBattles', getU32Encoder()],
@@ -129,11 +149,15 @@ export function getGameRoundEncoder(): FixedSizeEncoder<GameRoundArgs> {
 export function getGameRoundDecoder(): FixedSizeDecoder<GameRound> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['gameConfig', getAddressDecoder()],
-    ['mint', getAddressDecoder()],
+    ['globalConfig', getAddressDecoder()],
     ['roundNumber', getU64Decoder()],
+    ['entryFee', getU64Decoder()],
+    ['attackPackPrice', getU64Decoder()],
+    ['durationSecs', getI64Decoder()],
+    ['entryHourlyIncPct', getU8Decoder()],
     ['startTime', getI64Decoder()],
     ['endTime', getI64Decoder()],
+    ['leaderboardRevealTs', getI64Decoder()],
     ['prizePool', getU64Decoder()],
     ['playerCount', getU32Decoder()],
     ['totalBattles', getU32Decoder()],
@@ -202,5 +226,5 @@ export async function fetchAllMaybeGameRound(
 }
 
 export function getGameRoundSize(): number {
-  return 115;
+  return 116;
 }

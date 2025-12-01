@@ -10,19 +10,15 @@ import {
   combineCodec,
   fixDecoderSize,
   fixEncoderSize,
+  getAddressDecoder,
+  getAddressEncoder,
   getBytesDecoder,
   getBytesEncoder,
-  getI64Decoder,
-  getI64Encoder,
   getOptionDecoder,
   getOptionEncoder,
   getProgramDerivedAddress,
   getStructDecoder,
   getStructEncoder,
-  getU64Decoder,
-  getU64Encoder,
-  getU8Decoder,
-  getU8Encoder,
   transformEncoder,
   type AccountMeta,
   type AccountSignerMeta,
@@ -56,7 +52,7 @@ export function getUpdateConfigDiscriminatorBytes() {
 export type UpdateConfigInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountAdmin extends string | AccountMeta<string> = string,
-  TAccountGameConfig extends string | AccountMeta<string> = string,
+  TAccountGlobalConfig extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
   InstructionWithData<ReadonlyUint8Array> &
@@ -66,39 +62,27 @@ export type UpdateConfigInstruction<
         ? ReadonlySignerAccount<TAccountAdmin> &
             AccountSignerMeta<TAccountAdmin>
         : TAccountAdmin,
-      TAccountGameConfig extends string
-        ? WritableAccount<TAccountGameConfig>
-        : TAccountGameConfig,
+      TAccountGlobalConfig extends string
+        ? WritableAccount<TAccountGlobalConfig>
+        : TAccountGlobalConfig,
       ...TRemainingAccounts,
     ]
   >;
 
 export type UpdateConfigInstructionData = {
   discriminator: ReadonlyUint8Array;
-  entryFee: Option<bigint>;
-  turnBasePrice: Option<bigint>;
-  roundDuration: Option<bigint>;
-  stealPercentage: Option<number>;
-  idleDecayPercentage: Option<number>;
+  tokenMint: Option<Address>;
 };
 
 export type UpdateConfigInstructionDataArgs = {
-  entryFee: OptionOrNullable<number | bigint>;
-  turnBasePrice: OptionOrNullable<number | bigint>;
-  roundDuration: OptionOrNullable<number | bigint>;
-  stealPercentage: OptionOrNullable<number>;
-  idleDecayPercentage: OptionOrNullable<number>;
+  tokenMint: OptionOrNullable<Address>;
 };
 
 export function getUpdateConfigInstructionDataEncoder(): Encoder<UpdateConfigInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['entryFee', getOptionEncoder(getU64Encoder())],
-      ['turnBasePrice', getOptionEncoder(getU64Encoder())],
-      ['roundDuration', getOptionEncoder(getI64Encoder())],
-      ['stealPercentage', getOptionEncoder(getU8Encoder())],
-      ['idleDecayPercentage', getOptionEncoder(getU8Encoder())],
+      ['tokenMint', getOptionEncoder(getAddressEncoder())],
     ]),
     (value) => ({ ...value, discriminator: UPDATE_CONFIG_DISCRIMINATOR })
   );
@@ -107,11 +91,7 @@ export function getUpdateConfigInstructionDataEncoder(): Encoder<UpdateConfigIns
 export function getUpdateConfigInstructionDataDecoder(): Decoder<UpdateConfigInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['entryFee', getOptionDecoder(getU64Decoder())],
-    ['turnBasePrice', getOptionDecoder(getU64Decoder())],
-    ['roundDuration', getOptionDecoder(getI64Decoder())],
-    ['stealPercentage', getOptionDecoder(getU8Decoder())],
-    ['idleDecayPercentage', getOptionDecoder(getU8Decoder())],
+    ['tokenMint', getOptionDecoder(getAddressDecoder())],
   ]);
 }
 
@@ -127,26 +107,22 @@ export function getUpdateConfigInstructionDataCodec(): Codec<
 
 export type UpdateConfigAsyncInput<
   TAccountAdmin extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
 > = {
   admin: TransactionSigner<TAccountAdmin>;
-  gameConfig?: Address<TAccountGameConfig>;
-  entryFee: UpdateConfigInstructionDataArgs['entryFee'];
-  turnBasePrice: UpdateConfigInstructionDataArgs['turnBasePrice'];
-  roundDuration: UpdateConfigInstructionDataArgs['roundDuration'];
-  stealPercentage: UpdateConfigInstructionDataArgs['stealPercentage'];
-  idleDecayPercentage: UpdateConfigInstructionDataArgs['idleDecayPercentage'];
+  globalConfig?: Address<TAccountGlobalConfig>;
+  tokenMint: UpdateConfigInstructionDataArgs['tokenMint'];
 };
 
 export async function getUpdateConfigInstructionAsync<
   TAccountAdmin extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
-  input: UpdateConfigAsyncInput<TAccountAdmin, TAccountGameConfig>,
+  input: UpdateConfigAsyncInput<TAccountAdmin, TAccountGlobalConfig>,
   config?: { programAddress?: TProgramAddress }
 ): Promise<
-  UpdateConfigInstruction<TProgramAddress, TAccountAdmin, TAccountGameConfig>
+  UpdateConfigInstruction<TProgramAddress, TAccountAdmin, TAccountGlobalConfig>
 > {
   // Program address.
   const programAddress = config?.programAddress ?? PANDA_BATTLE_PROGRAM_ADDRESS;
@@ -154,7 +130,7 @@ export async function getUpdateConfigInstructionAsync<
   // Original accounts.
   const originalAccounts = {
     admin: { value: input.admin ?? null, isWritable: false },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: true },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: true },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -165,12 +141,14 @@ export async function getUpdateConfigInstructionAsync<
   const args = { ...input };
 
   // Resolve default values.
-  if (!accounts.gameConfig.value) {
-    accounts.gameConfig.value = await getProgramDerivedAddress({
+  if (!accounts.globalConfig.value) {
+    accounts.globalConfig.value = await getProgramDerivedAddress({
       programAddress,
       seeds: [
         getBytesEncoder().encode(
-          new Uint8Array([103, 97, 109, 101, 95, 99, 111, 110, 102, 105, 103])
+          new Uint8Array([
+            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
+          ])
         ),
       ],
     });
@@ -180,7 +158,7 @@ export async function getUpdateConfigInstructionAsync<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.admin),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
     ],
     data: getUpdateConfigInstructionDataEncoder().encode(
       args as UpdateConfigInstructionDataArgs
@@ -189,38 +167,38 @@ export async function getUpdateConfigInstructionAsync<
   } as UpdateConfigInstruction<
     TProgramAddress,
     TAccountAdmin,
-    TAccountGameConfig
+    TAccountGlobalConfig
   >);
 }
 
 export type UpdateConfigInput<
   TAccountAdmin extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
 > = {
   admin: TransactionSigner<TAccountAdmin>;
-  gameConfig: Address<TAccountGameConfig>;
-  entryFee: UpdateConfigInstructionDataArgs['entryFee'];
-  turnBasePrice: UpdateConfigInstructionDataArgs['turnBasePrice'];
-  roundDuration: UpdateConfigInstructionDataArgs['roundDuration'];
-  stealPercentage: UpdateConfigInstructionDataArgs['stealPercentage'];
-  idleDecayPercentage: UpdateConfigInstructionDataArgs['idleDecayPercentage'];
+  globalConfig: Address<TAccountGlobalConfig>;
+  tokenMint: UpdateConfigInstructionDataArgs['tokenMint'];
 };
 
 export function getUpdateConfigInstruction<
   TAccountAdmin extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
-  input: UpdateConfigInput<TAccountAdmin, TAccountGameConfig>,
+  input: UpdateConfigInput<TAccountAdmin, TAccountGlobalConfig>,
   config?: { programAddress?: TProgramAddress }
-): UpdateConfigInstruction<TProgramAddress, TAccountAdmin, TAccountGameConfig> {
+): UpdateConfigInstruction<
+  TProgramAddress,
+  TAccountAdmin,
+  TAccountGlobalConfig
+> {
   // Program address.
   const programAddress = config?.programAddress ?? PANDA_BATTLE_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
     admin: { value: input.admin ?? null, isWritable: false },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: true },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: true },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -234,7 +212,7 @@ export function getUpdateConfigInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.admin),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
     ],
     data: getUpdateConfigInstructionDataEncoder().encode(
       args as UpdateConfigInstructionDataArgs
@@ -243,7 +221,7 @@ export function getUpdateConfigInstruction<
   } as UpdateConfigInstruction<
     TProgramAddress,
     TAccountAdmin,
-    TAccountGameConfig
+    TAccountGlobalConfig
   >);
 }
 
@@ -254,7 +232,7 @@ export type ParsedUpdateConfigInstruction<
   programAddress: Address<TProgram>;
   accounts: {
     admin: TAccountMetas[0];
-    gameConfig: TAccountMetas[1];
+    globalConfig: TAccountMetas[1];
   };
   data: UpdateConfigInstructionData;
 };
@@ -279,7 +257,7 @@ export function parseUpdateConfigInstruction<
   };
   return {
     programAddress: instruction.programAddress,
-    accounts: { admin: getNextAccount(), gameConfig: getNextAccount() },
+    accounts: { admin: getNextAccount(), globalConfig: getNextAccount() },
     data: getUpdateConfigInstructionDataDecoder().decode(instruction.data),
   };
 }

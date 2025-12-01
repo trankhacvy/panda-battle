@@ -63,9 +63,9 @@ export function PandaFighterCreator() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-4 py-8 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center gap-4 px-4 py-8 relative overflow-hidden">
       {/* Stars background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 z-[-1] overflow-hidden pointer-events-none">
         {[...Array(50)].map((_, i) => (
           <div
             key={i}
@@ -80,7 +80,7 @@ export function PandaFighterCreator() {
       </div>
 
       {/* Title Section */}
-      <div className="text-center mb-6 relative z-10">
+      <div className="text-center mb-6 relative">
         <h1
           className="text-4xl font-extrabold tracking-wide"
           style={{
@@ -104,52 +104,56 @@ export function PandaFighterCreator() {
       </div>
 
       {/* Panda Image */}
-      <div className="w-full max-w-md aspect-square rounded-2xl overflow-hidden relative z-10 mb-6 border-4 border-[#3a7a5a]/50">
+      <div className="flex flex-1 w-full flex-col items-center justify-center">
         {!isCreated ? (
-          <img
-            src="/images/who-that-panda.png"
-            alt="Mystery Panda Fighter"
-            className="w-full h-full object-cover"
-          />
+          <div className="w-full max-w-md mx-auto aspect-square rounded-2xl overflow-hidden relative z-10 mb-6 border-4 border-[#3a7a5a]/50">
+            <img
+              src="/images/who-that-panda.png"
+              alt="Mystery Panda Fighter"
+              className="w-full h-full object-cover"
+            />
+          </div>
         ) : (
-          <div className="w-full h-full relative">
-            <img
-              src="/images/reated-panda-bg.png"
-              alt="Panda Background"
-              className="w-full h-full object-cover absolute inset-0"
-            />
-            <img
-              src="/images/sample-panda.png"
-              alt="Your Panda Fighter"
-              className="w-full h-full object-contain absolute inset-0 z-10"
-            />
+          <div className="w-full">
+            <div className="max-w-md mx-auto mb-6 aspect-square rounded-2xl overflow-hidden relative border-4 border-[#3a7a5a]/50">
+              <img
+                src="/images/fighter-frame.png"
+                alt="Panda Background"
+                className="w-full h-full object-cover"
+              />
+              <img
+                src="/images/sample-panda.png"
+                alt="Your Panda Fighter"
+                className="w-full h-full object-contain absolute inset-0 z-10"
+              />
+            </div>
+
+            {/* Attributes Display - Only show when panda is created (3 attributes only) */}
+            {isCreated && attributes && (
+              <div className="w-full grid grid-cols-3 max-w-md mx-auto gap-2 relative z-10">
+                <AttributeCard
+                  label="STR"
+                  value={attributes.str}
+                  icon="/images/attributes/str-att.png"
+                  color="orange"
+                />
+                <AttributeCard
+                  label="AGI"
+                  value={attributes.agi}
+                  icon="/images/attributes/agt-att.png"
+                  color="green"
+                />
+                <AttributeCard
+                  label="INT"
+                  value={attributes.int}
+                  icon="/images/attributes/int-att.png"
+                  color="blue"
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
-
-      {/* Attributes Display - Only show when panda is created (3 attributes only) */}
-      {isCreated && attributes && (
-        <div className="w-full max-w-md grid grid-cols-3 gap-3 mb-6 relative z-10">
-          <AttributeCard
-            label="STR"
-            value={attributes.str}
-            icon="/images/attributes/str-att.png"
-            color="orange"
-          />
-          <AttributeCard
-            label="AGI"
-            value={attributes.agi}
-            icon="/images/attributes/agt-att.png"
-            color="green"
-          />
-          <AttributeCard
-            label="INT"
-            value={attributes.int}
-            icon="/images/attributes/int-att.png"
-            color="blue"
-          />
-        </div>
-      )}
 
       {/* Buttons */}
       {!isCreated ? (
@@ -157,11 +161,12 @@ export function PandaFighterCreator() {
           {isLoading ? "Creating..." : "Create Panda Fighter"}
         </Button3D>
       ) : (
-        <div className="flex gap-4 relative z-10">
+        <div className="flex w-full gap-4 relative z-10">
           <Button3D
             onClick={handleReroll}
             disabled={isLoading}
             variant="3d-orange"
+            className="w-full"
           >
             {isLoading ? "Rerolling..." : "Reroll"}
           </Button3D>
@@ -169,6 +174,7 @@ export function PandaFighterCreator() {
             onClick={handleStartGame}
             disabled={isLoading}
             variant="3d-green"
+            className="w-full"
           >
             Start Game
           </Button3D>

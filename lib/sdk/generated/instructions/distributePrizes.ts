@@ -10,7 +10,6 @@ import {
   combineCodec,
   fixDecoderSize,
   fixEncoderSize,
-  getAddressDecoder,
   getAddressEncoder,
   getBytesDecoder,
   getBytesEncoder,
@@ -28,28 +27,34 @@ import {
   type InstructionWithAccounts,
   type InstructionWithData,
   type ReadonlyAccount,
+  type ReadonlySignerAccount,
   type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
-  type WritableSignerAccount,
 } from '@solana/kit';
 import { PANDA_BATTLE_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import {
+  expectAddress,
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared';
 
-export const INITIALIZE_GAME_DISCRIMINATOR = new Uint8Array([
-  44, 62, 102, 247, 126, 208, 130, 215,
+export const DISTRIBUTE_PRIZES_DISCRIMINATOR = new Uint8Array([
+  154, 99, 201, 93, 82, 104, 73, 232,
 ]);
 
-export function getInitializeGameDiscriminatorBytes() {
+export function getDistributePrizesDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    INITIALIZE_GAME_DISCRIMINATOR
+    DISTRIBUTE_PRIZES_DISCRIMINATOR
   );
 }
 
-export type InitializeGameInstruction<
+export type DistributePrizesInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
-  TAccountAdmin extends string | AccountMeta<string> = string,
+  TAccountCaller extends string | AccountMeta<string> = string,
   TAccountGlobalConfig extends string | AccountMeta<string> = string,
+  TAccountGameRound extends string | AccountMeta<string> = string,
+  TAccountLeaderboard extends string | AccountMeta<string> = string,
   TAccountSystemProgram extends string | AccountMeta<string> =
     '11111111111111111111111111111111',
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
@@ -57,13 +62,19 @@ export type InitializeGameInstruction<
   InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<
     [
-      TAccountAdmin extends string
-        ? WritableSignerAccount<TAccountAdmin> &
-            AccountSignerMeta<TAccountAdmin>
-        : TAccountAdmin,
+      TAccountCaller extends string
+        ? ReadonlySignerAccount<TAccountCaller> &
+            AccountSignerMeta<TAccountCaller>
+        : TAccountCaller,
       TAccountGlobalConfig extends string
-        ? WritableAccount<TAccountGlobalConfig>
+        ? ReadonlyAccount<TAccountGlobalConfig>
         : TAccountGlobalConfig,
+      TAccountGameRound extends string
+        ? WritableAccount<TAccountGameRound>
+        : TAccountGameRound,
+      TAccountLeaderboard extends string
+        ? ReadonlyAccount<TAccountLeaderboard>
+        : TAccountLeaderboard,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
@@ -71,68 +82,73 @@ export type InitializeGameInstruction<
     ]
   >;
 
-export type InitializeGameInstructionData = {
+export type DistributePrizesInstructionData = {
   discriminator: ReadonlyUint8Array;
-  tokenMint: Address;
 };
 
-export type InitializeGameInstructionDataArgs = { tokenMint: Address };
+export type DistributePrizesInstructionDataArgs = {};
 
-export function getInitializeGameInstructionDataEncoder(): FixedSizeEncoder<InitializeGameInstructionDataArgs> {
+export function getDistributePrizesInstructionDataEncoder(): FixedSizeEncoder<DistributePrizesInstructionDataArgs> {
   return transformEncoder(
-    getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['tokenMint', getAddressEncoder()],
-    ]),
-    (value) => ({ ...value, discriminator: INITIALIZE_GAME_DISCRIMINATOR })
+    getStructEncoder([['discriminator', fixEncoderSize(getBytesEncoder(), 8)]]),
+    (value) => ({ ...value, discriminator: DISTRIBUTE_PRIZES_DISCRIMINATOR })
   );
 }
 
-export function getInitializeGameInstructionDataDecoder(): FixedSizeDecoder<InitializeGameInstructionData> {
+export function getDistributePrizesInstructionDataDecoder(): FixedSizeDecoder<DistributePrizesInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['tokenMint', getAddressDecoder()],
   ]);
 }
 
-export function getInitializeGameInstructionDataCodec(): FixedSizeCodec<
-  InitializeGameInstructionDataArgs,
-  InitializeGameInstructionData
+export function getDistributePrizesInstructionDataCodec(): FixedSizeCodec<
+  DistributePrizesInstructionDataArgs,
+  DistributePrizesInstructionData
 > {
   return combineCodec(
-    getInitializeGameInstructionDataEncoder(),
-    getInitializeGameInstructionDataDecoder()
+    getDistributePrizesInstructionDataEncoder(),
+    getDistributePrizesInstructionDataDecoder()
   );
 }
 
-export type InitializeGameAsyncInput<
-  TAccountAdmin extends string = string,
+export type DistributePrizesAsyncInput<
+  TAccountCaller extends string = string,
   TAccountGlobalConfig extends string = string,
+  TAccountGameRound extends string = string,
+  TAccountLeaderboard extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
-  admin: TransactionSigner<TAccountAdmin>;
+  /** Anyone can call this (crank) */
+  caller: TransactionSigner<TAccountCaller>;
   globalConfig?: Address<TAccountGlobalConfig>;
+  gameRound: Address<TAccountGameRound>;
+  leaderboard?: Address<TAccountLeaderboard>;
   systemProgram?: Address<TAccountSystemProgram>;
-  tokenMint: InitializeGameInstructionDataArgs['tokenMint'];
 };
 
-export async function getInitializeGameInstructionAsync<
-  TAccountAdmin extends string,
+export async function getDistributePrizesInstructionAsync<
+  TAccountCaller extends string,
   TAccountGlobalConfig extends string,
+  TAccountGameRound extends string,
+  TAccountLeaderboard extends string,
   TAccountSystemProgram extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
-  input: InitializeGameAsyncInput<
-    TAccountAdmin,
+  input: DistributePrizesAsyncInput<
+    TAccountCaller,
     TAccountGlobalConfig,
+    TAccountGameRound,
+    TAccountLeaderboard,
     TAccountSystemProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): Promise<
-  InitializeGameInstruction<
+  DistributePrizesInstruction<
     TProgramAddress,
-    TAccountAdmin,
+    TAccountCaller,
     TAccountGlobalConfig,
+    TAccountGameRound,
+    TAccountLeaderboard,
     TAccountSystemProgram
   >
 > {
@@ -141,17 +157,16 @@ export async function getInitializeGameInstructionAsync<
 
   // Original accounts.
   const originalAccounts = {
-    admin: { value: input.admin ?? null, isWritable: true },
-    globalConfig: { value: input.globalConfig ?? null, isWritable: true },
+    caller: { value: input.caller ?? null, isWritable: false },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
+    gameRound: { value: input.gameRound ?? null, isWritable: true },
+    leaderboard: { value: input.leaderboard ?? null, isWritable: false },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
     ResolvedAccount
   >;
-
-  // Original args.
-  const args = { ...input };
 
   // Resolve default values.
   if (!accounts.globalConfig.value) {
@@ -166,6 +181,17 @@ export async function getInitializeGameInstructionAsync<
       ],
     });
   }
+  if (!accounts.leaderboard.value) {
+    accounts.leaderboard.value = await getProgramDerivedAddress({
+      programAddress,
+      seeds: [
+        getBytesEncoder().encode(
+          new Uint8Array([108, 101, 97, 100, 101, 114, 98, 111, 97, 114, 100])
+        ),
+        getAddressEncoder().encode(expectAddress(accounts.gameRound.value)),
+      ],
+    });
+  }
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
@@ -174,49 +200,61 @@ export async function getInitializeGameInstructionAsync<
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   return Object.freeze({
     accounts: [
-      getAccountMeta(accounts.admin),
+      getAccountMeta(accounts.caller),
       getAccountMeta(accounts.globalConfig),
+      getAccountMeta(accounts.gameRound),
+      getAccountMeta(accounts.leaderboard),
       getAccountMeta(accounts.systemProgram),
     ],
-    data: getInitializeGameInstructionDataEncoder().encode(
-      args as InitializeGameInstructionDataArgs
-    ),
+    data: getDistributePrizesInstructionDataEncoder().encode({}),
     programAddress,
-  } as InitializeGameInstruction<
+  } as DistributePrizesInstruction<
     TProgramAddress,
-    TAccountAdmin,
+    TAccountCaller,
     TAccountGlobalConfig,
+    TAccountGameRound,
+    TAccountLeaderboard,
     TAccountSystemProgram
   >);
 }
 
-export type InitializeGameInput<
-  TAccountAdmin extends string = string,
+export type DistributePrizesInput<
+  TAccountCaller extends string = string,
   TAccountGlobalConfig extends string = string,
+  TAccountGameRound extends string = string,
+  TAccountLeaderboard extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
-  admin: TransactionSigner<TAccountAdmin>;
+  /** Anyone can call this (crank) */
+  caller: TransactionSigner<TAccountCaller>;
   globalConfig: Address<TAccountGlobalConfig>;
+  gameRound: Address<TAccountGameRound>;
+  leaderboard: Address<TAccountLeaderboard>;
   systemProgram?: Address<TAccountSystemProgram>;
-  tokenMint: InitializeGameInstructionDataArgs['tokenMint'];
 };
 
-export function getInitializeGameInstruction<
-  TAccountAdmin extends string,
+export function getDistributePrizesInstruction<
+  TAccountCaller extends string,
   TAccountGlobalConfig extends string,
+  TAccountGameRound extends string,
+  TAccountLeaderboard extends string,
   TAccountSystemProgram extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
-  input: InitializeGameInput<
-    TAccountAdmin,
+  input: DistributePrizesInput<
+    TAccountCaller,
     TAccountGlobalConfig,
+    TAccountGameRound,
+    TAccountLeaderboard,
     TAccountSystemProgram
   >,
   config?: { programAddress?: TProgramAddress }
-): InitializeGameInstruction<
+): DistributePrizesInstruction<
   TProgramAddress,
-  TAccountAdmin,
+  TAccountCaller,
   TAccountGlobalConfig,
+  TAccountGameRound,
+  TAccountLeaderboard,
   TAccountSystemProgram
 > {
   // Program address.
@@ -224,17 +262,16 @@ export function getInitializeGameInstruction<
 
   // Original accounts.
   const originalAccounts = {
-    admin: { value: input.admin ?? null, isWritable: true },
-    globalConfig: { value: input.globalConfig ?? null, isWritable: true },
+    caller: { value: input.caller ?? null, isWritable: false },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
+    gameRound: { value: input.gameRound ?? null, isWritable: true },
+    leaderboard: { value: input.leaderboard ?? null, isWritable: false },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
     ResolvedAccount
   >;
-
-  // Original args.
-  const args = { ...input };
 
   // Resolve default values.
   if (!accounts.systemProgram.value) {
@@ -245,44 +282,49 @@ export function getInitializeGameInstruction<
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   return Object.freeze({
     accounts: [
-      getAccountMeta(accounts.admin),
+      getAccountMeta(accounts.caller),
       getAccountMeta(accounts.globalConfig),
+      getAccountMeta(accounts.gameRound),
+      getAccountMeta(accounts.leaderboard),
       getAccountMeta(accounts.systemProgram),
     ],
-    data: getInitializeGameInstructionDataEncoder().encode(
-      args as InitializeGameInstructionDataArgs
-    ),
+    data: getDistributePrizesInstructionDataEncoder().encode({}),
     programAddress,
-  } as InitializeGameInstruction<
+  } as DistributePrizesInstruction<
     TProgramAddress,
-    TAccountAdmin,
+    TAccountCaller,
     TAccountGlobalConfig,
+    TAccountGameRound,
+    TAccountLeaderboard,
     TAccountSystemProgram
   >);
 }
 
-export type ParsedInitializeGameInstruction<
+export type ParsedDistributePrizesInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
-    admin: TAccountMetas[0];
+    /** Anyone can call this (crank) */
+    caller: TAccountMetas[0];
     globalConfig: TAccountMetas[1];
-    systemProgram: TAccountMetas[2];
+    gameRound: TAccountMetas[2];
+    leaderboard: TAccountMetas[3];
+    systemProgram: TAccountMetas[4];
   };
-  data: InitializeGameInstructionData;
+  data: DistributePrizesInstructionData;
 };
 
-export function parseInitializeGameInstruction<
+export function parseDistributePrizesInstruction<
   TProgram extends string,
   TAccountMetas extends readonly AccountMeta[],
 >(
   instruction: Instruction<TProgram> &
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
-): ParsedInitializeGameInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 3) {
+): ParsedDistributePrizesInstruction<TProgram, TAccountMetas> {
+  if (instruction.accounts.length < 5) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -295,10 +337,12 @@ export function parseInitializeGameInstruction<
   return {
     programAddress: instruction.programAddress,
     accounts: {
-      admin: getNextAccount(),
+      caller: getNextAccount(),
       globalConfig: getNextAccount(),
+      gameRound: getNextAccount(),
+      leaderboard: getNextAccount(),
       systemProgram: getNextAccount(),
     },
-    data: getInitializeGameInstructionDataDecoder().decode(instruction.data),
+    data: getDistributePrizesInstructionDataDecoder().decode(instruction.data),
   };
 }

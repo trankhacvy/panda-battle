@@ -14,15 +14,7 @@ export function OpponentCard({
   onBattle,
 }: OpponentCardProps) {
   return (
-    <div 
-      className="rounded-xl p-3 flex items-center gap-3 border border-[#2a4a6c] bg-cover bg-center relative overflow-hidden"
-      style={{
-        backgroundImage: "url(/images/fighter-bg.png)",
-      }}
-    >
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/40"></div>
-      
+    <div className="rounded-xl p-3 flex items-center gap-3 border border-[#2a4a6c] bg-black/60 bg-cover bg-center relative overflow-hidden">
       {/* Content */}
       <div className="relative z-10 w-20 h-20 rounded-lg overflow-hidden shrink-0 backdrop-blur-sm bg-black/20">
         <img
@@ -73,7 +65,7 @@ export function OpponentCard({
 
       {/* Battle Button */}
       <div className="relative z-10">
-        <Button3D size="3d-tiny" onClick={onBattle}>
+        <Button3D size="3d-tiny" variant="3d-red" onClick={onBattle}>
           Battle
         </Button3D>
       </div>

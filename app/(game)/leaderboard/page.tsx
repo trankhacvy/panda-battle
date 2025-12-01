@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Search, ArrowDownUp, Filter } from "lucide-react";
 import { PlayerCard } from "@/components/leaderboard/player-card";
 import { useSound } from "@/hooks/use-sound";
+import { Button3D } from "@/components/ui/button-3d";
 
 const players = [
   {
@@ -90,20 +91,28 @@ export default function LeaderboardPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <button
+        <Button3D className="size-10" size="3d-tiny" onClick={handleSort}>
+          <ArrowDownUp />
+        </Button3D>
+
+        <Button3D className="size-10" size="3d-tiny" onClick={handleFilter}>
+          <Filter />
+        </Button3D>
+
+        {/* <button
           onClick={handleSort}
           className="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2.5 flex flex-col items-center justify-center min-w-[60px] transition-colors"
         >
           <ArrowDownUp className="w-5 h-5 text-white mb-0.5" />
           <span className="text-white text-xs font-medium">Sort</span>
-        </button>
-        <button
+        </button> */}
+        {/* <button
           onClick={handleFilter}
           className="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2.5 flex flex-col items-center justify-center min-w-[60px] transition-colors"
         >
           <Filter className="w-5 h-5 text-white mb-0.5" />
           <span className="text-white text-xs font-medium">Filter</span>
-        </button>
+        </button> */}
       </div>
 
       {/* Player List */}

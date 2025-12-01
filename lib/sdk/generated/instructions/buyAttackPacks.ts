@@ -41,20 +41,20 @@ import {
   type ResolvedAccount,
 } from '../shared';
 
-export const PURCHASE_TURNS_DISCRIMINATOR = new Uint8Array([
-  8, 119, 199, 7, 15, 206, 50, 10,
+export const BUY_ATTACK_PACKS_DISCRIMINATOR = new Uint8Array([
+  84, 219, 208, 11, 33, 219, 22, 185,
 ]);
 
-export function getPurchaseTurnsDiscriminatorBytes() {
+export function getBuyAttackPacksDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    PURCHASE_TURNS_DISCRIMINATOR
+    BUY_ATTACK_PACKS_DISCRIMINATOR
   );
 }
 
-export type PurchaseTurnsInstruction<
+export type BuyAttackPacksInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountPlayer extends string | AccountMeta<string> = string,
-  TAccountGameConfig extends string | AccountMeta<string> = string,
+  TAccountGlobalConfig extends string | AccountMeta<string> = string,
   TAccountGameRound extends string | AccountMeta<string> = string,
   TAccountPlayerState extends string | AccountMeta<string> = string,
   TAccountPlayerTokenAccount extends string | AccountMeta<string> = string,
@@ -72,9 +72,9 @@ export type PurchaseTurnsInstruction<
         ? WritableSignerAccount<TAccountPlayer> &
             AccountSignerMeta<TAccountPlayer>
         : TAccountPlayer,
-      TAccountGameConfig extends string
-        ? ReadonlyAccount<TAccountGameConfig>
-        : TAccountGameConfig,
+      TAccountGlobalConfig extends string
+        ? ReadonlyAccount<TAccountGlobalConfig>
+        : TAccountGlobalConfig,
       TAccountGameRound extends string
         ? WritableAccount<TAccountGameRound>
         : TAccountGameRound,
@@ -97,43 +97,43 @@ export type PurchaseTurnsInstruction<
     ]
   >;
 
-export type PurchaseTurnsInstructionData = {
+export type BuyAttackPacksInstructionData = {
   discriminator: ReadonlyUint8Array;
-  amount: number;
+  numPacks: number;
 };
 
-export type PurchaseTurnsInstructionDataArgs = { amount: number };
+export type BuyAttackPacksInstructionDataArgs = { numPacks: number };
 
-export function getPurchaseTurnsInstructionDataEncoder(): FixedSizeEncoder<PurchaseTurnsInstructionDataArgs> {
+export function getBuyAttackPacksInstructionDataEncoder(): FixedSizeEncoder<BuyAttackPacksInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['amount', getU8Encoder()],
+      ['numPacks', getU8Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: PURCHASE_TURNS_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: BUY_ATTACK_PACKS_DISCRIMINATOR })
   );
 }
 
-export function getPurchaseTurnsInstructionDataDecoder(): FixedSizeDecoder<PurchaseTurnsInstructionData> {
+export function getBuyAttackPacksInstructionDataDecoder(): FixedSizeDecoder<BuyAttackPacksInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['amount', getU8Decoder()],
+    ['numPacks', getU8Decoder()],
   ]);
 }
 
-export function getPurchaseTurnsInstructionDataCodec(): FixedSizeCodec<
-  PurchaseTurnsInstructionDataArgs,
-  PurchaseTurnsInstructionData
+export function getBuyAttackPacksInstructionDataCodec(): FixedSizeCodec<
+  BuyAttackPacksInstructionDataArgs,
+  BuyAttackPacksInstructionData
 > {
   return combineCodec(
-    getPurchaseTurnsInstructionDataEncoder(),
-    getPurchaseTurnsInstructionDataDecoder()
+    getBuyAttackPacksInstructionDataEncoder(),
+    getBuyAttackPacksInstructionDataDecoder()
   );
 }
 
-export type PurchaseTurnsAsyncInput<
+export type BuyAttackPacksAsyncInput<
   TAccountPlayer extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
   TAccountPlayerTokenAccount extends string = string,
@@ -142,7 +142,7 @@ export type PurchaseTurnsAsyncInput<
   TAccountTokenProgram extends string = string,
 > = {
   player: TransactionSigner<TAccountPlayer>;
-  gameConfig?: Address<TAccountGameConfig>;
+  globalConfig?: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
   playerState?: Address<TAccountPlayerState>;
   /** Player's token account */
@@ -151,12 +151,12 @@ export type PurchaseTurnsAsyncInput<
   vault: Address<TAccountVault>;
   systemProgram?: Address<TAccountSystemProgram>;
   tokenProgram?: Address<TAccountTokenProgram>;
-  amount: PurchaseTurnsInstructionDataArgs['amount'];
+  numPacks: BuyAttackPacksInstructionDataArgs['numPacks'];
 };
 
-export async function getPurchaseTurnsInstructionAsync<
+export async function getBuyAttackPacksInstructionAsync<
   TAccountPlayer extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
   TAccountPlayerTokenAccount extends string,
@@ -165,9 +165,9 @@ export async function getPurchaseTurnsInstructionAsync<
   TAccountTokenProgram extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
-  input: PurchaseTurnsAsyncInput<
+  input: BuyAttackPacksAsyncInput<
     TAccountPlayer,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
@@ -177,10 +177,10 @@ export async function getPurchaseTurnsInstructionAsync<
   >,
   config?: { programAddress?: TProgramAddress }
 ): Promise<
-  PurchaseTurnsInstruction<
+  BuyAttackPacksInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
@@ -195,7 +195,7 @@ export async function getPurchaseTurnsInstructionAsync<
   // Original accounts.
   const originalAccounts = {
     player: { value: input.player ?? null, isWritable: true },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: false },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
     playerState: { value: input.playerState ?? null, isWritable: true },
     playerTokenAccount: {
@@ -215,12 +215,14 @@ export async function getPurchaseTurnsInstructionAsync<
   const args = { ...input };
 
   // Resolve default values.
-  if (!accounts.gameConfig.value) {
-    accounts.gameConfig.value = await getProgramDerivedAddress({
+  if (!accounts.globalConfig.value) {
+    accounts.globalConfig.value = await getProgramDerivedAddress({
       programAddress,
       seeds: [
         getBytesEncoder().encode(
-          new Uint8Array([103, 97, 109, 101, 95, 99, 111, 110, 102, 105, 103])
+          new Uint8Array([
+            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
+          ])
         ),
       ],
     });
@@ -252,7 +254,7 @@ export async function getPurchaseTurnsInstructionAsync<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.player),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
       getAccountMeta(accounts.playerTokenAccount),
@@ -260,14 +262,14 @@ export async function getPurchaseTurnsInstructionAsync<
       getAccountMeta(accounts.systemProgram),
       getAccountMeta(accounts.tokenProgram),
     ],
-    data: getPurchaseTurnsInstructionDataEncoder().encode(
-      args as PurchaseTurnsInstructionDataArgs
+    data: getBuyAttackPacksInstructionDataEncoder().encode(
+      args as BuyAttackPacksInstructionDataArgs
     ),
     programAddress,
-  } as PurchaseTurnsInstruction<
+  } as BuyAttackPacksInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
@@ -277,9 +279,9 @@ export async function getPurchaseTurnsInstructionAsync<
   >);
 }
 
-export type PurchaseTurnsInput<
+export type BuyAttackPacksInput<
   TAccountPlayer extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
   TAccountPlayerTokenAccount extends string = string,
@@ -288,7 +290,7 @@ export type PurchaseTurnsInput<
   TAccountTokenProgram extends string = string,
 > = {
   player: TransactionSigner<TAccountPlayer>;
-  gameConfig: Address<TAccountGameConfig>;
+  globalConfig: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
   playerState: Address<TAccountPlayerState>;
   /** Player's token account */
@@ -297,12 +299,12 @@ export type PurchaseTurnsInput<
   vault: Address<TAccountVault>;
   systemProgram?: Address<TAccountSystemProgram>;
   tokenProgram?: Address<TAccountTokenProgram>;
-  amount: PurchaseTurnsInstructionDataArgs['amount'];
+  numPacks: BuyAttackPacksInstructionDataArgs['numPacks'];
 };
 
-export function getPurchaseTurnsInstruction<
+export function getBuyAttackPacksInstruction<
   TAccountPlayer extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
   TAccountPlayerTokenAccount extends string,
@@ -311,9 +313,9 @@ export function getPurchaseTurnsInstruction<
   TAccountTokenProgram extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
-  input: PurchaseTurnsInput<
+  input: BuyAttackPacksInput<
     TAccountPlayer,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
@@ -322,10 +324,10 @@ export function getPurchaseTurnsInstruction<
     TAccountTokenProgram
   >,
   config?: { programAddress?: TProgramAddress }
-): PurchaseTurnsInstruction<
+): BuyAttackPacksInstruction<
   TProgramAddress,
   TAccountPlayer,
-  TAccountGameConfig,
+  TAccountGlobalConfig,
   TAccountGameRound,
   TAccountPlayerState,
   TAccountPlayerTokenAccount,
@@ -339,7 +341,7 @@ export function getPurchaseTurnsInstruction<
   // Original accounts.
   const originalAccounts = {
     player: { value: input.player ?? null, isWritable: true },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: false },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
     playerState: { value: input.playerState ?? null, isWritable: true },
     playerTokenAccount: {
@@ -372,7 +374,7 @@ export function getPurchaseTurnsInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.player),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
       getAccountMeta(accounts.playerTokenAccount),
@@ -380,14 +382,14 @@ export function getPurchaseTurnsInstruction<
       getAccountMeta(accounts.systemProgram),
       getAccountMeta(accounts.tokenProgram),
     ],
-    data: getPurchaseTurnsInstructionDataEncoder().encode(
-      args as PurchaseTurnsInstructionDataArgs
+    data: getBuyAttackPacksInstructionDataEncoder().encode(
+      args as BuyAttackPacksInstructionDataArgs
     ),
     programAddress,
-  } as PurchaseTurnsInstruction<
+  } as BuyAttackPacksInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
@@ -397,14 +399,14 @@ export function getPurchaseTurnsInstruction<
   >);
 }
 
-export type ParsedPurchaseTurnsInstruction<
+export type ParsedBuyAttackPacksInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
     player: TAccountMetas[0];
-    gameConfig: TAccountMetas[1];
+    globalConfig: TAccountMetas[1];
     gameRound: TAccountMetas[2];
     playerState: TAccountMetas[3];
     /** Player's token account */
@@ -414,17 +416,17 @@ export type ParsedPurchaseTurnsInstruction<
     systemProgram: TAccountMetas[6];
     tokenProgram: TAccountMetas[7];
   };
-  data: PurchaseTurnsInstructionData;
+  data: BuyAttackPacksInstructionData;
 };
 
-export function parsePurchaseTurnsInstruction<
+export function parseBuyAttackPacksInstruction<
   TProgram extends string,
   TAccountMetas extends readonly AccountMeta[],
 >(
   instruction: Instruction<TProgram> &
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
-): ParsedPurchaseTurnsInstruction<TProgram, TAccountMetas> {
+): ParsedBuyAttackPacksInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 8) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
@@ -439,7 +441,7 @@ export function parsePurchaseTurnsInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       player: getNextAccount(),
-      gameConfig: getNextAccount(),
+      globalConfig: getNextAccount(),
       gameRound: getNextAccount(),
       playerState: getNextAccount(),
       playerTokenAccount: getNextAccount(),
@@ -447,6 +449,6 @@ export function parsePurchaseTurnsInstruction<
       systemProgram: getNextAccount(),
       tokenProgram: getNextAccount(),
     },
-    data: getPurchaseTurnsInstructionDataDecoder().decode(instruction.data),
+    data: getBuyAttackPacksInstructionDataDecoder().decode(instruction.data),
   };
 }

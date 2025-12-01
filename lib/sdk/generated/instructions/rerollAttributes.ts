@@ -41,27 +41,30 @@ import {
   type ResolvedAccount,
 } from '../shared';
 
-export const INITIATE_BATTLE_DISCRIMINATOR = new Uint8Array([
-  248, 205, 226, 209, 41, 28, 54, 75,
+export const REROLL_ATTRIBUTES_DISCRIMINATOR = new Uint8Array([
+  14, 125, 211, 32, 89, 82, 192, 48,
 ]);
 
-export function getInitiateBattleDiscriminatorBytes() {
+export function getRerollAttributesDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    INITIATE_BATTLE_DISCRIMINATOR
+    REROLL_ATTRIBUTES_DISCRIMINATOR
   );
 }
 
-export type InitiateBattleInstruction<
+export type RerollAttributesInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountPlayer extends string | AccountMeta<string> = string,
   TAccountGlobalConfig extends string | AccountMeta<string> = string,
   TAccountGameRound extends string | AccountMeta<string> = string,
-  TAccountAttackerState extends string | AccountMeta<string> = string,
-  TAccountDefenderState extends string | AccountMeta<string> = string,
+  TAccountPlayerState extends string | AccountMeta<string> = string,
+  TAccountPlayerTokenAccount extends string | AccountMeta<string> = string,
+  TAccountVault extends string | AccountMeta<string> = string,
   TAccountOracleQueue extends string | AccountMeta<string> =
     'Cuj97ggrhhidhbu39TijNVqE74xvKJ69gDervRUXAxGh',
   TAccountSystemProgram extends string | AccountMeta<string> =
     '11111111111111111111111111111111',
+  TAccountTokenProgram extends string | AccountMeta<string> =
+    'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
   TAccountProgramIdentity extends string | AccountMeta<string> = string,
   TAccountVrfProgram extends string | AccountMeta<string> =
     'Vrf1RNUjXmQGjmQrQLvJHs9SNkvDJEsRVFPkfSQUwGz',
@@ -82,18 +85,24 @@ export type InitiateBattleInstruction<
       TAccountGameRound extends string
         ? WritableAccount<TAccountGameRound>
         : TAccountGameRound,
-      TAccountAttackerState extends string
-        ? WritableAccount<TAccountAttackerState>
-        : TAccountAttackerState,
-      TAccountDefenderState extends string
-        ? WritableAccount<TAccountDefenderState>
-        : TAccountDefenderState,
+      TAccountPlayerState extends string
+        ? WritableAccount<TAccountPlayerState>
+        : TAccountPlayerState,
+      TAccountPlayerTokenAccount extends string
+        ? WritableAccount<TAccountPlayerTokenAccount>
+        : TAccountPlayerTokenAccount,
+      TAccountVault extends string
+        ? WritableAccount<TAccountVault>
+        : TAccountVault,
       TAccountOracleQueue extends string
         ? WritableAccount<TAccountOracleQueue>
         : TAccountOracleQueue,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
+      TAccountTokenProgram extends string
+        ? ReadonlyAccount<TAccountTokenProgram>
+        : TAccountTokenProgram,
       TAccountProgramIdentity extends string
         ? ReadonlyAccount<TAccountProgramIdentity>
         : TAccountProgramIdentity,
@@ -107,48 +116,50 @@ export type InitiateBattleInstruction<
     ]
   >;
 
-export type InitiateBattleInstructionData = {
+export type RerollAttributesInstructionData = {
   discriminator: ReadonlyUint8Array;
   clientSeed: number;
 };
 
-export type InitiateBattleInstructionDataArgs = { clientSeed: number };
+export type RerollAttributesInstructionDataArgs = { clientSeed: number };
 
-export function getInitiateBattleInstructionDataEncoder(): FixedSizeEncoder<InitiateBattleInstructionDataArgs> {
+export function getRerollAttributesInstructionDataEncoder(): FixedSizeEncoder<RerollAttributesInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
       ['clientSeed', getU8Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: INITIATE_BATTLE_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: REROLL_ATTRIBUTES_DISCRIMINATOR })
   );
 }
 
-export function getInitiateBattleInstructionDataDecoder(): FixedSizeDecoder<InitiateBattleInstructionData> {
+export function getRerollAttributesInstructionDataDecoder(): FixedSizeDecoder<RerollAttributesInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
     ['clientSeed', getU8Decoder()],
   ]);
 }
 
-export function getInitiateBattleInstructionDataCodec(): FixedSizeCodec<
-  InitiateBattleInstructionDataArgs,
-  InitiateBattleInstructionData
+export function getRerollAttributesInstructionDataCodec(): FixedSizeCodec<
+  RerollAttributesInstructionDataArgs,
+  RerollAttributesInstructionData
 > {
   return combineCodec(
-    getInitiateBattleInstructionDataEncoder(),
-    getInitiateBattleInstructionDataDecoder()
+    getRerollAttributesInstructionDataEncoder(),
+    getRerollAttributesInstructionDataDecoder()
   );
 }
 
-export type InitiateBattleAsyncInput<
+export type RerollAttributesAsyncInput<
   TAccountPlayer extends string = string,
   TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
-  TAccountAttackerState extends string = string,
-  TAccountDefenderState extends string = string,
+  TAccountPlayerState extends string = string,
+  TAccountPlayerTokenAccount extends string = string,
+  TAccountVault extends string = string,
   TAccountOracleQueue extends string = string,
   TAccountSystemProgram extends string = string,
+  TAccountTokenProgram extends string = string,
   TAccountProgramIdentity extends string = string,
   TAccountVrfProgram extends string = string,
   TAccountSlotHashes extends string = string,
@@ -156,52 +167,62 @@ export type InitiateBattleAsyncInput<
   player: TransactionSigner<TAccountPlayer>;
   globalConfig?: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
-  attackerState?: Address<TAccountAttackerState>;
-  defenderState: Address<TAccountDefenderState>;
+  playerState?: Address<TAccountPlayerState>;
+  /** Player's token account */
+  playerTokenAccount: Address<TAccountPlayerTokenAccount>;
+  /** Vault token account for this round (ATA owned by game_round) */
+  vault: Address<TAccountVault>;
   oracleQueue?: Address<TAccountOracleQueue>;
   systemProgram?: Address<TAccountSystemProgram>;
+  tokenProgram?: Address<TAccountTokenProgram>;
   programIdentity?: Address<TAccountProgramIdentity>;
   vrfProgram?: Address<TAccountVrfProgram>;
   slotHashes?: Address<TAccountSlotHashes>;
-  clientSeed: InitiateBattleInstructionDataArgs['clientSeed'];
+  clientSeed: RerollAttributesInstructionDataArgs['clientSeed'];
 };
 
-export async function getInitiateBattleInstructionAsync<
+export async function getRerollAttributesInstructionAsync<
   TAccountPlayer extends string,
   TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
-  TAccountAttackerState extends string,
-  TAccountDefenderState extends string,
+  TAccountPlayerState extends string,
+  TAccountPlayerTokenAccount extends string,
+  TAccountVault extends string,
   TAccountOracleQueue extends string,
   TAccountSystemProgram extends string,
+  TAccountTokenProgram extends string,
   TAccountProgramIdentity extends string,
   TAccountVrfProgram extends string,
   TAccountSlotHashes extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
-  input: InitiateBattleAsyncInput<
+  input: RerollAttributesAsyncInput<
     TAccountPlayer,
     TAccountGlobalConfig,
     TAccountGameRound,
-    TAccountAttackerState,
-    TAccountDefenderState,
+    TAccountPlayerState,
+    TAccountPlayerTokenAccount,
+    TAccountVault,
     TAccountOracleQueue,
     TAccountSystemProgram,
+    TAccountTokenProgram,
     TAccountProgramIdentity,
     TAccountVrfProgram,
     TAccountSlotHashes
   >,
   config?: { programAddress?: TProgramAddress }
 ): Promise<
-  InitiateBattleInstruction<
+  RerollAttributesInstruction<
     TProgramAddress,
     TAccountPlayer,
     TAccountGlobalConfig,
     TAccountGameRound,
-    TAccountAttackerState,
-    TAccountDefenderState,
+    TAccountPlayerState,
+    TAccountPlayerTokenAccount,
+    TAccountVault,
     TAccountOracleQueue,
     TAccountSystemProgram,
+    TAccountTokenProgram,
     TAccountProgramIdentity,
     TAccountVrfProgram,
     TAccountSlotHashes
@@ -215,10 +236,15 @@ export async function getInitiateBattleInstructionAsync<
     player: { value: input.player ?? null, isWritable: true },
     globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
-    attackerState: { value: input.attackerState ?? null, isWritable: true },
-    defenderState: { value: input.defenderState ?? null, isWritable: true },
+    playerState: { value: input.playerState ?? null, isWritable: true },
+    playerTokenAccount: {
+      value: input.playerTokenAccount ?? null,
+      isWritable: true,
+    },
+    vault: { value: input.vault ?? null, isWritable: true },
     oracleQueue: { value: input.oracleQueue ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
+    tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
     programIdentity: {
       value: input.programIdentity ?? null,
       isWritable: false,
@@ -247,8 +273,8 @@ export async function getInitiateBattleInstructionAsync<
       ],
     });
   }
-  if (!accounts.attackerState.value) {
-    accounts.attackerState.value = await getProgramDerivedAddress({
+  if (!accounts.playerState.value) {
+    accounts.playerState.value = await getProgramDerivedAddress({
       programAddress,
       seeds: [
         getBytesEncoder().encode(
@@ -268,6 +294,10 @@ export async function getInitiateBattleInstructionAsync<
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
+  }
+  if (!accounts.tokenProgram.value) {
+    accounts.tokenProgram.value =
+      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
   }
   if (!accounts.programIdentity.value) {
     accounts.programIdentity.value = await getProgramDerivedAddress({
@@ -294,41 +324,47 @@ export async function getInitiateBattleInstructionAsync<
       getAccountMeta(accounts.player),
       getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
-      getAccountMeta(accounts.attackerState),
-      getAccountMeta(accounts.defenderState),
+      getAccountMeta(accounts.playerState),
+      getAccountMeta(accounts.playerTokenAccount),
+      getAccountMeta(accounts.vault),
       getAccountMeta(accounts.oracleQueue),
       getAccountMeta(accounts.systemProgram),
+      getAccountMeta(accounts.tokenProgram),
       getAccountMeta(accounts.programIdentity),
       getAccountMeta(accounts.vrfProgram),
       getAccountMeta(accounts.slotHashes),
     ],
-    data: getInitiateBattleInstructionDataEncoder().encode(
-      args as InitiateBattleInstructionDataArgs
+    data: getRerollAttributesInstructionDataEncoder().encode(
+      args as RerollAttributesInstructionDataArgs
     ),
     programAddress,
-  } as InitiateBattleInstruction<
+  } as RerollAttributesInstruction<
     TProgramAddress,
     TAccountPlayer,
     TAccountGlobalConfig,
     TAccountGameRound,
-    TAccountAttackerState,
-    TAccountDefenderState,
+    TAccountPlayerState,
+    TAccountPlayerTokenAccount,
+    TAccountVault,
     TAccountOracleQueue,
     TAccountSystemProgram,
+    TAccountTokenProgram,
     TAccountProgramIdentity,
     TAccountVrfProgram,
     TAccountSlotHashes
   >);
 }
 
-export type InitiateBattleInput<
+export type RerollAttributesInput<
   TAccountPlayer extends string = string,
   TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
-  TAccountAttackerState extends string = string,
-  TAccountDefenderState extends string = string,
+  TAccountPlayerState extends string = string,
+  TAccountPlayerTokenAccount extends string = string,
+  TAccountVault extends string = string,
   TAccountOracleQueue extends string = string,
   TAccountSystemProgram extends string = string,
+  TAccountTokenProgram extends string = string,
   TAccountProgramIdentity extends string = string,
   TAccountVrfProgram extends string = string,
   TAccountSlotHashes extends string = string,
@@ -336,51 +372,61 @@ export type InitiateBattleInput<
   player: TransactionSigner<TAccountPlayer>;
   globalConfig: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
-  attackerState: Address<TAccountAttackerState>;
-  defenderState: Address<TAccountDefenderState>;
+  playerState: Address<TAccountPlayerState>;
+  /** Player's token account */
+  playerTokenAccount: Address<TAccountPlayerTokenAccount>;
+  /** Vault token account for this round (ATA owned by game_round) */
+  vault: Address<TAccountVault>;
   oracleQueue?: Address<TAccountOracleQueue>;
   systemProgram?: Address<TAccountSystemProgram>;
+  tokenProgram?: Address<TAccountTokenProgram>;
   programIdentity: Address<TAccountProgramIdentity>;
   vrfProgram?: Address<TAccountVrfProgram>;
   slotHashes?: Address<TAccountSlotHashes>;
-  clientSeed: InitiateBattleInstructionDataArgs['clientSeed'];
+  clientSeed: RerollAttributesInstructionDataArgs['clientSeed'];
 };
 
-export function getInitiateBattleInstruction<
+export function getRerollAttributesInstruction<
   TAccountPlayer extends string,
   TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
-  TAccountAttackerState extends string,
-  TAccountDefenderState extends string,
+  TAccountPlayerState extends string,
+  TAccountPlayerTokenAccount extends string,
+  TAccountVault extends string,
   TAccountOracleQueue extends string,
   TAccountSystemProgram extends string,
+  TAccountTokenProgram extends string,
   TAccountProgramIdentity extends string,
   TAccountVrfProgram extends string,
   TAccountSlotHashes extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
-  input: InitiateBattleInput<
+  input: RerollAttributesInput<
     TAccountPlayer,
     TAccountGlobalConfig,
     TAccountGameRound,
-    TAccountAttackerState,
-    TAccountDefenderState,
+    TAccountPlayerState,
+    TAccountPlayerTokenAccount,
+    TAccountVault,
     TAccountOracleQueue,
     TAccountSystemProgram,
+    TAccountTokenProgram,
     TAccountProgramIdentity,
     TAccountVrfProgram,
     TAccountSlotHashes
   >,
   config?: { programAddress?: TProgramAddress }
-): InitiateBattleInstruction<
+): RerollAttributesInstruction<
   TProgramAddress,
   TAccountPlayer,
   TAccountGlobalConfig,
   TAccountGameRound,
-  TAccountAttackerState,
-  TAccountDefenderState,
+  TAccountPlayerState,
+  TAccountPlayerTokenAccount,
+  TAccountVault,
   TAccountOracleQueue,
   TAccountSystemProgram,
+  TAccountTokenProgram,
   TAccountProgramIdentity,
   TAccountVrfProgram,
   TAccountSlotHashes
@@ -393,10 +439,15 @@ export function getInitiateBattleInstruction<
     player: { value: input.player ?? null, isWritable: true },
     globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
-    attackerState: { value: input.attackerState ?? null, isWritable: true },
-    defenderState: { value: input.defenderState ?? null, isWritable: true },
+    playerState: { value: input.playerState ?? null, isWritable: true },
+    playerTokenAccount: {
+      value: input.playerTokenAccount ?? null,
+      isWritable: true,
+    },
+    vault: { value: input.vault ?? null, isWritable: true },
     oracleQueue: { value: input.oracleQueue ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
+    tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
     programIdentity: {
       value: input.programIdentity ?? null,
       isWritable: false,
@@ -421,6 +472,10 @@ export function getInitiateBattleInstruction<
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
   }
+  if (!accounts.tokenProgram.value) {
+    accounts.tokenProgram.value =
+      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
+  }
   if (!accounts.vrfProgram.value) {
     accounts.vrfProgram.value =
       'Vrf1RNUjXmQGjmQrQLvJHs9SNkvDJEsRVFPkfSQUwGz' as Address<'Vrf1RNUjXmQGjmQrQLvJHs9SNkvDJEsRVFPkfSQUwGz'>;
@@ -436,34 +491,38 @@ export function getInitiateBattleInstruction<
       getAccountMeta(accounts.player),
       getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
-      getAccountMeta(accounts.attackerState),
-      getAccountMeta(accounts.defenderState),
+      getAccountMeta(accounts.playerState),
+      getAccountMeta(accounts.playerTokenAccount),
+      getAccountMeta(accounts.vault),
       getAccountMeta(accounts.oracleQueue),
       getAccountMeta(accounts.systemProgram),
+      getAccountMeta(accounts.tokenProgram),
       getAccountMeta(accounts.programIdentity),
       getAccountMeta(accounts.vrfProgram),
       getAccountMeta(accounts.slotHashes),
     ],
-    data: getInitiateBattleInstructionDataEncoder().encode(
-      args as InitiateBattleInstructionDataArgs
+    data: getRerollAttributesInstructionDataEncoder().encode(
+      args as RerollAttributesInstructionDataArgs
     ),
     programAddress,
-  } as InitiateBattleInstruction<
+  } as RerollAttributesInstruction<
     TProgramAddress,
     TAccountPlayer,
     TAccountGlobalConfig,
     TAccountGameRound,
-    TAccountAttackerState,
-    TAccountDefenderState,
+    TAccountPlayerState,
+    TAccountPlayerTokenAccount,
+    TAccountVault,
     TAccountOracleQueue,
     TAccountSystemProgram,
+    TAccountTokenProgram,
     TAccountProgramIdentity,
     TAccountVrfProgram,
     TAccountSlotHashes
   >);
 }
 
-export type ParsedInitiateBattleInstruction<
+export type ParsedRerollAttributesInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
@@ -472,26 +531,30 @@ export type ParsedInitiateBattleInstruction<
     player: TAccountMetas[0];
     globalConfig: TAccountMetas[1];
     gameRound: TAccountMetas[2];
-    attackerState: TAccountMetas[3];
-    defenderState: TAccountMetas[4];
-    oracleQueue: TAccountMetas[5];
-    systemProgram: TAccountMetas[6];
-    programIdentity: TAccountMetas[7];
-    vrfProgram: TAccountMetas[8];
-    slotHashes: TAccountMetas[9];
+    playerState: TAccountMetas[3];
+    /** Player's token account */
+    playerTokenAccount: TAccountMetas[4];
+    /** Vault token account for this round (ATA owned by game_round) */
+    vault: TAccountMetas[5];
+    oracleQueue: TAccountMetas[6];
+    systemProgram: TAccountMetas[7];
+    tokenProgram: TAccountMetas[8];
+    programIdentity: TAccountMetas[9];
+    vrfProgram: TAccountMetas[10];
+    slotHashes: TAccountMetas[11];
   };
-  data: InitiateBattleInstructionData;
+  data: RerollAttributesInstructionData;
 };
 
-export function parseInitiateBattleInstruction<
+export function parseRerollAttributesInstruction<
   TProgram extends string,
   TAccountMetas extends readonly AccountMeta[],
 >(
   instruction: Instruction<TProgram> &
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
-): ParsedInitiateBattleInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 10) {
+): ParsedRerollAttributesInstruction<TProgram, TAccountMetas> {
+  if (instruction.accounts.length < 12) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -507,14 +570,16 @@ export function parseInitiateBattleInstruction<
       player: getNextAccount(),
       globalConfig: getNextAccount(),
       gameRound: getNextAccount(),
-      attackerState: getNextAccount(),
-      defenderState: getNextAccount(),
+      playerState: getNextAccount(),
+      playerTokenAccount: getNextAccount(),
+      vault: getNextAccount(),
       oracleQueue: getNextAccount(),
       systemProgram: getNextAccount(),
+      tokenProgram: getNextAccount(),
       programIdentity: getNextAccount(),
       vrfProgram: getNextAccount(),
       slotHashes: getNextAccount(),
     },
-    data: getInitiateBattleInstructionDataDecoder().decode(instruction.data),
+    data: getRerollAttributesInstructionDataDecoder().decode(instruction.data),
   };
 }

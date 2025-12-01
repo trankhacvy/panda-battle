@@ -34,20 +34,20 @@ import {
 import { PANDA_BATTLE_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const APPLY_IDLE_DECAY_DISCRIMINATOR = new Uint8Array([
-  17, 240, 86, 231, 252, 176, 111, 61,
+export const RESET_PACKS_IF_NEW_HOUR_DISCRIMINATOR = new Uint8Array([
+  5, 2, 236, 18, 245, 159, 51, 252,
 ]);
 
-export function getApplyIdleDecayDiscriminatorBytes() {
+export function getResetPacksIfNewHourDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    APPLY_IDLE_DECAY_DISCRIMINATOR
+    RESET_PACKS_IF_NEW_HOUR_DISCRIMINATOR
   );
 }
 
-export type ApplyIdleDecayInstruction<
+export type ResetPacksIfNewHourInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountCaller extends string | AccountMeta<string> = string,
-  TAccountGameConfig extends string | AccountMeta<string> = string,
+  TAccountGlobalConfig extends string | AccountMeta<string> = string,
   TAccountGameRound extends string | AccountMeta<string> = string,
   TAccountPlayerState extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
@@ -59,9 +59,9 @@ export type ApplyIdleDecayInstruction<
         ? ReadonlySignerAccount<TAccountCaller> &
             AccountSignerMeta<TAccountCaller>
         : TAccountCaller,
-      TAccountGameConfig extends string
-        ? ReadonlyAccount<TAccountGameConfig>
-        : TAccountGameConfig,
+      TAccountGlobalConfig extends string
+        ? ReadonlyAccount<TAccountGlobalConfig>
+        : TAccountGlobalConfig,
       TAccountGameRound extends string
         ? ReadonlyAccount<TAccountGameRound>
         : TAccountGameRound,
@@ -72,67 +72,70 @@ export type ApplyIdleDecayInstruction<
     ]
   >;
 
-export type ApplyIdleDecayInstructionData = {
+export type ResetPacksIfNewHourInstructionData = {
   discriminator: ReadonlyUint8Array;
 };
 
-export type ApplyIdleDecayInstructionDataArgs = {};
+export type ResetPacksIfNewHourInstructionDataArgs = {};
 
-export function getApplyIdleDecayInstructionDataEncoder(): FixedSizeEncoder<ApplyIdleDecayInstructionDataArgs> {
+export function getResetPacksIfNewHourInstructionDataEncoder(): FixedSizeEncoder<ResetPacksIfNewHourInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', fixEncoderSize(getBytesEncoder(), 8)]]),
-    (value) => ({ ...value, discriminator: APPLY_IDLE_DECAY_DISCRIMINATOR })
+    (value) => ({
+      ...value,
+      discriminator: RESET_PACKS_IF_NEW_HOUR_DISCRIMINATOR,
+    })
   );
 }
 
-export function getApplyIdleDecayInstructionDataDecoder(): FixedSizeDecoder<ApplyIdleDecayInstructionData> {
+export function getResetPacksIfNewHourInstructionDataDecoder(): FixedSizeDecoder<ResetPacksIfNewHourInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
   ]);
 }
 
-export function getApplyIdleDecayInstructionDataCodec(): FixedSizeCodec<
-  ApplyIdleDecayInstructionDataArgs,
-  ApplyIdleDecayInstructionData
+export function getResetPacksIfNewHourInstructionDataCodec(): FixedSizeCodec<
+  ResetPacksIfNewHourInstructionDataArgs,
+  ResetPacksIfNewHourInstructionData
 > {
   return combineCodec(
-    getApplyIdleDecayInstructionDataEncoder(),
-    getApplyIdleDecayInstructionDataDecoder()
+    getResetPacksIfNewHourInstructionDataEncoder(),
+    getResetPacksIfNewHourInstructionDataDecoder()
   );
 }
 
-export type ApplyIdleDecayAsyncInput<
+export type ResetPacksIfNewHourAsyncInput<
   TAccountCaller extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
 > = {
   /** Anyone can call this (crank) */
   caller: TransactionSigner<TAccountCaller>;
-  gameConfig?: Address<TAccountGameConfig>;
+  globalConfig?: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
   playerState: Address<TAccountPlayerState>;
 };
 
-export async function getApplyIdleDecayInstructionAsync<
+export async function getResetPacksIfNewHourInstructionAsync<
   TAccountCaller extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
-  input: ApplyIdleDecayAsyncInput<
+  input: ResetPacksIfNewHourAsyncInput<
     TAccountCaller,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState
   >,
   config?: { programAddress?: TProgramAddress }
 ): Promise<
-  ApplyIdleDecayInstruction<
+  ResetPacksIfNewHourInstruction<
     TProgramAddress,
     TAccountCaller,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState
   >
@@ -143,7 +146,7 @@ export async function getApplyIdleDecayInstructionAsync<
   // Original accounts.
   const originalAccounts = {
     caller: { value: input.caller ?? null, isWritable: false },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: false },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: false },
     playerState: { value: input.playerState ?? null, isWritable: true },
   };
@@ -153,12 +156,14 @@ export async function getApplyIdleDecayInstructionAsync<
   >;
 
   // Resolve default values.
-  if (!accounts.gameConfig.value) {
-    accounts.gameConfig.value = await getProgramDerivedAddress({
+  if (!accounts.globalConfig.value) {
+    accounts.globalConfig.value = await getProgramDerivedAddress({
       programAddress,
       seeds: [
         getBytesEncoder().encode(
-          new Uint8Array([103, 97, 109, 101, 95, 99, 111, 110, 102, 105, 103])
+          new Uint8Array([
+            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
+          ])
         ),
       ],
     });
@@ -168,52 +173,52 @@ export async function getApplyIdleDecayInstructionAsync<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.caller),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
     ],
-    data: getApplyIdleDecayInstructionDataEncoder().encode({}),
+    data: getResetPacksIfNewHourInstructionDataEncoder().encode({}),
     programAddress,
-  } as ApplyIdleDecayInstruction<
+  } as ResetPacksIfNewHourInstruction<
     TProgramAddress,
     TAccountCaller,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState
   >);
 }
 
-export type ApplyIdleDecayInput<
+export type ResetPacksIfNewHourInput<
   TAccountCaller extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
 > = {
   /** Anyone can call this (crank) */
   caller: TransactionSigner<TAccountCaller>;
-  gameConfig: Address<TAccountGameConfig>;
+  globalConfig: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
   playerState: Address<TAccountPlayerState>;
 };
 
-export function getApplyIdleDecayInstruction<
+export function getResetPacksIfNewHourInstruction<
   TAccountCaller extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
-  input: ApplyIdleDecayInput<
+  input: ResetPacksIfNewHourInput<
     TAccountCaller,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState
   >,
   config?: { programAddress?: TProgramAddress }
-): ApplyIdleDecayInstruction<
+): ResetPacksIfNewHourInstruction<
   TProgramAddress,
   TAccountCaller,
-  TAccountGameConfig,
+  TAccountGlobalConfig,
   TAccountGameRound,
   TAccountPlayerState
 > {
@@ -223,7 +228,7 @@ export function getApplyIdleDecayInstruction<
   // Original accounts.
   const originalAccounts = {
     caller: { value: input.caller ?? null, isWritable: false },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: false },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: false },
     playerState: { value: input.playerState ?? null, isWritable: true },
   };
@@ -236,22 +241,22 @@ export function getApplyIdleDecayInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.caller),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
     ],
-    data: getApplyIdleDecayInstructionDataEncoder().encode({}),
+    data: getResetPacksIfNewHourInstructionDataEncoder().encode({}),
     programAddress,
-  } as ApplyIdleDecayInstruction<
+  } as ResetPacksIfNewHourInstruction<
     TProgramAddress,
     TAccountCaller,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState
   >);
 }
 
-export type ParsedApplyIdleDecayInstruction<
+export type ParsedResetPacksIfNewHourInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
@@ -259,21 +264,21 @@ export type ParsedApplyIdleDecayInstruction<
   accounts: {
     /** Anyone can call this (crank) */
     caller: TAccountMetas[0];
-    gameConfig: TAccountMetas[1];
+    globalConfig: TAccountMetas[1];
     gameRound: TAccountMetas[2];
     playerState: TAccountMetas[3];
   };
-  data: ApplyIdleDecayInstructionData;
+  data: ResetPacksIfNewHourInstructionData;
 };
 
-export function parseApplyIdleDecayInstruction<
+export function parseResetPacksIfNewHourInstruction<
   TProgram extends string,
   TAccountMetas extends readonly AccountMeta[],
 >(
   instruction: Instruction<TProgram> &
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
-): ParsedApplyIdleDecayInstruction<TProgram, TAccountMetas> {
+): ParsedResetPacksIfNewHourInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 4) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
@@ -288,10 +293,12 @@ export function parseApplyIdleDecayInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       caller: getNextAccount(),
-      gameConfig: getNextAccount(),
+      globalConfig: getNextAccount(),
       gameRound: getNextAccount(),
       playerState: getNextAccount(),
     },
-    data: getApplyIdleDecayInstructionDataDecoder().decode(instruction.data),
+    data: getResetPacksIfNewHourInstructionDataDecoder().decode(
+      instruction.data
+    ),
   };
 }

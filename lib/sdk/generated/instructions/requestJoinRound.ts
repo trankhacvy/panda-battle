@@ -54,13 +54,20 @@ export function getRequestJoinRoundDiscriminatorBytes() {
 export type RequestJoinRoundInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountPlayer extends string | AccountMeta<string> = string,
-  TAccountGameConfig extends string | AccountMeta<string> = string,
+  TAccountGlobalConfig extends string | AccountMeta<string> = string,
   TAccountGameRound extends string | AccountMeta<string> = string,
   TAccountPlayerState extends string | AccountMeta<string> = string,
   TAccountPlayerTokenAccount extends string | AccountMeta<string> = string,
   TAccountVault extends string | AccountMeta<string> = string,
   TAccountOracleQueue extends string | AccountMeta<string> =
     'Cuj97ggrhhidhbu39TijNVqE74xvKJ69gDervRUXAxGh',
+  TAccountBuffer extends string | AccountMeta<string> = string,
+  TAccountDelegationRecord extends string | AccountMeta<string> = string,
+  TAccountDelegationMetadata extends string | AccountMeta<string> = string,
+  TAccountOwnerProgram extends string | AccountMeta<string> =
+    'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP',
+  TAccountDelegationProgram extends string | AccountMeta<string> =
+    'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh',
   TAccountSystemProgram extends string | AccountMeta<string> =
     '11111111111111111111111111111111',
   TAccountTokenProgram extends string | AccountMeta<string> =
@@ -79,9 +86,9 @@ export type RequestJoinRoundInstruction<
         ? WritableSignerAccount<TAccountPlayer> &
             AccountSignerMeta<TAccountPlayer>
         : TAccountPlayer,
-      TAccountGameConfig extends string
-        ? ReadonlyAccount<TAccountGameConfig>
-        : TAccountGameConfig,
+      TAccountGlobalConfig extends string
+        ? ReadonlyAccount<TAccountGlobalConfig>
+        : TAccountGlobalConfig,
       TAccountGameRound extends string
         ? WritableAccount<TAccountGameRound>
         : TAccountGameRound,
@@ -97,6 +104,21 @@ export type RequestJoinRoundInstruction<
       TAccountOracleQueue extends string
         ? WritableAccount<TAccountOracleQueue>
         : TAccountOracleQueue,
+      TAccountBuffer extends string
+        ? WritableAccount<TAccountBuffer>
+        : TAccountBuffer,
+      TAccountDelegationRecord extends string
+        ? WritableAccount<TAccountDelegationRecord>
+        : TAccountDelegationRecord,
+      TAccountDelegationMetadata extends string
+        ? WritableAccount<TAccountDelegationMetadata>
+        : TAccountDelegationMetadata,
+      TAccountOwnerProgram extends string
+        ? ReadonlyAccount<TAccountOwnerProgram>
+        : TAccountOwnerProgram,
+      TAccountDelegationProgram extends string
+        ? ReadonlyAccount<TAccountDelegationProgram>
+        : TAccountDelegationProgram,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
@@ -152,12 +174,17 @@ export function getRequestJoinRoundInstructionDataCodec(): FixedSizeCodec<
 
 export type RequestJoinRoundAsyncInput<
   TAccountPlayer extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
   TAccountPlayerTokenAccount extends string = string,
   TAccountVault extends string = string,
   TAccountOracleQueue extends string = string,
+  TAccountBuffer extends string = string,
+  TAccountDelegationRecord extends string = string,
+  TAccountDelegationMetadata extends string = string,
+  TAccountOwnerProgram extends string = string,
+  TAccountDelegationProgram extends string = string,
   TAccountSystemProgram extends string = string,
   TAccountTokenProgram extends string = string,
   TAccountProgramIdentity extends string = string,
@@ -165,7 +192,7 @@ export type RequestJoinRoundAsyncInput<
   TAccountSlotHashes extends string = string,
 > = {
   player: TransactionSigner<TAccountPlayer>;
-  gameConfig?: Address<TAccountGameConfig>;
+  globalConfig?: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
   playerState?: Address<TAccountPlayerState>;
   /** Player's token account */
@@ -173,6 +200,11 @@ export type RequestJoinRoundAsyncInput<
   /** Vault token account for this round (ATA owned by game_round) */
   vault: Address<TAccountVault>;
   oracleQueue?: Address<TAccountOracleQueue>;
+  buffer?: Address<TAccountBuffer>;
+  delegationRecord?: Address<TAccountDelegationRecord>;
+  delegationMetadata?: Address<TAccountDelegationMetadata>;
+  ownerProgram?: Address<TAccountOwnerProgram>;
+  delegationProgram?: Address<TAccountDelegationProgram>;
   systemProgram?: Address<TAccountSystemProgram>;
   tokenProgram?: Address<TAccountTokenProgram>;
   programIdentity?: Address<TAccountProgramIdentity>;
@@ -183,12 +215,17 @@ export type RequestJoinRoundAsyncInput<
 
 export async function getRequestJoinRoundInstructionAsync<
   TAccountPlayer extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
   TAccountPlayerTokenAccount extends string,
   TAccountVault extends string,
   TAccountOracleQueue extends string,
+  TAccountBuffer extends string,
+  TAccountDelegationRecord extends string,
+  TAccountDelegationMetadata extends string,
+  TAccountOwnerProgram extends string,
+  TAccountDelegationProgram extends string,
   TAccountSystemProgram extends string,
   TAccountTokenProgram extends string,
   TAccountProgramIdentity extends string,
@@ -198,12 +235,17 @@ export async function getRequestJoinRoundInstructionAsync<
 >(
   input: RequestJoinRoundAsyncInput<
     TAccountPlayer,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
     TAccountVault,
     TAccountOracleQueue,
+    TAccountBuffer,
+    TAccountDelegationRecord,
+    TAccountDelegationMetadata,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram,
     TAccountSystemProgram,
     TAccountTokenProgram,
     TAccountProgramIdentity,
@@ -215,12 +257,17 @@ export async function getRequestJoinRoundInstructionAsync<
   RequestJoinRoundInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
     TAccountVault,
     TAccountOracleQueue,
+    TAccountBuffer,
+    TAccountDelegationRecord,
+    TAccountDelegationMetadata,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram,
     TAccountSystemProgram,
     TAccountTokenProgram,
     TAccountProgramIdentity,
@@ -234,7 +281,7 @@ export async function getRequestJoinRoundInstructionAsync<
   // Original accounts.
   const originalAccounts = {
     player: { value: input.player ?? null, isWritable: true },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: false },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
     playerState: { value: input.playerState ?? null, isWritable: true },
     playerTokenAccount: {
@@ -243,6 +290,20 @@ export async function getRequestJoinRoundInstructionAsync<
     },
     vault: { value: input.vault ?? null, isWritable: true },
     oracleQueue: { value: input.oracleQueue ?? null, isWritable: true },
+    buffer: { value: input.buffer ?? null, isWritable: true },
+    delegationRecord: {
+      value: input.delegationRecord ?? null,
+      isWritable: true,
+    },
+    delegationMetadata: {
+      value: input.delegationMetadata ?? null,
+      isWritable: true,
+    },
+    ownerProgram: { value: input.ownerProgram ?? null, isWritable: false },
+    delegationProgram: {
+      value: input.delegationProgram ?? null,
+      isWritable: false,
+    },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
     tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
     programIdentity: {
@@ -261,12 +322,14 @@ export async function getRequestJoinRoundInstructionAsync<
   const args = { ...input };
 
   // Resolve default values.
-  if (!accounts.gameConfig.value) {
-    accounts.gameConfig.value = await getProgramDerivedAddress({
+  if (!accounts.globalConfig.value) {
+    accounts.globalConfig.value = await getProgramDerivedAddress({
       programAddress,
       seeds: [
         getBytesEncoder().encode(
-          new Uint8Array([103, 97, 109, 101, 95, 99, 111, 110, 102, 105, 103])
+          new Uint8Array([
+            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
+          ])
         ),
       ],
     });
@@ -288,6 +351,49 @@ export async function getRequestJoinRoundInstructionAsync<
   if (!accounts.oracleQueue.value) {
     accounts.oracleQueue.value =
       'Cuj97ggrhhidhbu39TijNVqE74xvKJ69gDervRUXAxGh' as Address<'Cuj97ggrhhidhbu39TijNVqE74xvKJ69gDervRUXAxGh'>;
+  }
+  if (!accounts.buffer.value) {
+    accounts.buffer.value = await getProgramDerivedAddress({
+      programAddress:
+        'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP' as Address<'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP'>,
+      seeds: [
+        getBytesEncoder().encode(new Uint8Array([98, 117, 102, 102, 101, 114])),
+        getAddressEncoder().encode(expectAddress(accounts.playerState.value)),
+      ],
+    });
+  }
+  if (!accounts.delegationRecord.value) {
+    accounts.delegationRecord.value = await getProgramDerivedAddress({
+      programAddress,
+      seeds: [
+        getBytesEncoder().encode(
+          new Uint8Array([100, 101, 108, 101, 103, 97, 116, 105, 111, 110])
+        ),
+        getAddressEncoder().encode(expectAddress(accounts.playerState.value)),
+      ],
+    });
+  }
+  if (!accounts.delegationMetadata.value) {
+    accounts.delegationMetadata.value = await getProgramDerivedAddress({
+      programAddress,
+      seeds: [
+        getBytesEncoder().encode(
+          new Uint8Array([
+            100, 101, 108, 101, 103, 97, 116, 105, 111, 110, 45, 109, 101, 116,
+            97, 100, 97, 116, 97,
+          ])
+        ),
+        getAddressEncoder().encode(expectAddress(accounts.playerState.value)),
+      ],
+    });
+  }
+  if (!accounts.ownerProgram.value) {
+    accounts.ownerProgram.value =
+      'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP' as Address<'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP'>;
+  }
+  if (!accounts.delegationProgram.value) {
+    accounts.delegationProgram.value =
+      'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh' as Address<'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh'>;
   }
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
@@ -320,12 +426,17 @@ export async function getRequestJoinRoundInstructionAsync<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.player),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
       getAccountMeta(accounts.playerTokenAccount),
       getAccountMeta(accounts.vault),
       getAccountMeta(accounts.oracleQueue),
+      getAccountMeta(accounts.buffer),
+      getAccountMeta(accounts.delegationRecord),
+      getAccountMeta(accounts.delegationMetadata),
+      getAccountMeta(accounts.ownerProgram),
+      getAccountMeta(accounts.delegationProgram),
       getAccountMeta(accounts.systemProgram),
       getAccountMeta(accounts.tokenProgram),
       getAccountMeta(accounts.programIdentity),
@@ -339,12 +450,17 @@ export async function getRequestJoinRoundInstructionAsync<
   } as RequestJoinRoundInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
     TAccountVault,
     TAccountOracleQueue,
+    TAccountBuffer,
+    TAccountDelegationRecord,
+    TAccountDelegationMetadata,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram,
     TAccountSystemProgram,
     TAccountTokenProgram,
     TAccountProgramIdentity,
@@ -355,12 +471,17 @@ export async function getRequestJoinRoundInstructionAsync<
 
 export type RequestJoinRoundInput<
   TAccountPlayer extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
   TAccountPlayerTokenAccount extends string = string,
   TAccountVault extends string = string,
   TAccountOracleQueue extends string = string,
+  TAccountBuffer extends string = string,
+  TAccountDelegationRecord extends string = string,
+  TAccountDelegationMetadata extends string = string,
+  TAccountOwnerProgram extends string = string,
+  TAccountDelegationProgram extends string = string,
   TAccountSystemProgram extends string = string,
   TAccountTokenProgram extends string = string,
   TAccountProgramIdentity extends string = string,
@@ -368,7 +489,7 @@ export type RequestJoinRoundInput<
   TAccountSlotHashes extends string = string,
 > = {
   player: TransactionSigner<TAccountPlayer>;
-  gameConfig: Address<TAccountGameConfig>;
+  globalConfig: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
   playerState: Address<TAccountPlayerState>;
   /** Player's token account */
@@ -376,6 +497,11 @@ export type RequestJoinRoundInput<
   /** Vault token account for this round (ATA owned by game_round) */
   vault: Address<TAccountVault>;
   oracleQueue?: Address<TAccountOracleQueue>;
+  buffer: Address<TAccountBuffer>;
+  delegationRecord: Address<TAccountDelegationRecord>;
+  delegationMetadata: Address<TAccountDelegationMetadata>;
+  ownerProgram?: Address<TAccountOwnerProgram>;
+  delegationProgram?: Address<TAccountDelegationProgram>;
   systemProgram?: Address<TAccountSystemProgram>;
   tokenProgram?: Address<TAccountTokenProgram>;
   programIdentity: Address<TAccountProgramIdentity>;
@@ -386,12 +512,17 @@ export type RequestJoinRoundInput<
 
 export function getRequestJoinRoundInstruction<
   TAccountPlayer extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
   TAccountPlayerTokenAccount extends string,
   TAccountVault extends string,
   TAccountOracleQueue extends string,
+  TAccountBuffer extends string,
+  TAccountDelegationRecord extends string,
+  TAccountDelegationMetadata extends string,
+  TAccountOwnerProgram extends string,
+  TAccountDelegationProgram extends string,
   TAccountSystemProgram extends string,
   TAccountTokenProgram extends string,
   TAccountProgramIdentity extends string,
@@ -401,12 +532,17 @@ export function getRequestJoinRoundInstruction<
 >(
   input: RequestJoinRoundInput<
     TAccountPlayer,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
     TAccountVault,
     TAccountOracleQueue,
+    TAccountBuffer,
+    TAccountDelegationRecord,
+    TAccountDelegationMetadata,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram,
     TAccountSystemProgram,
     TAccountTokenProgram,
     TAccountProgramIdentity,
@@ -417,12 +553,17 @@ export function getRequestJoinRoundInstruction<
 ): RequestJoinRoundInstruction<
   TProgramAddress,
   TAccountPlayer,
-  TAccountGameConfig,
+  TAccountGlobalConfig,
   TAccountGameRound,
   TAccountPlayerState,
   TAccountPlayerTokenAccount,
   TAccountVault,
   TAccountOracleQueue,
+  TAccountBuffer,
+  TAccountDelegationRecord,
+  TAccountDelegationMetadata,
+  TAccountOwnerProgram,
+  TAccountDelegationProgram,
   TAccountSystemProgram,
   TAccountTokenProgram,
   TAccountProgramIdentity,
@@ -435,7 +576,7 @@ export function getRequestJoinRoundInstruction<
   // Original accounts.
   const originalAccounts = {
     player: { value: input.player ?? null, isWritable: true },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: false },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
     playerState: { value: input.playerState ?? null, isWritable: true },
     playerTokenAccount: {
@@ -444,6 +585,20 @@ export function getRequestJoinRoundInstruction<
     },
     vault: { value: input.vault ?? null, isWritable: true },
     oracleQueue: { value: input.oracleQueue ?? null, isWritable: true },
+    buffer: { value: input.buffer ?? null, isWritable: true },
+    delegationRecord: {
+      value: input.delegationRecord ?? null,
+      isWritable: true,
+    },
+    delegationMetadata: {
+      value: input.delegationMetadata ?? null,
+      isWritable: true,
+    },
+    ownerProgram: { value: input.ownerProgram ?? null, isWritable: false },
+    delegationProgram: {
+      value: input.delegationProgram ?? null,
+      isWritable: false,
+    },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
     tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
     programIdentity: {
@@ -466,6 +621,14 @@ export function getRequestJoinRoundInstruction<
     accounts.oracleQueue.value =
       'Cuj97ggrhhidhbu39TijNVqE74xvKJ69gDervRUXAxGh' as Address<'Cuj97ggrhhidhbu39TijNVqE74xvKJ69gDervRUXAxGh'>;
   }
+  if (!accounts.ownerProgram.value) {
+    accounts.ownerProgram.value =
+      'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP' as Address<'H7UJumnqZJjHNcmfTjcnM3vyz23g4DNNZbh5upWF6ECP'>;
+  }
+  if (!accounts.delegationProgram.value) {
+    accounts.delegationProgram.value =
+      'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh' as Address<'DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh'>;
+  }
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
@@ -487,12 +650,17 @@ export function getRequestJoinRoundInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.player),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
       getAccountMeta(accounts.playerTokenAccount),
       getAccountMeta(accounts.vault),
       getAccountMeta(accounts.oracleQueue),
+      getAccountMeta(accounts.buffer),
+      getAccountMeta(accounts.delegationRecord),
+      getAccountMeta(accounts.delegationMetadata),
+      getAccountMeta(accounts.ownerProgram),
+      getAccountMeta(accounts.delegationProgram),
       getAccountMeta(accounts.systemProgram),
       getAccountMeta(accounts.tokenProgram),
       getAccountMeta(accounts.programIdentity),
@@ -506,12 +674,17 @@ export function getRequestJoinRoundInstruction<
   } as RequestJoinRoundInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
     TAccountVault,
     TAccountOracleQueue,
+    TAccountBuffer,
+    TAccountDelegationRecord,
+    TAccountDelegationMetadata,
+    TAccountOwnerProgram,
+    TAccountDelegationProgram,
     TAccountSystemProgram,
     TAccountTokenProgram,
     TAccountProgramIdentity,
@@ -527,7 +700,7 @@ export type ParsedRequestJoinRoundInstruction<
   programAddress: Address<TProgram>;
   accounts: {
     player: TAccountMetas[0];
-    gameConfig: TAccountMetas[1];
+    globalConfig: TAccountMetas[1];
     gameRound: TAccountMetas[2];
     playerState: TAccountMetas[3];
     /** Player's token account */
@@ -535,11 +708,16 @@ export type ParsedRequestJoinRoundInstruction<
     /** Vault token account for this round (ATA owned by game_round) */
     vault: TAccountMetas[5];
     oracleQueue: TAccountMetas[6];
-    systemProgram: TAccountMetas[7];
-    tokenProgram: TAccountMetas[8];
-    programIdentity: TAccountMetas[9];
-    vrfProgram: TAccountMetas[10];
-    slotHashes: TAccountMetas[11];
+    buffer: TAccountMetas[7];
+    delegationRecord: TAccountMetas[8];
+    delegationMetadata: TAccountMetas[9];
+    ownerProgram: TAccountMetas[10];
+    delegationProgram: TAccountMetas[11];
+    systemProgram: TAccountMetas[12];
+    tokenProgram: TAccountMetas[13];
+    programIdentity: TAccountMetas[14];
+    vrfProgram: TAccountMetas[15];
+    slotHashes: TAccountMetas[16];
   };
   data: RequestJoinRoundInstructionData;
 };
@@ -552,7 +730,7 @@ export function parseRequestJoinRoundInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedRequestJoinRoundInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 12) {
+  if (instruction.accounts.length < 17) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -566,12 +744,17 @@ export function parseRequestJoinRoundInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       player: getNextAccount(),
-      gameConfig: getNextAccount(),
+      globalConfig: getNextAccount(),
       gameRound: getNextAccount(),
       playerState: getNextAccount(),
       playerTokenAccount: getNextAccount(),
       vault: getNextAccount(),
       oracleQueue: getNextAccount(),
+      buffer: getNextAccount(),
+      delegationRecord: getNextAccount(),
+      delegationMetadata: getNextAccount(),
+      ownerProgram: getNextAccount(),
+      delegationProgram: getNextAccount(),
       systemProgram: getNextAccount(),
       tokenProgram: getNextAccount(),
       programIdentity: getNextAccount(),

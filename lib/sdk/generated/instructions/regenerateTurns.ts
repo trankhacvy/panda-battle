@@ -47,7 +47,7 @@ export function getRegenerateTurnsDiscriminatorBytes() {
 export type RegenerateTurnsInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountCaller extends string | AccountMeta<string> = string,
-  TAccountGameConfig extends string | AccountMeta<string> = string,
+  TAccountGlobalConfig extends string | AccountMeta<string> = string,
   TAccountGameRound extends string | AccountMeta<string> = string,
   TAccountPlayerState extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
@@ -59,9 +59,9 @@ export type RegenerateTurnsInstruction<
         ? ReadonlySignerAccount<TAccountCaller> &
             AccountSignerMeta<TAccountCaller>
         : TAccountCaller,
-      TAccountGameConfig extends string
-        ? ReadonlyAccount<TAccountGameConfig>
-        : TAccountGameConfig,
+      TAccountGlobalConfig extends string
+        ? ReadonlyAccount<TAccountGlobalConfig>
+        : TAccountGlobalConfig,
       TAccountGameRound extends string
         ? ReadonlyAccount<TAccountGameRound>
         : TAccountGameRound,
@@ -103,27 +103,27 @@ export function getRegenerateTurnsInstructionDataCodec(): FixedSizeCodec<
 
 export type RegenerateTurnsAsyncInput<
   TAccountCaller extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
 > = {
   /** Anyone can call this (crank) */
   caller: TransactionSigner<TAccountCaller>;
-  gameConfig?: Address<TAccountGameConfig>;
+  globalConfig?: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
   playerState: Address<TAccountPlayerState>;
 };
 
 export async function getRegenerateTurnsInstructionAsync<
   TAccountCaller extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
   input: RegenerateTurnsAsyncInput<
     TAccountCaller,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState
   >,
@@ -132,7 +132,7 @@ export async function getRegenerateTurnsInstructionAsync<
   RegenerateTurnsInstruction<
     TProgramAddress,
     TAccountCaller,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState
   >
@@ -143,7 +143,7 @@ export async function getRegenerateTurnsInstructionAsync<
   // Original accounts.
   const originalAccounts = {
     caller: { value: input.caller ?? null, isWritable: false },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: false },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: false },
     playerState: { value: input.playerState ?? null, isWritable: true },
   };
@@ -153,12 +153,14 @@ export async function getRegenerateTurnsInstructionAsync<
   >;
 
   // Resolve default values.
-  if (!accounts.gameConfig.value) {
-    accounts.gameConfig.value = await getProgramDerivedAddress({
+  if (!accounts.globalConfig.value) {
+    accounts.globalConfig.value = await getProgramDerivedAddress({
       programAddress,
       seeds: [
         getBytesEncoder().encode(
-          new Uint8Array([103, 97, 109, 101, 95, 99, 111, 110, 102, 105, 103])
+          new Uint8Array([
+            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
+          ])
         ),
       ],
     });
@@ -168,7 +170,7 @@ export async function getRegenerateTurnsInstructionAsync<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.caller),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
     ],
@@ -177,7 +179,7 @@ export async function getRegenerateTurnsInstructionAsync<
   } as RegenerateTurnsInstruction<
     TProgramAddress,
     TAccountCaller,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState
   >);
@@ -185,27 +187,27 @@ export async function getRegenerateTurnsInstructionAsync<
 
 export type RegenerateTurnsInput<
   TAccountCaller extends string = string,
-  TAccountGameConfig extends string = string,
+  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
 > = {
   /** Anyone can call this (crank) */
   caller: TransactionSigner<TAccountCaller>;
-  gameConfig: Address<TAccountGameConfig>;
+  globalConfig: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
   playerState: Address<TAccountPlayerState>;
 };
 
 export function getRegenerateTurnsInstruction<
   TAccountCaller extends string,
-  TAccountGameConfig extends string,
+  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
   TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
 >(
   input: RegenerateTurnsInput<
     TAccountCaller,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState
   >,
@@ -213,7 +215,7 @@ export function getRegenerateTurnsInstruction<
 ): RegenerateTurnsInstruction<
   TProgramAddress,
   TAccountCaller,
-  TAccountGameConfig,
+  TAccountGlobalConfig,
   TAccountGameRound,
   TAccountPlayerState
 > {
@@ -223,7 +225,7 @@ export function getRegenerateTurnsInstruction<
   // Original accounts.
   const originalAccounts = {
     caller: { value: input.caller ?? null, isWritable: false },
-    gameConfig: { value: input.gameConfig ?? null, isWritable: false },
+    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: false },
     playerState: { value: input.playerState ?? null, isWritable: true },
   };
@@ -236,7 +238,7 @@ export function getRegenerateTurnsInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.caller),
-      getAccountMeta(accounts.gameConfig),
+      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
     ],
@@ -245,7 +247,7 @@ export function getRegenerateTurnsInstruction<
   } as RegenerateTurnsInstruction<
     TProgramAddress,
     TAccountCaller,
-    TAccountGameConfig,
+    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState
   >);
@@ -259,7 +261,7 @@ export type ParsedRegenerateTurnsInstruction<
   accounts: {
     /** Anyone can call this (crank) */
     caller: TAccountMetas[0];
-    gameConfig: TAccountMetas[1];
+    globalConfig: TAccountMetas[1];
     gameRound: TAccountMetas[2];
     playerState: TAccountMetas[3];
   };
@@ -288,7 +290,7 @@ export function parseRegenerateTurnsInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       caller: getNextAccount(),
-      gameConfig: getNextAccount(),
+      globalConfig: getNextAccount(),
       gameRound: getNextAccount(),
       playerState: getNextAccount(),
     },
