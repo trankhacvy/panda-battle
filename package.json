@@ -28,6 +28,7 @@
     "@solana/kit": "^5.0.0",
     "@solana/react": "^5.0.0",
     "@solana/rpc": "^5.0.0",
+    "@solana/web3.js": "^1.98.4",
     "@wallet-standard/core": "^1.1.1",
     "@wallet-standard/react": "^1.0.1",
     "bs58": "^6.0.0",
