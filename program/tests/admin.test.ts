@@ -77,6 +77,9 @@ describe("Admin Instructions", () => {
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
+      .postInstructions([
+        await program.methods.
+      ])
       .rpc();
 
     const gameRound = await getGameRound(program, roundPDA);
