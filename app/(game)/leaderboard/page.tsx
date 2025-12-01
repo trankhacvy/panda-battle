@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search, ArrowDownUp, Filter } from "lucide-react";
 import { PlayerCard } from "@/components/leaderboard/player-card";
+import { useSound } from "@/hooks/use-sound";
 
 const players = [
   {
@@ -44,21 +45,42 @@ const players = [
 
 export default function LeaderboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { play, SOUNDS } = useSound();
 
   const filteredPlayers = players.filter((player) =>
     player.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleBattle = (playerName: string) => {
+    play(SOUNDS.GAME_START);
     console.log("Battle with player:", playerName);
     // TODO: Navigate to battle screen
   };
 
+  const handleSort = () => {
+    play(SOUNDS.BUTTON_CLICK);
+    console.log("Sort players");
+  };
+
+  const handleFilter = () => {
+    play(SOUNDS.BUTTON_CLICK);
+    console.log("Filter players");
+  };
+
   return (
-    <div className="flex-1 px-4 py-2 space-y-3 overflow-auto relative z-10">
+    <div className="flex-1 px-4 py-2 space-y-3 overflow-auto relative z-10 pb-24">
+      {/* Prize Pool Banner */}
+      <div className="relative rounded-2xl overflow-hidden">
+        <img
+          src="/images/attributes/pool-bg.png"
+          alt="Prize Pool"
+          className="w-full h-auto object-cover"
+        />
+      </div>
+
       {/* Search and Filters */}
       <div className="flex gap-2">
-        <div className="flex-1 bg-[#0f2a4a]/80 border border-cyan-500/20 rounded-lg flex items-center px-3 py-2">
+        <div className="flex-1 bg-[#0f2a4a]/80 border border-cyan-500/20 rounded-lg flex items-center px-3 py-2.5">
           <Search className="w-5 h-5 text-white/50 mr-2" />
           <input
             type="text"
@@ -68,13 +90,19 @@ export default function LeaderboardPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-2 flex flex-col items-center justify-center min-w-[50px] transition-colors">
-          <ArrowDownUp className="w-4 h-4 text-white" />
-          <span className="text-white text-xs sr-only">Sort</span>
+        <button
+          onClick={handleSort}
+          className="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2.5 flex flex-col items-center justify-center min-w-[60px] transition-colors"
+        >
+          <ArrowDownUp className="w-5 h-5 text-white mb-0.5" />
+          <span className="text-white text-xs font-medium">Sort</span>
         </button>
-        <button className="bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-2 flex flex-col items-center justify-center min-w-[50px] transition-colors">
-          <Filter className="w-4 h-4 text-white" />
-          <span className="text-white text-xs sr-only">Filter</span>
+        <button
+          onClick={handleFilter}
+          className="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2.5 flex flex-col items-center justify-center min-w-[60px] transition-colors"
+        >
+          <Filter className="w-5 h-5 text-white mb-0.5" />
+          <span className="text-white text-xs font-medium">Filter</span>
         </button>
       </div>
 

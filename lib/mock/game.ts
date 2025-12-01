@@ -101,6 +101,9 @@ export interface PlayerData {
   id: string;
   name: string;
   pandaName: string;
+  level: number;
+  experience: number;
+  experienceToNextLevel: number;
   attributes: {
     strength: number;
     speed: number;
@@ -122,6 +125,9 @@ export const mockPlayerData: PlayerData = {
   id: "player_1",
   name: "Player",
   pandaName: "Shadow Striker",
+  level: 15,
+  experience: 8500,
+  experienceToNextLevel: 10000,
   attributes: {
     strength: 28,
     speed: 32,

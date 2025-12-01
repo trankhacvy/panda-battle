@@ -1,18 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button3D } from "@/components/ui/button-3d";
-// import { useSolana } from "@/components/providers/solana-provider";
-// import { useConnect, type UiWallet } from "@wallet-standard/react";
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogDescription,
-//   DialogHeader,
-//   DialogTitle,
-// } from "@/components/ui/dialog";
-// import { Button } from "@/components/ui/button";
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SplashScreen } from "@/components/splash-screen";
 import { useWallet } from "@/hooks/use-wallet";
 import { useLogin } from "@privy-io/react-auth";
 
@@ -77,11 +68,16 @@ import { useLogin } from "@privy-io/react-auth";
 export default function Home() {
   const router = useRouter();
   const { ready } = useWallet();
+  const [showSplash, setShowSplash] = useState(true);
   const { login } = useLogin({
     onComplete: () => {
       router.push("/create");
     },
   });
+
+  if (showSplash) {
+    return <SplashScreen onComplete={() => setShowSplash(false)} duration={3000} />;
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4">

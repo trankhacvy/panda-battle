@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Button3D } from "@/components/ui/button-3d";
 import { Home, Swords, Trophy, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSound } from "@/hooks/use-sound";
 
 interface NavItem {
   id: string;
@@ -44,9 +45,15 @@ const navItems: NavItem[] = [
 export function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
+  const { play, SOUNDS } = useSound();
 
   const isActive = (path: string) => {
     return pathname === path || pathname.startsWith(path + "/");
+  };
+
+  const handleNavClick = (path: string) => {
+    play(SOUNDS.BUTTON_CLICK);
+    router.push(path);
   };
 
   if (pathname === "/") {
@@ -65,7 +72,7 @@ export function Navigation() {
         return (
           <button
             key={item.id}
-            onClick={() => router.push(item.path)}
+            onClick={() => handleNavClick(item.path)}
             className={cn(
               "transition-all duration-200 flex flex-col items-center justify-center w-full h-full flex-1",
               active && "bg-[#1a3a5c]"

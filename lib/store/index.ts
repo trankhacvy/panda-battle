@@ -14,3 +14,5 @@ export {
   usePlayerRank,
   useIsTop20,
 } from "./game-store";
+
+export { useSoundStore } from "./sound-store";
