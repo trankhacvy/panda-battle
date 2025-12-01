@@ -3,31 +3,12 @@ use anchor_lang::prelude::*;
 /// Global game configuration account
 #[account]
 #[derive(Default, InitSpace)]
-pub struct GameConfig {
+pub struct GlobalConfig {
     /// Admin authority
     pub admin: Pubkey,
 
-<<<<<<< HEAD
-    /// Entry fee in lamports
-    pub entry_fee: u64,
-
-    /// Base price for purchasing turns (in lamports)
-=======
-    /// Entry fee in tokens
-    pub entry_fee: u64,
-
-    /// Base price for purchasing turns (in tokens)
->>>>>>> 6594ddf (program)
-    pub turn_base_price: u64,
-
-    /// Round duration in seconds
-    pub round_duration: i64,
-
-    /// Percentage of attribute stolen on win (0-25)
-    pub steal_percentage: u8,
-
-    /// Percentage of attribute decay per hour when idle (0-10)
-    pub idle_decay_percentage: u8,
+    /// Token mint for the game
+    pub token_mint: Pubkey,
 
     /// Current active round number
     pub current_round: u64,
@@ -37,31 +18,34 @@ pub struct GameConfig {
 
     /// Bump seed for PDA
     pub bump: u8,
-<<<<<<< HEAD
 
     /// Vault bump seed
     pub vault_bump: u8,
-=======
->>>>>>> 6594ddf (program)
 }
 
-impl GameConfig {}
+impl GlobalConfig {}
 
 /// Game round state
 #[account]
 #[derive(Default, InitSpace)]
 pub struct GameRound {
-    /// Reference to game config
-    pub game_config: Pubkey,
+    /// Reference to global config
+    pub global_config: Pubkey,
 
-<<<<<<< HEAD
-=======
-    /// Token mint for this round
-    pub mint: Pubkey,
-
->>>>>>> 6594ddf (program)
     /// Round number
     pub round_number: u64,
+
+    /// Entry fee in tokens (e.g., $1.99 worth)
+    pub entry_fee: u64,
+
+    /// Attack pack base price in tokens (e.g., $0.10 worth)
+    pub attack_pack_price: u64,
+
+    /// Round duration in seconds (e.g., 24 hours = 86400)
+    pub duration_secs: i64,
+
+    /// Entry fee hourly increase percentage (default: 1%)
+    pub entry_hourly_inc_pct: u8,
 
     /// Round start timestamp
     pub start_time: i64,
@@ -69,11 +53,10 @@ pub struct GameRound {
     /// Round end timestamp
     pub end_time: i64,
 
-<<<<<<< HEAD
-    /// Total prize pool in lamports
-=======
+    /// Leaderboard reveal timestamp (12 hours after start)
+    pub leaderboard_reveal_ts: i64,
+
     /// Total prize pool in tokens
->>>>>>> 6594ddf (program)
     pub prize_pool: u64,
 
     /// Number of players in this round
@@ -102,28 +85,46 @@ pub struct PlayerState {
     /// Reference to the game round
     pub round: Pubkey,
 
-    // ===== ATTRIBUTES =====
+    // ===== ATTRIBUTES (u8, init 5-15, max 15 with levels) =====
     /// Strength attribute (damage output)
-    pub strength: u16,
+    pub str: u8,
 
-    /// Speed attribute (turn order, dodge chance)
-    pub speed: u16,
+    /// Agility attribute (turn order, dodge chance, crit chance)
+    pub agi: u8,
 
-    /// Endurance attribute (HP, damage absorption)
-    pub endurance: u16,
+    /// Intelligence attribute (damage mitigation)
+    pub int: u8,
 
-    /// Luck attribute (crit chance, steal success)
-    pub luck: u16,
+    // ===== PROGRESSION =====
+    /// Current level (0-10, starts at 0)
+    pub level: u8,
+
+    /// Current experience points
+    pub xp: u32,
+
+    /// Leaderboard points (wins = +1 point)
+    pub points: u16,
 
     // ===== TURNS =====
     /// Current available turns
     pub turns: u8,
 
-    /// Maximum turn storage
+    /// Maximum turn storage (default 50)
     pub max_turns: u8,
 
     /// Last turn regeneration timestamp
     pub last_turn_regen: i64,
+
+    // ===== REROLLS =====
+    /// Number of rerolls used (max 3)
+    pub rerolls_used: u8,
+
+    // ===== ATTACK PACKS =====
+    /// Number of attack packs bought in current hour
+    pub packs_bought_hour: u8,
+
+    /// Last hour when pack was bought (unix timestamp)
+    pub last_pack_hour: i64,
 
     // ===== BATTLE STATS =====
     /// Last battle/action timestamp
@@ -139,20 +140,17 @@ pub struct PlayerState {
     pub losses: u16,
 
     // ===== REWARDS =====
-    /// Rewards earned this round
-    pub rewards_earned: u64,
+    /// Prize share for this round (calculated at end)
+    pub prize_share: u64,
 
-    /// Whether rewards have been claimed
-    pub rewards_claimed: bool,
+    /// Whether prize has been claimed
+    pub prize_claimed: bool,
 
     // ===== TIMESTAMPS =====
     /// When player joined the round
     pub joined_at: i64,
 
-    /// Last idle decay application
-    pub last_decay: i64,
-
-    /// Entry fee paid (for late join tracking)
+    /// Entry fee paid (for tracking)
     pub entry_fee_paid: u64,
 
     /// Bump seed for PDA
@@ -160,36 +158,40 @@ pub struct PlayerState {
 }
 
 impl PlayerState {
-    /// Calculate total attribute sum (for ranking)
-    pub fn total_attributes(&self) -> u64 {
-        self.strength as u64 + self.speed as u64 + self.endurance as u64 + self.luck as u64
+    /// Calculate total power (for ranking)
+    pub fn total_power(&self) -> u16 {
+        self.str as u16 + self.agi as u16 + self.int as u16
     }
 
-    /// Calculate battle score with weighted formula
-    pub fn battle_score(&self) -> u64 {
-        // Weights: Strength 30%, Speed 25%, Endurance 30%, Luck 15%
-        let strength_score = (self.strength as u64) * 30;
-        let speed_score = (self.speed as u64) * 25;
-        let endurance_score = (self.endurance as u64) * 30;
-        let luck_score = (self.luck as u64) * 15;
-
-        (strength_score + speed_score + endurance_score + luck_score) / 100
+    /// Calculate HP for battle: 100 + (STR + INT) * 2
+    pub fn calculate_hp(&self) -> u16 {
+        100 + ((self.str as u16 + self.int as u16) * 2)
     }
 }
 
-/// Attribute type enum for steal selection
-#[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq)]
-pub enum AttributeType {
-    Strength,
-    Speed,
-    Endurance,
-    Luck,
+/// Leaderboard entry
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, InitSpace)]
+pub struct LeaderboardEntry {
+    pub player: Pubkey,
+    pub points: u16,
 }
 
-impl Default for AttributeType {
-    fn default() -> Self {
-        AttributeType::Strength
-    }
+/// Leaderboard state (top 20 players)
+#[account]
+#[derive(Default, InitSpace)]
+pub struct Leaderboard {
+    /// Reference to the game round
+    pub round: Pubkey,
+
+    /// Top 20 players (sorted by points descending)
+    #[max_len(20)]
+    pub entries: Vec<LeaderboardEntry>,
+
+    /// Whether leaderboard has been revealed
+    pub is_revealed: bool,
+
+    /// Bump seed for PDA
+    pub bump: u8,
 }
 
 /// Round status enum

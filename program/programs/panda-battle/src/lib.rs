@@ -6,7 +6,6 @@ pub mod instructions;
 pub mod state;
 
 use instructions::*;
-use state::AttributeType;
 
 declare_id!("2U6NvgpGn779fBKMziM88UxQqWwstTgQm4LLHyt7JqyG");
 
@@ -16,28 +15,26 @@ pub mod panda_battle {
 
     // ============== ADMIN INSTRUCTIONS ==============
 
-    /// Initialize the game configuration (one-time setup)
-    pub fn initialize_game(
-        ctx: Context<InitializeGame>,
-        entry_fee: u64,
-        turn_base_price: u64,
-        round_duration: i64,
-        steal_percentage: u8,
-        idle_decay_percentage: u8,
-    ) -> Result<()> {
-        instructions::admin::initialize_game(
-            ctx,
-            entry_fee,
-            turn_base_price,
-            round_duration,
-            steal_percentage,
-            idle_decay_percentage,
-        )
+    /// Initialize the global game configuration (one-time setup)
+    pub fn initialize_game(ctx: Context<InitializeGame>, token_mint: Pubkey) -> Result<()> {
+        instructions::admin::initialize_game(ctx, token_mint)
     }
 
     /// Create a new game round
-    pub fn create_round(ctx: Context<CreateRound>) -> Result<()> {
-        instructions::admin::create_round(ctx)
+    pub fn create_round(
+        ctx: Context<CreateRound>,
+        entry_fee: u64,
+        attack_pack_price: u64,
+        duration_secs: i64,
+        entry_hourly_inc_pct: u8,
+    ) -> Result<()> {
+        instructions::admin::create_round(
+            ctx,
+            entry_fee,
+            attack_pack_price,
+            duration_secs,
+            entry_hourly_inc_pct,
+        )
     }
 
     /// End the current round and prepare for payouts
@@ -45,23 +42,9 @@ pub mod panda_battle {
         instructions::admin::end_round(ctx)
     }
 
-    /// Update game configuration parameters
-    pub fn update_config(
-        ctx: Context<UpdateConfig>,
-        entry_fee: Option<u64>,
-        turn_base_price: Option<u64>,
-        round_duration: Option<i64>,
-        steal_percentage: Option<u8>,
-        idle_decay_percentage: Option<u8>,
-    ) -> Result<()> {
-        instructions::admin::update_config(
-            ctx,
-            entry_fee,
-            turn_base_price,
-            round_duration,
-            steal_percentage,
-            idle_decay_percentage,
-        )
+    /// Update global configuration parameters
+    pub fn update_config(ctx: Context<UpdateConfig>, token_mint: Option<Pubkey>) -> Result<()> {
+        instructions::admin::update_config(ctx, token_mint)
     }
 
     // ============== PLAYER INSTRUCTIONS ==============
@@ -79,22 +62,40 @@ pub mod panda_battle {
         instructions::player::callback_join_round(ctx, randomness)
     }
 
-    /// Purchase additional turns
-    pub fn purchase_turns(ctx: Context<PurchaseTurns>, amount: u8) -> Result<()> {
-        instructions::player::purchase_turns(ctx, amount)
+    /// Buy attack packs (replaces purchase_turns)
+    pub fn buy_attack_packs(ctx: Context<BuyAttackPacks>, num_packs: u8) -> Result<()> {
+        instructions::player::buy_attack_packs(ctx, num_packs)
     }
 
-    /// Initiate a battle against another player
-    pub fn initiate_battle(
-        ctx: Context<InitiateBattle>,
-        steal_attribute: AttributeType,
+    /// Reroll attributes (costs $1 fixed, max 3 times)
+    pub fn reroll_attributes(ctx: Context<RerollAttributes>, client_seed: u8) -> Result<()> {
+        instructions::player::reroll_attributes(ctx, client_seed)
+    }
+
+    /// Callback to complete attribute reroll (Step 2: Consume VRF randomness)
+    pub fn callback_reroll_attributes(
+        ctx: Context<CallbackRerollAttributes>,
+        randomness: [u8; 32],
     ) -> Result<()> {
-        instructions::player::initiate_battle(ctx, steal_attribute)
+        instructions::player::callback_reroll_attributes(ctx, randomness)
     }
 
-    /// Claim rewards after round ends
-    pub fn claim_reward(ctx: Context<ClaimReward>) -> Result<()> {
-        instructions::player::claim_reward(ctx)
+    /// Initiate a battle against another player (Step 1: Request VRF)
+    pub fn initiate_battle(ctx: Context<InitiateBattle>, client_seed: u8) -> Result<()> {
+        instructions::player::initiate_battle(ctx, client_seed)
+    }
+
+    /// Callback to resolve battle (Step 2: Full battle simulation with VRF randomness)
+    pub fn callback_resolve_battle(
+        ctx: Context<CallbackResolveBattle>,
+        randomness: [u8; 32],
+    ) -> Result<()> {
+        instructions::player::callback_resolve_battle(ctx, randomness)
+    }
+
+    /// Claim prize after round ends
+    pub fn claim_prize(ctx: Context<ClaimPrize>) -> Result<()> {
+        instructions::player::claim_prize(ctx)
     }
 
     // ============== CRANK INSTRUCTIONS ==============
@@ -104,8 +105,23 @@ pub mod panda_battle {
         instructions::crank::regenerate_turns(ctx)
     }
 
-    /// Apply idle decay to inactive player (can be called by anyone)
-    pub fn apply_idle_decay(ctx: Context<ApplyIdleDecay>) -> Result<()> {
-        instructions::crank::apply_idle_decay(ctx)
+    /// Reset packs bought counter if a new hour has started (can be called by anyone)
+    pub fn reset_packs_if_new_hour(ctx: Context<ResetPacksIfNewHour>) -> Result<()> {
+        instructions::crank::reset_packs_if_new_hour(ctx)
+    }
+
+    /// Reveal leaderboard after reveal timestamp (computes and stores top 20 players)
+    pub fn reveal_leaderboard(ctx: Context<RevealLeaderboard>) -> Result<()> {
+        instructions::crank::reveal_leaderboard(ctx)
+    }
+
+    /// Hourly jackpot distribution (post-reveal, weighted random pick from top 20)
+    pub fn hourly_jackpot(ctx: Context<HourlyJackpot>, client_seed: u8) -> Result<()> {
+        instructions::crank::hourly_jackpot(ctx, client_seed)
+    }
+
+    /// Distribute prizes after round ends (calculates prize shares for all players)
+    pub fn distribute_prizes(ctx: Context<DistributePrizes>) -> Result<()> {
+        instructions::crank::distribute_prizes(ctx)
     }
 }

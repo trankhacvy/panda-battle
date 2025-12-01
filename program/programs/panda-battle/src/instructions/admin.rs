@@ -8,59 +8,53 @@ use crate::constants::*;
 use crate::errors::PandaBattleError;
 use crate::state::*;
 
-/// Initialize the game configuration
-pub fn initialize_game(
-    ctx: Context<InitializeGame>,
-    entry_fee: u64,
-    turn_base_price: u64,
-    round_duration: i64,
-    steal_percentage: u8,
-    idle_decay_percentage: u8,
-) -> Result<()> {
-    require!(
-        steal_percentage <= MAX_STEAL_PERCENTAGE,
-        PandaBattleError::InvalidConfig
-    );
-    require!(idle_decay_percentage <= 10, PandaBattleError::InvalidConfig);
-    require!(round_duration > 0, PandaBattleError::InvalidConfig);
+/// Initialize the global game configuration
+pub fn initialize_game(ctx: Context<InitializeGame>, token_mint: Pubkey) -> Result<()> {
+    let global_config = &mut ctx.accounts.global_config;
 
-    let game_config = &mut ctx.accounts.game_config;
-
-    game_config.admin = ctx.accounts.admin.key();
-    game_config.entry_fee = entry_fee;
-    game_config.turn_base_price = turn_base_price;
-    game_config.round_duration = round_duration;
-    game_config.steal_percentage = steal_percentage;
-    game_config.idle_decay_percentage = idle_decay_percentage;
-    game_config.current_round = 0;
-    game_config.total_rounds = 0;
-    game_config.bump = ctx.bumps.game_config;
+    global_config.admin = ctx.accounts.admin.key();
+    global_config.token_mint = token_mint;
+    global_config.current_round = 0;
+    global_config.total_rounds = 0;
+    global_config.bump = ctx.bumps.global_config;
 
     msg!(
-        "Game initialized with entry_fee: {}, turn_price: {}",
-        entry_fee,
-        turn_base_price
+        "Game initialized with admin: {}, token_mint: {}",
+        global_config.admin,
+        token_mint
     );
 
     Ok(())
 }
 
 /// Create a new game round with dedicated vault
-pub fn create_round(ctx: Context<CreateRound>) -> Result<()> {
-    let game_config = &mut ctx.accounts.game_config;
+pub fn create_round(
+    ctx: Context<CreateRound>,
+    entry_fee: u64,
+    attack_pack_price: u64,
+    duration_secs: i64,
+    entry_hourly_inc_pct: u8,
+) -> Result<()> {
+    let global_config = &mut ctx.accounts.global_config;
     let game_round = &mut ctx.accounts.game_round;
     let clock = Clock::get()?;
 
+    require!(duration_secs > 0, PandaBattleError::InvalidConfig);
+
     // Increment round counter
-    game_config.current_round = game_config.total_rounds + 1;
-    game_config.total_rounds += 1;
+    global_config.current_round = global_config.total_rounds + 1;
+    global_config.total_rounds += 1;
 
     // Initialize round
-    game_round.game_config = game_config.key();
-    game_round.mint = ctx.accounts.mint.key();
-    game_round.round_number = game_config.current_round;
+    game_round.global_config = global_config.key();
+    game_round.round_number = global_config.current_round;
+    game_round.entry_fee = entry_fee;
+    game_round.attack_pack_price = attack_pack_price;
+    game_round.duration_secs = duration_secs;
+    game_round.entry_hourly_inc_pct = entry_hourly_inc_pct;
     game_round.start_time = clock.unix_timestamp;
-    game_round.end_time = clock.unix_timestamp + game_config.round_duration;
+    game_round.end_time = clock.unix_timestamp + duration_secs;
+    game_round.leaderboard_reveal_ts = clock.unix_timestamp + (duration_secs / 2); // 12 hours for 24h round
     game_round.prize_pool = 0;
     game_round.player_count = 0;
     game_round.total_battles = 0;
@@ -69,12 +63,14 @@ pub fn create_round(ctx: Context<CreateRound>) -> Result<()> {
     game_round.bump = ctx.bumps.game_round;
 
     msg!(
-        "Round {} created with mint: {}, vault: {}. Starts: {}, Ends: {}",
+        "Round {} created. Entry: {}, Pack: {}, Duration: {}s. Starts: {}, Ends: {}, Reveal: {}",
         game_round.round_number,
-        ctx.accounts.mint.key(),
-        ctx.accounts.vault.key(),
+        entry_fee,
+        attack_pack_price,
+        duration_secs,
         game_round.start_time,
-        game_round.end_time
+        game_round.end_time,
+        game_round.leaderboard_reveal_ts
     );
 
     Ok(())
@@ -88,7 +84,7 @@ pub fn end_round(ctx: Context<EndRound>) -> Result<()> {
     require!(game_round.is_active, PandaBattleError::RoundAlreadyEnded);
 
     // Allow early end by admin or auto-end after duration
-    let is_admin = ctx.accounts.admin.key() == ctx.accounts.game_config.admin;
+    let is_admin = ctx.accounts.admin.key() == ctx.accounts.global_config.admin;
     let is_expired = clock.unix_timestamp >= game_round.end_time;
 
     require!(is_admin || is_expired, PandaBattleError::Unauthorized);
@@ -107,44 +103,15 @@ pub fn end_round(ctx: Context<EndRound>) -> Result<()> {
     Ok(())
 }
 
-/// Update game configuration
-pub fn update_config(
-    ctx: Context<UpdateConfig>,
-    entry_fee: Option<u64>,
-    turn_base_price: Option<u64>,
-    round_duration: Option<i64>,
-    steal_percentage: Option<u8>,
-    idle_decay_percentage: Option<u8>,
-) -> Result<()> {
-    let game_config = &mut ctx.accounts.game_config;
+/// Update global configuration
+pub fn update_config(ctx: Context<UpdateConfig>, token_mint: Option<Pubkey>) -> Result<()> {
+    let global_config = &mut ctx.accounts.global_config;
 
-    if let Some(fee) = entry_fee {
-        game_config.entry_fee = fee;
+    if let Some(mint) = token_mint {
+        global_config.token_mint = mint;
     }
 
-    if let Some(price) = turn_base_price {
-        game_config.turn_base_price = price;
-    }
-
-    if let Some(duration) = round_duration {
-        require!(duration > 0, PandaBattleError::InvalidConfig);
-        game_config.round_duration = duration;
-    }
-
-    if let Some(percentage) = steal_percentage {
-        require!(
-            percentage <= MAX_STEAL_PERCENTAGE,
-            PandaBattleError::InvalidConfig
-        );
-        game_config.steal_percentage = percentage;
-    }
-
-    if let Some(percentage) = idle_decay_percentage {
-        require!(percentage <= 10, PandaBattleError::InvalidConfig);
-        game_config.idle_decay_percentage = percentage;
-    }
-
-    msg!("Game config updated");
+    msg!("Global config updated");
 
     Ok(())
 }
@@ -159,11 +126,11 @@ pub struct InitializeGame<'info> {
     #[account(
         init,
         payer = admin,
-        space = 8 + GameConfig::INIT_SPACE,
-        seeds = [GAME_CONFIG_SEED],
+        space = 8 + GlobalConfig::INIT_SPACE,
+        seeds = [GLOBAL_CONFIG_SEED],
         bump
     )]
-    pub game_config: Account<'info, GameConfig>,
+    pub global_config: Account<'info, GlobalConfig>,
 
     pub system_program: Program<'info, System>,
 }
@@ -172,7 +139,7 @@ pub struct InitializeGame<'info> {
 pub struct CreateRound<'info> {
     #[account(
         mut,
-        constraint = admin.key() == game_config.admin @ PandaBattleError::Unauthorized
+        constraint = admin.key() == global_config.admin @ PandaBattleError::Unauthorized
     )]
     pub admin: Signer<'info>,
 
@@ -181,10 +148,10 @@ pub struct CreateRound<'info> {
 
     #[account(
         mut,
-        seeds = [GAME_CONFIG_SEED],
-        bump = game_config.bump
+        seeds = [GLOBAL_CONFIG_SEED],
+        bump = global_config.bump
     )]
-    pub game_config: Account<'info, GameConfig>,
+    pub global_config: Account<'info, GlobalConfig>,
 
     #[account(
         init,
@@ -192,8 +159,8 @@ pub struct CreateRound<'info> {
         space = 8 + GameRound::INIT_SPACE,
         seeds = [
             GAME_ROUND_SEED,
-            game_config.key().as_ref(),
-            (game_config.total_rounds + 1).to_le_bytes().as_ref()
+            global_config.key().as_ref(),
+            (global_config.total_rounds + 1).to_le_bytes().as_ref()
         ],
         bump
     )]
@@ -219,16 +186,16 @@ pub struct EndRound<'info> {
     pub admin: Signer<'info>,
 
     #[account(
-        seeds = [GAME_CONFIG_SEED],
-        bump = game_config.bump
+        seeds = [GLOBAL_CONFIG_SEED],
+        bump = global_config.bump
     )]
-    pub game_config: Account<'info, GameConfig>,
+    pub global_config: Account<'info, GlobalConfig>,
 
     #[account(
         mut,
         seeds = [
             GAME_ROUND_SEED,
-            game_config.key().as_ref(),
+            global_config.key().as_ref(),
             game_round.round_number.to_le_bytes().as_ref()
         ],
         bump = game_round.bump,
@@ -240,16 +207,16 @@ pub struct EndRound<'info> {
 #[derive(Accounts)]
 pub struct UpdateConfig<'info> {
     #[account(
-        constraint = admin.key() == game_config.admin @ PandaBattleError::Unauthorized
+        constraint = admin.key() == global_config.admin @ PandaBattleError::Unauthorized
     )]
     pub admin: Signer<'info>,
 
     #[account(
         mut,
-        seeds = [GAME_CONFIG_SEED],
-        bump = game_config.bump
+        seeds = [GLOBAL_CONFIG_SEED],
+        bump = global_config.bump
     )]
-    pub game_config: Account<'info, GameConfig>,
+    pub global_config: Account<'info, GlobalConfig>,
 }
 
 // ============== UTILITY FUNCTIONS ==============

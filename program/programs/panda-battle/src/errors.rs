@@ -41,6 +41,9 @@ pub enum PandaBattleError {
     #[msg("Insufficient funds")]
     InsufficientFunds,
 
+    #[msg("Maximum rerolls reached (3 max)")]
+    MaxRerollsReached,
+
     // Battle Errors
     #[msg("Cannot battle yourself")]
     CannotBattleSelf,
@@ -51,15 +54,9 @@ pub enum PandaBattleError {
     #[msg("Battle calculation overflow")]
     BattleOverflow,
 
-    #[msg("Invalid attribute type")]
-    InvalidAttribute,
-
     // Reward Errors
     #[msg("Rewards already claimed")]
     AlreadyClaimed,
-
-    #[msg("Not eligible for rewards (minimum battles not met)")]
-    NotEligibleForRewards,
 
     #[msg("No rewards available")]
     NoRewardsAvailable,
@@ -68,11 +65,21 @@ pub enum PandaBattleError {
     #[msg("Turn regeneration not ready yet")]
     RegenNotReady,
 
-    #[msg("Player is not idle")]
-    PlayerNotIdle,
+    // Leaderboard Errors
+    #[msg("Leaderboard reveal time has not been reached yet")]
+    LeaderboardNotReady,
 
-    #[msg("Decay already applied recently")]
-    DecayAlreadyApplied,
+    #[msg("Leaderboard has already been revealed")]
+    LeaderboardAlreadyRevealed,
+
+    #[msg("Leaderboard has not been revealed yet")]
+    LeaderboardNotRevealed,
+
+    #[msg("Leaderboard is empty")]
+    EmptyLeaderboard,
+
+    #[msg("Invalid round for player state")]
+    InvalidRound,
 
     // Math Errors
     #[msg("Numerical overflow")]
