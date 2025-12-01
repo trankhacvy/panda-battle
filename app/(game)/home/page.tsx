@@ -99,9 +99,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <p className="text-center text-gray-300 text-sm">
-            Higher levels increase attribute power.
-          </p>
+        
         </div>
       </div>
 
