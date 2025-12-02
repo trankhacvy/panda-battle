@@ -103,6 +103,7 @@ export type PlayerState = {
   joinedAt: bigint;
   /** Entry fee paid (for tracking) */
   entryFeePaid: bigint;
+  delegated: boolean;
   /** Bump seed for PDA */
   bump: number;
 };
@@ -152,6 +153,7 @@ export type PlayerStateArgs = {
   joinedAt: number | bigint;
   /** Entry fee paid (for tracking) */
   entryFeePaid: number | bigint;
+  delegated: boolean;
   /** Bump seed for PDA */
   bump: number;
 };
@@ -183,6 +185,7 @@ export function getPlayerStateEncoder(): FixedSizeEncoder<PlayerStateArgs> {
       ['prizeClaimed', getBooleanEncoder()],
       ['joinedAt', getI64Encoder()],
       ['entryFeePaid', getU64Encoder()],
+      ['delegated', getBooleanEncoder()],
       ['bump', getU8Encoder()],
     ]),
     (value) => ({ ...value, discriminator: PLAYER_STATE_DISCRIMINATOR })
@@ -215,6 +218,7 @@ export function getPlayerStateDecoder(): FixedSizeDecoder<PlayerState> {
     ['prizeClaimed', getBooleanDecoder()],
     ['joinedAt', getI64Decoder()],
     ['entryFeePaid', getU64Decoder()],
+    ['delegated', getBooleanDecoder()],
     ['bump', getU8Decoder()],
   ]);
 }
@@ -281,5 +285,5 @@ export async function fetchAllMaybePlayerState(
 }
 
 export function getPlayerStateSize(): number {
-  return 142;
+  return 143;
 }

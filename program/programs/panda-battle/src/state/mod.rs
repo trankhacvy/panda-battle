@@ -156,6 +156,8 @@ pub struct PlayerState {
     /// Entry fee paid (for tracking)
     pub entry_fee_paid: u64,
 
+    pub delegated: bool,
+
     /// Bump seed for PDA
     pub bump: u8,
 }

@@ -16,13 +16,13 @@ export const VRF_PROGRAM_IDENTITY = address(
   "9irBy75QS2BN81FUgXuHcjqceJJRuc9oDkAe8TKVvvAw"
 );
 
-// 1764685466977
+// 1764695842752
 export const PLATFORM_CONFIG = address(
-  "9KFfvtAKET6XCqZBmDBYFacL13wPVJSAsCc3qTsVbvZM"
+  "HhkQT9cSX6Hny7WvDoPrz59ncazKDjCox85HLDAZS5YB"
 );
 
 export const GAME_ROUND_ADDRESS = address(
-  "GL46MedpugsMJNUYVVNuYoaNM8W9D7mEat179yvarApj"
+  "2UxH7BW3f1CMzMrGHHzdVfhFAVEr6c2WXmJfVZDsJZHb"
 );
 
 // export const USDC_MINT_ADDRESS = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";

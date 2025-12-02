@@ -9,6 +9,8 @@ import {
   type Instruction,
   type TransactionSigner,
   address,
+  getProgramDerivedAddress,
+  getAddressEncoder,
 } from "@solana/kit";
 import {
   getCreateAssociatedTokenInstructionAsync,
@@ -31,6 +33,7 @@ import {
   getRevealLeaderboardInstructionAsync,
   getEndRoundInstruction,
   getUpdateConfigInstruction,
+  PANDA_BATTLE_PROGRAM_ADDRESS,
 } from "./generated";
 import {
   fetchGlobalConfig,
@@ -60,7 +63,11 @@ import {
   mapGameRound,
   mapPlayerState,
 } from "./types";
-import { DEFAULT_QUEUE, PLATFORM_CONFIG } from "@/configs/constants";
+import {
+  DEFAULT_QUEUE,
+  DELEGATION_PROGRAM_ID,
+  PLATFORM_CONFIG,
+} from "@/configs/constants";
 
 // ============== TYPES ==============
 
@@ -80,14 +87,13 @@ export interface CreateRoundParams {
 
 export interface ConfirmJoinRoundParams {
   player: TransactionSigner;
-  roundNumber: number;
-  playerTokenAccount: Address;
+  gameRound: Address;
 }
 
 export interface GeneratePandaAttributesParams {
   rpc: Rpc<SolanaRpcApi>;
   player: TransactionSigner;
-  roundNumber: number;
+  gameRound: Address;
 }
 
 export interface BuyAttackPacksParams {
@@ -246,21 +252,37 @@ export class PandaBattleSDK {
   async confirmJoinRoundIx(
     params: ConfirmJoinRoundParams
   ): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-    const [gameRoundPDA] = await getGameRoundPDA(
-      gameConfigPDA,
-      params.roundNumber
-    );
     const [playerStatePDA] = await getPlayerStatePDA(
-      gameRoundPDA,
+      params.gameRound,
       params.player.address
     );
 
+    const [buffer] = await getProgramDerivedAddress({
+      programAddress: PANDA_BATTLE_PROGRAM_ADDRESS,
+      seeds: ["buffer", getAddressEncoder().encode(playerStatePDA)],
+    });
+
+    const [delegationRecord] = await getProgramDerivedAddress({
+      programAddress: DELEGATION_PROGRAM_ID,
+      seeds: ["delegation", getAddressEncoder().encode(playerStatePDA)],
+    });
+
+    const [delegationMetadata] = await getProgramDerivedAddress({
+      programAddress: DELEGATION_PROGRAM_ID,
+      seeds: [
+        "delegation-metadata",
+        getAddressEncoder().encode(playerStatePDA),
+      ],
+    });
+
     return await getConfirmJoinRoundInstructionAsync({
       player: params.player,
-      globalConfig: gameConfigPDA,
-      gameRound: gameRoundPDA,
+      gameRound: params.gameRound,
       playerState: playerStatePDA,
+      buffer,
+      delegationRecord,
+      delegationMetadata,
+      delegationProgram: DELEGATION_PROGRAM_ID,
     });
   }
 
@@ -273,20 +295,12 @@ export class PandaBattleSDK {
     instruction: Instruction;
     playerStateAddress: Address;
   }> {
-    const config = await fetchGlobalConfig(params.rpc, PLATFORM_CONFIG);
-    if (!config) throw new Error("Global config not found");
-
-    const [gameRoundPDA] = await getGameRoundPDA(
-      PLATFORM_CONFIG,
-      Number(config.data.currentRound)
-    );
-
-    const gameRound = await fetchGameRound(params.rpc, gameRoundPDA);
+    const gameRound = await fetchGameRound(params.rpc, params.gameRound);
 
     if (!gameRound) throw new Error("Game round not found");
 
     const [playerStatePDA] = await getPlayerStatePDA(
-      gameRoundPDA,
+      params.gameRound,
       params.player.address
     );
 
@@ -298,7 +312,7 @@ export class PandaBattleSDK {
     // const vaultPDA = await getAssociatedTokenAddress(mint, roundPDA, true);
     const [vaultPDA] = await getTokenVaultPda(
       gameRound.data.tokenMint,
-      gameRoundPDA
+      params.gameRound
     );
     console.log("vaultPDA", vaultPDA);
 
@@ -313,9 +327,8 @@ export class PandaBattleSDK {
 
     const ix = await getGeneratePandaAttributesInstructionAsync({
       player: params.player,
-      globalConfig: PLATFORM_CONFIG,
       gameAuthority: gameAuthority,
-      gameRound: gameRoundPDA,
+      gameRound: params.gameRound,
       playerState: playerStatePDA,
       playerTokenAccount,
       vault: vaultPDA,

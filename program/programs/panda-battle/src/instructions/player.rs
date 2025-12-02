@@ -15,12 +15,6 @@ pub struct GeneratePandaAttributes<'info> {
     #[account(mut)]
     pub player: Signer<'info>,
 
-    #[account(
-        seeds = [GLOBAL_CONFIG_SEED, &global_config.id.to_le_bytes()],
-        bump = global_config.bump
-    )]
-    pub global_config: Box<Account<'info, GlobalConfig>>,
-
     /// CHECK: game authority PDA - only required for paid games
     #[account(
         seeds = [
@@ -34,7 +28,7 @@ pub struct GeneratePandaAttributes<'info> {
         mut,
         seeds = [
             GAME_ROUND_SEED,
-            global_config.key().as_ref(),
+            game_round.global_config.as_ref(),
             game_round.round_number.to_le_bytes().as_ref()
         ],
         bump = game_round.bump,
@@ -234,15 +228,9 @@ pub struct ConfirmJoinRound<'info> {
     pub player: Signer<'info>,
 
     #[account(
-        seeds = [GLOBAL_CONFIG_SEED, &global_config.id.to_le_bytes()],
-        bump = global_config.bump
-    )]
-    pub global_config: Box<Account<'info, GlobalConfig>>,
-
-    #[account(
         seeds = [
             GAME_ROUND_SEED,
-            global_config.key().as_ref(),
+            game_round.global_config.as_ref(),
             game_round.round_number.to_le_bytes().as_ref()
         ],
         bump = game_round.bump,
@@ -301,49 +289,52 @@ pub struct ConfirmJoinRound<'info> {
 }
 
 pub fn confirm_join_round(ctx: Context<ConfirmJoinRound>) -> Result<()> {
-    msg!("Delegating player_state to Ephemeral Rollups...");
+    let player_state = &mut ctx.accounts.player_state;
 
-    let player_state = &ctx.accounts.player_state;
-    let game_round = &ctx.accounts.game_round;
-    let player_key = player_state.player;
-    let game_round_key = game_round.key();
+    require!(player_state.str > 0, PandaBattleError::RoundNotActive);
+    player_state.delegated = true;
 
-    // Verify that attributes have been set (str should not be 0)
-    // require!(player_state.str > 0, PandaBattleError::RoundNotActive); // Reusing error for now
+    {
+        msg!("Delegating player_state to Ephemeral Rollups...");
+        let player_state = &ctx.accounts.player_state;
+        let game_round = &ctx.accounts.game_round;
+        let player_key = player_state.player;
+        let game_round_key = game_round.key();
 
-    let del_accounts = ephemeral_rollups_sdk::cpi::DelegateAccounts {
-        payer: &ctx.accounts.player.to_account_info(),
-        pda: &player_state.to_account_info(),
-        owner_program: &ctx.accounts.owner_program.to_account_info(),
-        buffer: &ctx.accounts.buffer.to_account_info(),
-        delegation_record: &ctx.accounts.delegation_record.to_account_info(),
-        delegation_metadata: &ctx.accounts.delegation_metadata.to_account_info(),
-        delegation_program: &ctx.accounts.delegation_program.to_account_info(),
-        system_program: &ctx.accounts.system_program.to_account_info(),
-    };
+        let del_accounts = ephemeral_rollups_sdk::cpi::DelegateAccounts {
+            payer: &ctx.accounts.player.to_account_info(),
+            pda: &player_state.to_account_info(),
+            owner_program: &ctx.accounts.owner_program.to_account_info(),
+            buffer: &ctx.accounts.buffer.to_account_info(),
+            delegation_record: &ctx.accounts.delegation_record.to_account_info(),
+            delegation_metadata: &ctx.accounts.delegation_metadata.to_account_info(),
+            delegation_program: &ctx.accounts.delegation_program.to_account_info(),
+            system_program: &ctx.accounts.system_program.to_account_info(),
+        };
 
-    let seeds = &[
-        PLAYER_STATE_SEED,
-        game_round_key.as_ref(),
-        player_key.as_ref(),
-    ];
+        let seeds = &[
+            PLAYER_STATE_SEED,
+            game_round_key.as_ref(),
+            player_key.as_ref(),
+        ];
 
-    let config = DelegateConfig {
-        commit_frequency_ms: 30_000,
-        validator: Some(pubkey!("MAS1Dt9qreoRMQ14YQuhg8UTZMMzDdKhmkZMECCzk57")),
-    };
+        let config = DelegateConfig {
+            commit_frequency_ms: 30_000,
+            validator: Some(pubkey!("MAS1Dt9qreoRMQ14YQuhg8UTZMMzDdKhmkZMECCzk57")),
+        };
 
-    player_state.exit(&crate::ID)?;
-    ephemeral_rollups_sdk::cpi::delegate_account(del_accounts, seeds, config)?;
+        player_state.exit(&crate::ID)?;
+        ephemeral_rollups_sdk::cpi::delegate_account(del_accounts, seeds, config)?;
 
-    msg!(
-        "Player {} successfully joined round {} with panda STR:{} AGI:{} INT:{}",
-        player_state.player,
-        game_round.round_number,
-        player_state.str,
-        player_state.agi,
-        player_state.int
-    );
+        msg!(
+            "Player {} successfully joined round {} with panda STR:{} AGI:{} INT:{}",
+            player_state.player,
+            game_round.round_number,
+            player_state.str,
+            player_state.agi,
+            player_state.int
+        );
+    }
 
     Ok(())
 }
