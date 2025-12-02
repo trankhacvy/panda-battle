@@ -12,7 +12,6 @@ import {
   fixEncoderSize,
   getBytesDecoder,
   getBytesEncoder,
-  getProgramDerivedAddress,
   getStructDecoder,
   getStructEncoder,
   transformEncoder,
@@ -91,81 +90,6 @@ export function getEndRoundInstructionDataCodec(): FixedSizeCodec<
     getEndRoundInstructionDataEncoder(),
     getEndRoundInstructionDataDecoder()
   );
-}
-
-export type EndRoundAsyncInput<
-  TAccountAdmin extends string = string,
-  TAccountGlobalConfig extends string = string,
-  TAccountGameRound extends string = string,
-> = {
-  admin: TransactionSigner<TAccountAdmin>;
-  globalConfig?: Address<TAccountGlobalConfig>;
-  gameRound: Address<TAccountGameRound>;
-};
-
-export async function getEndRoundInstructionAsync<
-  TAccountAdmin extends string,
-  TAccountGlobalConfig extends string,
-  TAccountGameRound extends string,
-  TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
->(
-  input: EndRoundAsyncInput<
-    TAccountAdmin,
-    TAccountGlobalConfig,
-    TAccountGameRound
-  >,
-  config?: { programAddress?: TProgramAddress }
-): Promise<
-  EndRoundInstruction<
-    TProgramAddress,
-    TAccountAdmin,
-    TAccountGlobalConfig,
-    TAccountGameRound
-  >
-> {
-  // Program address.
-  const programAddress = config?.programAddress ?? PANDA_BATTLE_PROGRAM_ADDRESS;
-
-  // Original accounts.
-  const originalAccounts = {
-    admin: { value: input.admin ?? null, isWritable: true },
-    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
-    gameRound: { value: input.gameRound ?? null, isWritable: true },
-  };
-  const accounts = originalAccounts as Record<
-    keyof typeof originalAccounts,
-    ResolvedAccount
-  >;
-
-  // Resolve default values.
-  if (!accounts.globalConfig.value) {
-    accounts.globalConfig.value = await getProgramDerivedAddress({
-      programAddress,
-      seeds: [
-        getBytesEncoder().encode(
-          new Uint8Array([
-            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
-          ])
-        ),
-      ],
-    });
-  }
-
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
-  return Object.freeze({
-    accounts: [
-      getAccountMeta(accounts.admin),
-      getAccountMeta(accounts.globalConfig),
-      getAccountMeta(accounts.gameRound),
-    ],
-    data: getEndRoundInstructionDataEncoder().encode({}),
-    programAddress,
-  } as EndRoundInstruction<
-    TProgramAddress,
-    TAccountAdmin,
-    TAccountGlobalConfig,
-    TAccountGameRound
-  >);
 }
 
 export type EndRoundInput<

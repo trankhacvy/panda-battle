@@ -57,6 +57,8 @@ export type GameRound = {
   discriminator: ReadonlyUint8Array;
   /** Reference to global config */
   globalConfig: Address;
+  /** Token mint for the game */
+  tokenMint: Address;
   /** Round number */
   roundNumber: bigint;
   /** Entry fee in tokens (e.g., $1.99 worth) */
@@ -90,6 +92,8 @@ export type GameRound = {
 export type GameRoundArgs = {
   /** Reference to global config */
   globalConfig: Address;
+  /** Token mint for the game */
+  tokenMint: Address;
   /** Round number */
   roundNumber: number | bigint;
   /** Entry fee in tokens (e.g., $1.99 worth) */
@@ -126,6 +130,7 @@ export function getGameRoundEncoder(): FixedSizeEncoder<GameRoundArgs> {
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
       ['globalConfig', getAddressEncoder()],
+      ['tokenMint', getAddressEncoder()],
       ['roundNumber', getU64Encoder()],
       ['entryFee', getU64Encoder()],
       ['attackPackPrice', getU64Encoder()],
@@ -150,6 +155,7 @@ export function getGameRoundDecoder(): FixedSizeDecoder<GameRound> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
     ['globalConfig', getAddressDecoder()],
+    ['tokenMint', getAddressDecoder()],
     ['roundNumber', getU64Decoder()],
     ['entryFee', getU64Decoder()],
     ['attackPackPrice', getU64Decoder()],
@@ -226,5 +232,5 @@ export async function fetchAllMaybeGameRound(
 }
 
 export function getGameRoundSize(): number {
-  return 116;
+  return 148;
 }

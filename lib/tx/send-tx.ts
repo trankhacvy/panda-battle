@@ -18,7 +18,7 @@ import {
 } from "@solana/kit";
 import { buildTransaction, buildTransactionLegacy } from "./build-tx";
 import { WalletWithMetadata } from "@privy-io/react-auth";
-// import { signTransactionWithPrivy } from "../privy";
+import { signTransactionWithPrivy } from "../privy";
 
 export async function buildAndSendTransaction(
   rpc: Rpc<SolanaRpcApi>,
@@ -206,13 +206,13 @@ export async function buildAndSendTransactionWithPrivy(
 
   const serializedTransaction = getBase64EncodedWireTransaction(tx);
 
-  // const signedTxResponse = await signTransactionWithPrivy(
-  //   wallet.id!,
-  //   serializedTransaction
-  // );
+  const signedTxResponse = await signTransactionWithPrivy(
+    wallet.id!,
+    serializedTransaction
+  );
 
   const txBytes = Buffer.from(
-    'signedTxResponse.data.signed_transaction',
+    signedTxResponse.data.signed_transaction,
     "base64"
   );
   // @ts-expect-error

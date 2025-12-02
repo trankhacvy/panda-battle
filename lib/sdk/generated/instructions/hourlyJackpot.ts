@@ -137,7 +137,7 @@ export type HourlyJackpotAsyncInput<
 > = {
   /** Anyone can call this (crank) */
   caller: TransactionSigner<TAccountCaller>;
-  globalConfig?: Address<TAccountGlobalConfig>;
+  globalConfig: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
   leaderboard?: Address<TAccountLeaderboard>;
   vault?: Address<TAccountVault>;
@@ -204,18 +204,6 @@ export async function getHourlyJackpotInstructionAsync<
   const args = { ...input };
 
   // Resolve default values.
-  if (!accounts.globalConfig.value) {
-    accounts.globalConfig.value = await getProgramDerivedAddress({
-      programAddress,
-      seeds: [
-        getBytesEncoder().encode(
-          new Uint8Array([
-            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
-          ])
-        ),
-      ],
-    });
-  }
   if (!accounts.leaderboard.value) {
     accounts.leaderboard.value = await getProgramDerivedAddress({
       programAddress,
@@ -231,7 +219,9 @@ export async function getHourlyJackpotInstructionAsync<
     accounts.vault.value = await getProgramDerivedAddress({
       programAddress,
       seeds: [
-        getBytesEncoder().encode(new Uint8Array([118, 97, 117, 108, 116])),
+        getBytesEncoder().encode(
+          new Uint8Array([116, 111, 107, 101, 110, 95, 118, 97, 117, 108, 116])
+        ),
         getAddressEncoder().encode(expectAddress(accounts.globalConfig.value)),
       ],
     });

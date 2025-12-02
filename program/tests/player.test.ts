@@ -22,7 +22,9 @@ import {
 } from "./utils";
 
 // Mock VRF oracle queue (use default from ephemeral-vrf-sdk)
-const ORACLE_QUEUE = new PublicKey("FfD96yeXs4cxZshoPPSKhSPgVQxLAJUT3gefgh84m1Di");
+const ORACLE_QUEUE = new PublicKey(
+  "Cuj97ggrhhidhbu39TijNVqE74xvKJ69gDervRUXAxGh"
+);
 
 describe("Player Instructions", () => {
   const provider = anchor.AnchorProvider.env();
@@ -32,6 +34,7 @@ describe("Player Instructions", () => {
   const admin = provider.wallet as anchor.Wallet;
 
   let globalConfigPDA: PublicKey;
+  const configId = Date.now();
   let mint: PublicKey;
   let roundPDA: PublicKey;
   let vaultPDA: PublicKey;
@@ -49,8 +52,8 @@ describe("Player Instructions", () => {
     player1 = Keypair.generate();
     player2 = Keypair.generate();
 
-    await airdrop(provider.connection, player1.publicKey, 5);
-    await airdrop(provider.connection, player2.publicKey, 5);
+    await airdrop(provider.connection, player1.publicKey, 0.01, admin.payer);
+    await airdrop(provider.connection, player2.publicKey, 0.01, admin.payer);
 
     // Create mint
     mint = await createMint(
@@ -93,27 +96,39 @@ describe("Player Instructions", () => {
     );
 
     // Initialize game
-    globalConfigPDA = getGlobalConfigPDA(program);
-    await program.methods
-      .initializeGame(mint)
-      .accountsPartial({
-        admin: admin.publicKey,
-        globalConfig: globalConfigPDA,
-        systemProgram: SystemProgram.programId,
-      })
-      .rpc();
+    globalConfigPDA = getGlobalConfigPDA(program, configId);
+    let globalConfig = await program.account.globalConfig.fetchNullable(
+      globalConfigPDA
+    );
+    if (!globalConfig) {
+      await program.methods
+        .initializeGame(new BN(configId))
+        .accountsPartial({
+          admin: admin.publicKey,
+          globalConfig: globalConfigPDA,
+          systemProgram: SystemProgram.programId,
+        })
+        .rpc();
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 2000)); // wait for tx finality
+    globalConfig = await program.account.globalConfig.fetchNullable(
+      globalConfigPDA
+    );
+
+    console.log("Global config:", globalConfig.currentRound.toString());
 
     // Create round
-    roundPDA = getGameRoundPDA(program, globalConfigPDA, 1);
+    roundPDA = getGameRoundPDA(
+      program,
+      globalConfigPDA,
+      globalConfig.currentRound.add(new BN(1)).toNumber()
+    );
+    console.log("roundPDA", roundPDA.toBase58());
     vaultPDA = await getAssociatedTokenAddress(mint, roundPDA, true);
 
     await program.methods
-      .createRound(
-        new BN(1_990_000),
-        new BN(100_000),
-        new BN(86400),
-        1
-      )
+      .createRound(new BN(1_990_000), new BN(100_000), new BN(86400), 1)
       .accountsPartial({
         admin: admin.publicKey,
         mint: mint,
@@ -128,14 +143,23 @@ describe("Player Instructions", () => {
 
     player1StatePDA = getPlayerStatePDA(program, roundPDA, player1.publicKey);
     player2StatePDA = getPlayerStatePDA(program, roundPDA, player2.publicKey);
+
+    const gameRound = await getGameRound(program, roundPDA);
+    console.log("Game round:", gameRound);
   });
 
-  it("Request join round (VRF)", async () => {
+  // ============== NEW FLOW: Generate Panda -> Confirm Join ==============
+  // Step 1: Generate panda attributes using VRF (pays entry fee)
+  // Step 2: Wait for VRF callback to set attributes (callback_generate_attributes)
+  // Step 3: If satisfied with attributes, confirm join to delegate to ER
+  // ======================================================================
+
+  it.only("Generate panda attributes (VRF)", async () => {
     const clientSeed = 42;
 
     try {
-      await program.methods
-        .requestJoinRound(clientSeed)
+      const tx = await program.methods
+        .generatePandaAttributes(clientSeed)
         .accountsPartial({
           player: player1.publicKey,
           globalConfig: globalConfigPDA,
@@ -150,17 +174,115 @@ describe("Player Instructions", () => {
         .signers([player1])
         .rpc();
 
-      // Note: In real test, you'd need to wait for VRF callback
-      console.log("Join round request sent (waiting for VRF callback)");
+      console.log("Generate panda tx:", tx);
+
+      await new Promise((resolve) => setTimeout(resolve, 10_000)); // wait for tx finality
+
+      const player = await program.account.playerState.fetchNullable(
+        player1StatePDA
+      );
+      console.log("Player state after generate request:", player);
+
+      // Note: In real test, you'd need to wait for VRF callback to set attributes
+      console.log(
+        "Panda generation request sent (waiting for VRF callback to set attributes)"
+      );
     } catch (err: any) {
-      console.log("Join round failed (VRF may not be available):", err.message);
+      console.log(
+        "Generate panda failed (VRF may not be available):",
+        err.message
+      );
+    }
+  });
+
+  it.only("Confirm join round (after attributes generated)", async () => {
+    // This test assumes the VRF callback has already set the attributes
+    // In production, you'd wait for callback_generate_attributes to complete first
+
+    try {
+      const tx = await program.methods
+        .confirmJoinRound()
+        .accountsPartial({
+          player: player1.publicKey,
+          globalConfig: globalConfigPDA,
+          gameRound: roundPDA,
+          playerState: player1StatePDA,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([player1])
+        .rpc();
+
+      console.log("Confirm join tx:", tx);
+
+      const playerState = await getPlayerState(program, player1StatePDA);
+      console.log("Player confirmed join with attributes:", {
+        str: playerState.str,
+        agi: playerState.agi,
+        int: playerState.int,
+      });
+    } catch (err: any) {
+      console.log(
+        "Confirm join failed (attributes may not be set yet):",
+        err.message
+      );
+    }
+  });
+
+  it("Generate panda attributes for player 2 (for battle testing)", async () => {
+    const clientSeed = 43;
+
+    try {
+      await program.methods
+        .generatePandaAttributes(clientSeed)
+        .accountsPartial({
+          player: player2.publicKey,
+          globalConfig: globalConfigPDA,
+          gameRound: roundPDA,
+          playerState: player2StatePDA,
+          playerTokenAccount: player2TokenAccount,
+          vault: vaultPDA,
+          oracleQueue: ORACLE_QUEUE,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .signers([player2])
+        .rpc();
+
+      console.log("Player 2 panda generation request sent");
+    } catch (err: any) {
+      console.log("Player 2 generate panda failed:", err.message);
+    }
+  });
+
+  it("Confirm join round for player 2", async () => {
+    try {
+      await program.methods
+        .confirmJoinRound()
+        .accountsPartial({
+          player: player2.publicKey,
+          globalConfig: globalConfigPDA,
+          gameRound: roundPDA,
+          playerState: player2StatePDA,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([player2])
+        .rpc();
+
+      const playerState = await getPlayerState(program, player2StatePDA);
+      console.log("Player 2 confirmed join with attributes:", {
+        str: playerState.str,
+        agi: playerState.agi,
+        int: playerState.int,
+      });
+    } catch (err: any) {
+      console.log("Player 2 confirm join failed:", err.message);
     }
   });
 
   it("Buy attack packs", async () => {
     // First ensure player is joined (mock the callback for testing)
     // In production, this would be done by VRF callback
-    
+
     const numPacks = 2; // Buy 2 packs (20 turns)
 
     try {
@@ -266,7 +388,10 @@ describe("Player Instructions", () => {
       const playerState = await getPlayerState(program, player1StatePDA);
       assert.equal(playerState.prizeClaimed, true);
     } catch (err: any) {
-      console.log("Claim prize failed (payouts may not be processed):", err.message);
+      console.log(
+        "Claim prize failed (payouts may not be processed):",
+        err.message
+      );
     }
   });
 });

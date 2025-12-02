@@ -16,11 +16,10 @@ import {
 import { assert } from "chai";
 import {
   airdrop,
-  getGameConfigPDA,
+  getGlobalConfigPDA,
   getGameRoundPDA,
   getPlayerStatePDA,
-  getVaultPDA,
-  getGameConfig,
+  getGlobalConfig,
   getGameRound,
   getPlayerState,
 } from "./utils";
@@ -42,7 +41,6 @@ describe("panda-battle", () => {
   // PDAs
   let gameConfigPDA: PublicKey;
   let vaultPDA: PublicKey;
-  let vaultSolPDA: PublicKey;
   let mint: PublicKey;
 
   // Test players
@@ -55,8 +53,8 @@ describe("panda-battle", () => {
     player2 = Keypair.generate();
 
     // Airdrop SOL to test accounts
-    await airdrop(provider.connection, player1.publicKey, 5);
-    await airdrop(provider.connection, player2.publicKey, 5);
+    await airdrop(provider.connection, player1.publicKey, 5, admin.payer);
+    await airdrop(provider.connection, player2.publicKey, 5, admin.payer);
 
     // Create test mint (simulating USDC)
     mint = await createMint(
@@ -68,9 +66,8 @@ describe("panda-battle", () => {
     );
 
     // Derive PDAs
-    gameConfigPDA = getGameConfigPDA(program);
+    gameConfigPDA = getGlobalConfigPDA(program, 1);
     vaultPDA = await getAssociatedTokenAddress(mint, gameConfigPDA, true); // SPL token vault for admin
-    vaultSolPDA = getVaultPDA(program, gameConfigPDA); // SOL vault for player operations
   });
 
   // ============== ADMIN INSTRUCTION TESTS ==============
@@ -97,7 +94,7 @@ describe("panda-battle", () => {
         })
         .rpc();
 
-      const gameConfig = await getGameConfig(program, gameConfigPDA);
+      const gameConfig = await getGlobalConfig(program, gameConfigPDA);
       assert.equal(gameConfig.admin.toString(), admin.publicKey.toString());
       assert.equal(gameConfig.entryFee.toString(), ENTRY_FEE.toString());
       assert.equal(
@@ -138,7 +135,7 @@ describe("panda-battle", () => {
         })
         .rpc();
 
-      const gameConfig = await getGameConfig(program, gameConfigPDA);
+      const gameConfig = await getGlobalConfig(program, gameConfigPDA);
       assert.equal(gameConfig.entryFee.toString(), newEntryFee.toString());
     });
 
@@ -168,7 +165,7 @@ describe("panda-battle", () => {
 
     before(async () => {
       // Create a new round for player tests
-      const gameConfig = await getGameConfig(program, gameConfigPDA);
+      const gameConfig = await getGlobalConfig(program, gameConfigPDA);
       const nextRound = gameConfig.totalRounds.toNumber() + 1;
       roundPDA = getGameRoundPDA(program, gameConfigPDA, nextRound);
 
@@ -314,10 +311,10 @@ describe("panda-battle", () => {
     const cranker = Keypair.generate();
 
     before(async () => {
-      await airdrop(provider.connection, cranker.publicKey, 2);
+      await airdrop(provider.connection, cranker.publicKey, 2, admin.payer);
 
       // Create a new round
-      const gameConfig = await getGameConfig(program, gameConfigPDA);
+      const gameConfig = await getGlobalConfig(program, gameConfigPDA);
       const nextRound = gameConfig.totalRounds.toNumber() + 1;
       roundPDA = getGameRoundPDA(program, gameConfigPDA, nextRound);
 

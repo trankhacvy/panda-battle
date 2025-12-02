@@ -36,8 +36,9 @@ pub const TURN_PRICE_MULTIPLIER_3: u64 = 20000; // 200% for 3rd+ turn
 pub const GLOBAL_CONFIG_SEED: &[u8] = b"global_config";
 pub const GAME_ROUND_SEED: &[u8] = b"game_round";
 pub const PLAYER_STATE_SEED: &[u8] = b"player_state";
-pub const VAULT_SEED: &[u8] = b"vault";
+pub const TOKEN_VAULT_SEED: &[u8] = b"token_vault";
 pub const LEADERBOARD_SEED: &[u8] = b"leaderboard";
+pub const GAME_AUTHORITY_SEED: &[u8] = b"game_authority";
 
 // ============== LEVEL SYSTEM CONSTANTS ==============
 

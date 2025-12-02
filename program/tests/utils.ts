@@ -1,29 +1,66 @@
 import { Program, BN } from "@coral-xyz/anchor";
 import { PandaBattle } from "../target/types/panda_battle";
-import { PublicKey, Connection, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { getAssociatedTokenAddress, mintTo, createMint } from "@solana/spl-token";
+import {
+  PublicKey,
+  Connection,
+  LAMPORTS_PER_SOL,
+  Keypair,
+  SystemProgram,
+  Transaction,
+  sendAndConfirmTransaction,
+} from "@solana/web3.js";
+import {
+  getAssociatedTokenAddress,
+  mintTo,
+  createMint,
+} from "@solana/spl-token";
 
 /**
- * Airdrop SOL to an account
+ * Airdrop SOL to an account, with fallback to direct transfer if airdrop fails
  */
 export async function airdrop(
   connection: Connection,
   publicKey: PublicKey,
-  amount: number
+  amount: number,
+  payer?: Keypair
 ): Promise<void> {
-  const sig = await connection.requestAirdrop(
-    publicKey,
-    amount * LAMPORTS_PER_SOL
-  );
-  await connection.confirmTransaction(sig);
+  try {
+    const sig = await connection.requestAirdrop(
+      publicKey,
+      amount * LAMPORTS_PER_SOL
+    );
+    await connection.confirmTransaction(sig);
+  } catch (error) {
+    // If airdrop fails (e.g., rate limit), fall back to direct transfer
+    if (payer) {
+      console.log(
+        `Airdrop failed, transferring ${amount} SOL from payer instead...`
+      );
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: payer.publicKey,
+          toPubkey: publicKey,
+          lamports: amount * LAMPORTS_PER_SOL,
+        })
+      );
+      await sendAndConfirmTransaction(connection, transaction, [payer]);
+    } else {
+      throw new Error(
+        `Airdrop failed and no payer provided for fallback transfer: ${error}`
+      );
+    }
+  }
 }
 
 /**
  * Get Global Config PDA
  */
-export function getGlobalConfigPDA(program: Program<PandaBattle>): PublicKey {
+export function getGlobalConfigPDA(
+  program: Program<PandaBattle>,
+  id: number
+): PublicKey {
   const [pda] = PublicKey.findProgramAddressSync(
-    [Buffer.from("global_config")],
+    [Buffer.from("global_config"), new BN(id).toArrayLike(Buffer, "le", 8)],
     program.programId
   );
   return pda;
@@ -149,4 +186,24 @@ export async function setupTestToken(
   }
 
   return mint;
+}
+
+export function getTokenVaultPDA(
+  program: Program<PandaBattle>,
+  mint: PublicKey,
+  roundPDA: PublicKey
+): PublicKey {
+  const [pda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("token_vault"), mint.toBuffer(), roundPDA.toBuffer()],
+    program.programId
+  );
+  return pda;
+}
+
+export function getGameAuthorityPDA(program: Program<PandaBattle>): PublicKey {
+  const [pda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("game_authority")],
+    program.programId
+  );
+  return pda;
 }

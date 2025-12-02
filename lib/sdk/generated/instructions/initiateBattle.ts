@@ -154,7 +154,7 @@ export type InitiateBattleAsyncInput<
   TAccountSlotHashes extends string = string,
 > = {
   player: TransactionSigner<TAccountPlayer>;
-  globalConfig?: Address<TAccountGlobalConfig>;
+  globalConfig: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
   attackerState?: Address<TAccountAttackerState>;
   defenderState: Address<TAccountDefenderState>;
@@ -235,18 +235,6 @@ export async function getInitiateBattleInstructionAsync<
   const args = { ...input };
 
   // Resolve default values.
-  if (!accounts.globalConfig.value) {
-    accounts.globalConfig.value = await getProgramDerivedAddress({
-      programAddress,
-      seeds: [
-        getBytesEncoder().encode(
-          new Uint8Array([
-            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
-          ])
-        ),
-      ],
-    });
-  }
   if (!accounts.attackerState.value) {
     accounts.attackerState.value = await getProgramDerivedAddress({
       programAddress,

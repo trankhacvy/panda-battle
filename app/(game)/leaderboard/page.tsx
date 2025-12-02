@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Search, ArrowDownUp, Filter } from "lucide-react";
+import Image from "next/image";
 import { PlayerCard } from "@/components/leaderboard/player-card";
 import { useSound } from "@/hooks/use-sound";
 import { Button3D } from "@/components/ui/button-3d";
@@ -72,11 +73,16 @@ export default function LeaderboardPage() {
   return (
     <div className="flex-1 px-3 sm:px-4 py-2 space-y-2 sm:space-y-3 overflow-auto relative z-10 pb-24">
       {/* Prize Pool Banner */}
-      <div className="relative rounded-2xl overflow-hidden">
-        <img
+      <div className="relative rounded-2xl overflow-hidden w-full aspect-video">
+        <Image
           src="/images/attributes/pool-bg.png"
           alt="Prize Pool"
-          className="w-full h-auto object-cover"
+          fill
+          priority
+          sizes="(max-width: 768px) 100vw, 768px"
+          style={{
+            objectFit: "cover",
+          }}
         />
       </div>
 

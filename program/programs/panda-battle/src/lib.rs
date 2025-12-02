@@ -5,6 +5,7 @@ pub mod constants;
 pub mod errors;
 pub mod instructions;
 pub mod state;
+pub mod utils;
 
 use instructions::*;
 
@@ -17,8 +18,8 @@ pub mod panda_battle {
 
     // ============== ADMIN INSTRUCTIONS ==============
 
-    pub fn initialize_game(ctx: Context<InitializeGame>, token_mint: Pubkey) -> Result<()> {
-        instructions::admin::initialize_game(ctx, token_mint)
+    pub fn initialize_game(ctx: Context<InitializeGame>, id: u64) -> Result<()> {
+        instructions::admin::initialize_game(ctx, id)
     }
 
     pub fn create_round(
@@ -51,15 +52,23 @@ pub mod panda_battle {
 
     // ============== PLAYER INSTRUCTIONS ==============
 
-    pub fn request_join_round(ctx: Context<RequestJoinRound>, client_seed: u8) -> Result<()> {
-        instructions::player::request_join_round(ctx, client_seed)
+    // New split approach: Generate attributes first, then confirm join
+    pub fn generate_panda_attributes(
+        ctx: Context<GeneratePandaAttributes>,
+        client_seed: u8,
+    ) -> Result<()> {
+        instructions::player::generate_panda_attributes(ctx, client_seed)
     }
 
-    pub fn callback_join_round(
-        ctx: Context<CallbackJoinRound>,
+    pub fn callback_generate_attributes(
+        ctx: Context<CallbackGenerateAttributes>,
         randomness: [u8; 32],
     ) -> Result<()> {
-        instructions::player::callback_join_round(ctx, randomness)
+        instructions::player::callback_generate_attributes(ctx, randomness)
+    }
+
+    pub fn confirm_join_round(ctx: Context<ConfirmJoinRound>) -> Result<()> {
+        instructions::player::confirm_join_round(ctx)
     }
 
     pub fn buy_attack_packs(ctx: Context<BuyAttackPacks>, num_packs: u8) -> Result<()> {

@@ -9,17 +9,21 @@ import { useEffect, useState } from "react";
 import { Typography } from "@/components/ui/typography";
 import { Button3D } from "@/components/ui/button-3d";
 import { useWallet } from "@/hooks/use-wallet";
+import { usePlayerState } from "@/hooks/use-game-data";
+import { address } from "@solana/kit";
 
 export default function HomePage() {
-  const { logout } = useWallet();
-  const player = mockPlayerData;
+  const { wallet, logout } = useWallet();
+  const { playerState } = usePlayerState(
+    wallet?.address ? address(wallet.address) : undefined
+  );
+  // const player = mockPlayerData;
   const [timeUntilNextTurn, setTimeUntilNextTurn] = useState("");
-  useWallet();
 
   useEffect(() => {
     const updateTimer = () => {
       const now = new Date().getTime();
-      const target = player.nextTurnRegenTime.getTime();
+      const target = Number(playerState?.data?.lastTurnRegen);
       const diff = target - now;
 
       if (diff <= 0) {
@@ -35,18 +39,12 @@ export default function HomePage() {
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [player.nextTurnRegenTime]);
+  }, [playerState]);
 
   const totalPower =
-    player.attributes.strength +
-    player.attributes.speed +
-    player.attributes.endurance +
-    player.attributes.luck;
-
-  const winRate =
-    player.totalBattles > 0
-      ? Math.round((player.wins / player.totalBattles) * 100)
-      : 0;
+    (playerState?.data?.str ?? 0) +
+    (playerState?.data?.agi ?? 0) +
+    (playerState?.data?.int ?? 0);
 
   return (
     <div className="p-4 pb-24 space-y-4">
@@ -80,20 +78,21 @@ export default function HomePage() {
         {/* <div className="absolute inset-0 bg-[#0a1628]/70"></div> */}
         <div className="relative z-10">
           <h2 className="text-2xl font-bold text-white text-center mb-3">
-            Level: {player.level}
+            Level: {playerState?.data?.level}
           </h2>
 
           {/* XP Progress Bar */}
           <div className="relative">
-            <Progress 
-              value={(player.experience / player.experienceToNextLevel) * 100} 
-              variant="game" 
-              showShell 
+            <Progress
+              value={(playerState?.data?.xp ?? 0) / (playerState?.data?.xp ?? 1) * 100}
+              variant="game"
+              showShell
               className="h-8"
             />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span className="text-white font-bold text-sm drop-shadow-lg z-10">
-                XP: {player.experience.toLocaleString()} / {player.experienceToNextLevel.toLocaleString()}
+                XP: {playerState?.data?.xp.toLocaleString()} /{" "}
+                {playerState?.data?.xp.toLocaleString()}
               </span>
             </div>
           </div>
@@ -149,7 +148,9 @@ export default function HomePage() {
             />
           </div>
           <div>
-            <p className="text-white font-bold text-sm">New Event: Bamboo Festival</p>
+            <p className="text-white font-bold text-sm">
+              New Event: Bamboo Festival
+            </p>
           </div>
         </div>
       </div>
@@ -181,15 +182,15 @@ function QuestCard({
           {title}
         </p>
         <div className="w-full relative">
-          <Progress 
-            value={(progress / total) * 100} 
-            variant="game" 
-            showShell 
+          <Progress
+            value={(progress / total) * 100}
+            variant="game"
+            showShell
             className="h-5"
           />
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <p className="text-white text-xs font-bold drop-shadow-lg z-10">
-              {isFull ? '100%' : `${progress} / ${total}`}
+              {isFull ? "100%" : `${progress} / ${total}`}
             </p>
           </div>
         </div>

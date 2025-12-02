@@ -4,11 +4,11 @@ use anchor_lang::prelude::*;
 #[account]
 #[derive(Default, InitSpace)]
 pub struct GlobalConfig {
+    /// Unique ID for this game instance
+    pub id: u64,
+
     /// Admin authority
     pub admin: Pubkey,
-
-    /// Token mint for the game
-    pub token_mint: Pubkey,
 
     /// Current active round number
     pub current_round: u64,
@@ -31,6 +31,9 @@ impl GlobalConfig {}
 pub struct GameRound {
     /// Reference to global config
     pub global_config: Pubkey,
+
+    /// Token mint for the game
+    pub token_mint: Pubkey,
 
     /// Round number
     pub round_number: u64,
@@ -152,6 +155,8 @@ pub struct PlayerState {
 
     /// Entry fee paid (for tracking)
     pub entry_fee_paid: u64,
+
+    pub delegated: bool,
 
     /// Bump seed for PDA
     pub bump: u8,

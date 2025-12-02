@@ -15,23 +15,24 @@ export const metadata: Metadata = {
   description: "Strategic turn-based panda battles on the blockchain",
 };
 
+// Preload critical images
+const preloadImages = [
+  <link key="app-bg" rel="preload" as="image" href="/images/app-bg.png" />,
+];
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className="flex h-full flex-col items-center overscroll-none"
-    >
+    <html lang="en" suppressHydrationWarning className="overscroll-none">
+      <head>{preloadImages}</head>
       <body
-        className={`flex h-full min-h-0 w-full max-w-(--max-layout-width) flex-col ${rubik.variable}  antialiased`}
+        className={`flex h-full min-h-screen w-full max-w-(--max-layout-width) mx-auto flex-col ${rubik.variable}  antialiased`}
       >
         <AppProviders>
           <AppBackground />
-          {/* <Header /> */}
           <main
             className="h-full min-h-0 grow overflow-auto overscroll-contain"
             style={{
@@ -43,7 +44,6 @@ export default function RootLayout({
           >
             {children}
           </main>
-          {/* <Navigation /> */}
           <Toaster className="z-100" position="top-center" />
         </AppProviders>
       </body>

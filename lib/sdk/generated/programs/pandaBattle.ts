@@ -15,20 +15,21 @@ import {
 } from '@solana/kit';
 import {
   type ParsedBuyAttackPacksInstruction,
-  type ParsedCallbackJoinRoundInstruction,
+  type ParsedCallbackGenerateAttributesInstruction,
   type ParsedCallbackRerollAttributesInstruction,
   type ParsedCallbackResolveBattleInstruction,
   type ParsedClaimPrizeInstruction,
+  type ParsedConfirmJoinRoundInstruction,
   type ParsedCreateRoundInstruction,
   type ParsedDelegateRoundInstruction,
   type ParsedDistributePrizesInstruction,
   type ParsedEndRoundInstruction,
+  type ParsedGeneratePandaAttributesInstruction,
   type ParsedHourlyJackpotInstruction,
   type ParsedInitializeGameInstruction,
   type ParsedInitiateBattleInstruction,
   type ParsedProcessUndelegationInstruction,
   type ParsedRegenerateTurnsInstruction,
-  type ParsedRequestJoinRoundInstruction,
   type ParsedRerollAttributesInstruction,
   type ParsedResetPacksIfNewHourInstruction,
   type ParsedRevealLeaderboardInstruction,
@@ -100,20 +101,21 @@ export function identifyPandaBattleAccount(
 
 export enum PandaBattleInstruction {
   BuyAttackPacks,
-  CallbackJoinRound,
+  CallbackGenerateAttributes,
   CallbackRerollAttributes,
   CallbackResolveBattle,
   ClaimPrize,
+  ConfirmJoinRound,
   CreateRound,
   DelegateRound,
   DistributePrizes,
   EndRound,
+  GeneratePandaAttributes,
   HourlyJackpot,
   InitializeGame,
   InitiateBattle,
   ProcessUndelegation,
   RegenerateTurns,
-  RequestJoinRound,
   RerollAttributes,
   ResetPacksIfNewHour,
   RevealLeaderboard,
@@ -139,12 +141,12 @@ export function identifyPandaBattleInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([25, 254, 139, 110, 218, 156, 72, 160])
+        new Uint8Array([92, 203, 161, 144, 184, 75, 32, 182])
       ),
       0
     )
   ) {
-    return PandaBattleInstruction.CallbackJoinRound;
+    return PandaBattleInstruction.CallbackGenerateAttributes;
   }
   if (
     containsBytes(
@@ -178,6 +180,17 @@ export function identifyPandaBattleInstruction(
     )
   ) {
     return PandaBattleInstruction.ClaimPrize;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([95, 29, 110, 12, 130, 61, 10, 198])
+      ),
+      0
+    )
+  ) {
+    return PandaBattleInstruction.ConfirmJoinRound;
   }
   if (
     containsBytes(
@@ -222,6 +235,17 @@ export function identifyPandaBattleInstruction(
     )
   ) {
     return PandaBattleInstruction.EndRound;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([244, 112, 213, 118, 76, 233, 244, 252])
+      ),
+      0
+    )
+  ) {
+    return PandaBattleInstruction.GeneratePandaAttributes;
   }
   if (
     containsBytes(
@@ -282,17 +306,6 @@ export function identifyPandaBattleInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([169, 134, 51, 77, 169, 224, 171, 197])
-      ),
-      0
-    )
-  ) {
-    return PandaBattleInstruction.RequestJoinRound;
-  }
-  if (
-    containsBytes(
-      data,
-      fixEncoderSize(getBytesEncoder(), 8).encode(
         new Uint8Array([14, 125, 211, 32, 89, 82, 192, 48])
       ),
       0
@@ -345,8 +358,8 @@ export type ParsedPandaBattleInstruction<
       instructionType: PandaBattleInstruction.BuyAttackPacks;
     } & ParsedBuyAttackPacksInstruction<TProgram>)
   | ({
-      instructionType: PandaBattleInstruction.CallbackJoinRound;
-    } & ParsedCallbackJoinRoundInstruction<TProgram>)
+      instructionType: PandaBattleInstruction.CallbackGenerateAttributes;
+    } & ParsedCallbackGenerateAttributesInstruction<TProgram>)
   | ({
       instructionType: PandaBattleInstruction.CallbackRerollAttributes;
     } & ParsedCallbackRerollAttributesInstruction<TProgram>)
@@ -356,6 +369,9 @@ export type ParsedPandaBattleInstruction<
   | ({
       instructionType: PandaBattleInstruction.ClaimPrize;
     } & ParsedClaimPrizeInstruction<TProgram>)
+  | ({
+      instructionType: PandaBattleInstruction.ConfirmJoinRound;
+    } & ParsedConfirmJoinRoundInstruction<TProgram>)
   | ({
       instructionType: PandaBattleInstruction.CreateRound;
     } & ParsedCreateRoundInstruction<TProgram>)
@@ -368,6 +384,9 @@ export type ParsedPandaBattleInstruction<
   | ({
       instructionType: PandaBattleInstruction.EndRound;
     } & ParsedEndRoundInstruction<TProgram>)
+  | ({
+      instructionType: PandaBattleInstruction.GeneratePandaAttributes;
+    } & ParsedGeneratePandaAttributesInstruction<TProgram>)
   | ({
       instructionType: PandaBattleInstruction.HourlyJackpot;
     } & ParsedHourlyJackpotInstruction<TProgram>)
@@ -383,9 +402,6 @@ export type ParsedPandaBattleInstruction<
   | ({
       instructionType: PandaBattleInstruction.RegenerateTurns;
     } & ParsedRegenerateTurnsInstruction<TProgram>)
-  | ({
-      instructionType: PandaBattleInstruction.RequestJoinRound;
-    } & ParsedRequestJoinRoundInstruction<TProgram>)
   | ({
       instructionType: PandaBattleInstruction.RerollAttributes;
     } & ParsedRerollAttributesInstruction<TProgram>)
