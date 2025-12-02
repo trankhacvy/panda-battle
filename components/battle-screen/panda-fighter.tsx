@@ -45,17 +45,17 @@ export function PandaFighter({
   return (
     <div className={`panda-card flex flex-col items-center cursor-pointer ${slideAnimation}`} onClick={onToggleStats}>
       <div className={cn("relative transition-all duration-300", attackAnimation, hitAnimation)}>
-        <div className={`w-36 h-36 rounded-2xl overflow-hidden border-4 ${borderColor} ${shadowColor} bg-cover bg-center relative`}>
+        <div className={`w-28 sm:w-36 h-28 sm:h-36 rounded-xl sm:rounded-2xl overflow-hidden border-3 sm:border-4 ${borderColor} ${shadowColor} bg-cover bg-center relative`}>
           <img src="/images/fighter-frame.png" alt="Fighter" className="w-full h-full object-cover absolute inset-0" />
           <img src="/images/sample-panda.png" alt="Panda" className="w-full h-full object-contain relative z-10" />
         </div>
         <div
-          className={`absolute ${side === "left" ? "-top-1.5 -left-1.5" : "-top-1.5 -right-1.5"} bg-white text-black px-2 py-0.5 rounded-full text-xs font-bold `}
+          className={`absolute ${side === "left" ? "-top-1 sm:-top-1.5 -left-1 sm:-left-1.5" : "-top-1 sm:-top-1.5 -right-1 sm:-right-1.5"} bg-white text-black px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold `}
         >
           Lv {stats.level}
         </div>
       </div>
-      <div className={`mt-2 ${bgColor} text-white px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap`}>
+      <div className={`mt-1.5 sm:mt-2 ${bgColor} text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap`}>
         {stats.name}
       </div>
 

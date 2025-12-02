@@ -39,8 +39,8 @@ export function BattleLog({ logs, playerName = "I_am_Me", opponentName = "Crisis
   };
 
   return (
-    <div className="flex-shrink-0 h-24 px-4 pb-4 flex justify-center">
-      <div className="bg-black/60 backdrop-blur-sm border-2 border-white/40 rounded-lg px-4 py-2 max-w-md w-full">
+    <div className="flex-shrink-0 h-24 px-3 sm:px-4 pb-4 flex justify-center">
+      <div className="bg-black/60 backdrop-blur-sm border-2 border-white/40 rounded-lg px-3 sm:px-4 py-2 max-w-md w-full">
         <div 
           ref={scrollRef}
           className="h-16 overflow-y-auto space-y-0.5 scroll-smooth"
@@ -48,7 +48,7 @@ export function BattleLog({ logs, playerName = "I_am_Me", opponentName = "Crisis
           {logs.map((log, index) => (
             <p
               key={`${index}-${log}`}
-              className="text-white text-xs font-medium text-center transition-all duration-500 ease-out opacity-0 translate-y-2"
+              className="text-white text-[10px] sm:text-xs font-medium text-center transition-all duration-500 ease-out opacity-0 translate-y-2"
               style={{
                 animation: 'slideUpFade 0.5s ease-out forwards',
                 animationDelay: `${index === logs.length - 1 ? '0ms' : '0ms'}`

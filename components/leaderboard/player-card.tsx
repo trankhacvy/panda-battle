@@ -33,7 +33,7 @@ export function PlayerCard({
 
   return (
     <div
-      className={`${getCardBackground()} backdrop-blur rounded-xl p-3 flex items-center gap-3 ${borderColor} relative overflow-hidden`}
+      className={`${getCardBackground()} backdrop-blur rounded-xl p-2.5 sm:p-3 flex items-center gap-2.5 sm:gap-3 ${borderColor} relative overflow-hidden`}
     >
       {/* Background pattern for top 3 */}
       {rank <= 3 && (
@@ -47,15 +47,15 @@ export function PlayerCard({
       )}
 
       {/* Content */}
-      <div className="relative z-10 flex items-center gap-3 w-full">
+      <div className="relative z-10 flex items-center gap-2.5 sm:gap-3 w-full">
         {/* Rank */}
-        <div className="flex flex-col items-center w-8">
-          <span className="text-white font-bold text-lg">{rank}.</span>
+        <div className="flex flex-col items-center w-6 sm:w-8">
+          <span className="text-white font-bold text-base sm:text-lg">{rank}.</span>
         </div>
 
         {/* Avatar */}
         <div
-          className={`w-16 h-16 rounded-lg ${bgColor} overflow-hidden shrink-0`}
+          className={`w-12 sm:w-16 h-12 sm:h-16 rounded-lg ${bgColor} overflow-hidden shrink-0`}
         >
           <img
             src="/images/sample-panda.png"
@@ -66,8 +66,8 @@ export function PlayerCard({
 
         {/* Info */}
         <div className="flex-1">
-          <h3 className="text-white font-bold text-lg">{name}</h3>
-          <p className="text-white/80">
+          <h3 className="text-white font-bold text-base sm:text-lg">{name}</h3>
+          <p className="text-white/80 text-xs sm:text-sm">
             Points:{" "}
             <span className="text-yellow-400 font-bold">
               {points.toLocaleString()}

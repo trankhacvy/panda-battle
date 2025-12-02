@@ -106,22 +106,22 @@ export default function HomePage() {
       {/* Stats Grid - 3 Attributes */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         <StatBadge
-          icon="/images/attributes/str-att.png"
+          icon="💪"
           label="STR"
           value={92}
-          color="bg-[#ff9500]"
+          textColor="text-orange-500"
         />
         <StatBadge
-          icon="/images/attributes/agt-att.png"
+          icon="⚡"
           label="AGI"
           value={78}
-          color="bg-[#34c759]"
+          textColor="text-green-500"
         />
         <StatBadge
-          icon="/images/attributes/int-att.png"
+          icon="🧠"
           label="INT"
           value={64}
-          color="bg-[#007aff]"
+          textColor="text-blue-500"
         />
       </div>
     </div>
@@ -132,20 +132,20 @@ function StatBadge({
   icon,
   label,
   value,
-  color,
+  textColor,
 }: {
   icon: string;
   label: string;
   value: number;
-  color: string;
+  textColor: string;
 }) {
   return (
-    <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-2xl px-3 py-3 flex items-center justify-center gap-2 border border-white/10">
-      <div className="rounded-xl shrink-0 overflow-hidden w-12 h-12">
-        <img src={icon} alt={label} className="w-full h-full object-cover" />
+    <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-2xl px-2 py-2 flex items-center justify-center gap-1.5 border border-white/10">
+      <div className="text-lg grayscale opacity-80">
+        {icon}
       </div>
-      <span className="font-bold text-white text-base whitespace-nowrap">
-        {label}: {value}
+      <span className="font-bold text-xs whitespace-nowrap text-white">
+        {label}: <span className={textColor}>{value}</span>
       </span>
     </div>
   );
