@@ -47,6 +47,7 @@ const players = [
 export default function LeaderboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const { play, SOUNDS } = useSound();
+  const { play, SOUNDS } = useSound();
 
   const filteredPlayers = players.filter((player) =>
     player.name.toLowerCase().includes(searchQuery.toLowerCase())

@@ -8,6 +8,7 @@ import { Button3D } from "./ui/button-3d";
 import { ArrowLeft, EllipsisVertical } from "lucide-react";
 import { Typography } from "./ui/typography";
 import { SettingsDropdown } from "./settings-dropdown";
+import { SettingsDropdown } from "./settings-dropdown";
 
 export default function Header() {
   const embeddedAddress = useEmbeddedAddress();

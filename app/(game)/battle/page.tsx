@@ -19,6 +19,7 @@ export default function BattlePage() {
   const router = useRouter();
   const displayOpponents = mockOpponents.slice(0, 5);
   const { play, SOUNDS } = useSound();
+  const { play, SOUNDS } = useSound();
 
   const handleBattle = (opponentId: string) => {
     play(SOUNDS.GAME_START);
@@ -26,6 +27,16 @@ export default function BattlePage() {
     console.log("Battle with opponent:", opponentId);
     // TODO: Navigate to battle screen or start battle
     router.push("/battle-screen");
+  };
+
+  const handleSort = () => {
+    play(SOUNDS.BUTTON_CLICK);
+    console.log("Sort opponents");
+  };
+
+  const handleFilter = () => {
+    play(SOUNDS.BUTTON_CLICK);
+    console.log("Filter opponents");
   };
 
   const handleSort = () => {
