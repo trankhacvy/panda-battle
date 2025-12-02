@@ -49,10 +49,10 @@ export default function HomePage() {
       : 0;
 
   return (
-    <div className="p-4 pb-24">
+    <div className="p-4 pb-24 space-y-4">
       {/* Panda Image */}
       <div
-        className="rounded-xl flex items-center justify-center aspect-video overflow-hidden mb-4"
+        className="rounded-xl flex items-center justify-center aspect-video overflow-hidden shadow-[0_0_12px_rgba(0,0,0,0.15)]"
         style={{
           backgroundImage: "url(/images/fighter-frame.png)",
           backgroundRepeat: "no-repeat",
@@ -69,7 +69,7 @@ export default function HomePage() {
 
       {/* Level and XP Section */}
       <div
-        className="backdrop-blur-sm rounded-2xl p-6 mb-4 border border-cyan-500/30 relative overflow-hidden"
+        className="rounded-2xl p-4 relative overflow-hidden shadow-[0_0_12px_rgba(0,0,0,0.15)]"
         style={{
           backgroundImage: "url(/images/attributes/lv-bg.png)",
           backgroundRepeat: "no-repeat",
@@ -77,76 +77,134 @@ export default function HomePage() {
           backgroundPosition: "center",
         }}
       >
-        <div className="absolute inset-0 bg-[#0a1628]/60"></div>
+        {/* <div className="absolute inset-0 bg-[#0a1628]/70"></div> */}
         <div className="relative z-10">
-          <h2 className="text-3xl font-bold text-white text-center mb-4">
+          <h2 className="text-2xl font-bold text-white text-center mb-3">
             Level: {player.level}
           </h2>
 
           {/* XP Progress Bar */}
-          <div className="mb-3">
-            <div className="relative bg-gray-700/50 rounded-full h-10 overflow-hidden border-2 border-white/20">
-              <div
-                className="absolute inset-0 bg-linear-to-r from-blue-500 to-blue-400 transition-all duration-300 flex items-center justify-center"
-                style={{ width: `${(player.experience / player.experienceToNextLevel) * 100}%` }}
-              >
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white font-bold text-sm drop-shadow-lg">
-                  XP: {player.experience.toLocaleString()} / {player.experienceToNextLevel.toLocaleString()}
-                </span>
-              </div>
+          <div className="relative">
+            <Progress 
+              value={(player.experience / player.experienceToNextLevel) * 100} 
+              variant="game" 
+              showShell 
+              className="h-8"
+            />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="text-white font-bold text-sm drop-shadow-lg z-10">
+                XP: {player.experience.toLocaleString()} / {player.experienceToNextLevel.toLocaleString()}
+              </span>
             </div>
           </div>
-
-        
         </div>
       </div>
 
-      {/* Stats Grid - 3 Attributes */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <StatBadge
-          icon="💪"
-          label="STR"
-          value={92}
-          textColor="text-orange-500"
-        />
-        <StatBadge
-          icon="⚡"
-          label="AGI"
-          value={78}
-          textColor="text-green-500"
-        />
-        <StatBadge
-          icon="🧠"
-          label="INT"
-          value={64}
-          textColor="text-blue-500"
-        />
+      {/* Daily Quests */}
+      <div>
+        <h3 className="text-xl font-bold text-white mb-3">Daily Quests</h3>
+        <div className="grid grid-cols-3 gap-2">
+          <QuestCard
+            icon="🎋"
+            title="Collect 50 Bamboo"
+            progress={2}
+            total={50}
+            color="bg-yellow-400"
+          />
+          <QuestCard
+            icon="⚔️"
+            title="Defeat 3 Enemies"
+            progress={3}
+            total={3}
+            color="bg-yellow-400"
+            completed
+          />
+          <QuestCard
+            icon="🏃"
+            title="Train Agility"
+            progress={1}
+            total={1}
+            color="bg-green-500"
+            completed
+          />
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="grid grid-cols-3 gap-3">
+        <ActionButton icon="⚔️" label="Train" />
+        <ActionButton icon="🏪" label="Shop" />
+        <ActionButton icon="👥" label="Social" />
+      </div>
+
+      {/* News Feed */}
+      <div>
+        <h3 className="text-xl font-bold text-white mb-3">News Feed</h3>
+        <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3">
+          <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+            <img
+              src="/images/sample-panda.png"
+              alt="Event"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div>
+            <p className="text-white font-bold text-sm">New Event: Bamboo Festival</p>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function StatBadge({
+function QuestCard({
   icon,
-  label,
-  value,
-  textColor,
+  title,
+  progress,
+  total,
+  color,
+  completed = false,
 }: {
   icon: string;
-  label: string;
-  value: number;
-  textColor: string;
+  title: string;
+  progress: number;
+  total: number;
+  color: string;
+  completed?: boolean;
 }) {
+  const isFull = progress >= total;
   return (
-    <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-2xl px-2 py-2 flex items-center justify-center gap-1.5 border border-white/10">
-      <div className="text-lg grayscale opacity-80">
-        {icon}
+    <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-xl p-3">
+      <div className="flex flex-col items-center gap-2">
+        <div className="text-2xl">{icon}</div>
+        <p className="text-white text-xs font-medium text-center leading-tight min-h-[2rem]">
+          {title}
+        </p>
+        <div className="w-full relative">
+          <Progress 
+            value={(progress / total) * 100} 
+            variant="game" 
+            showShell 
+            className="h-5"
+          />
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <p className="text-white text-xs font-bold drop-shadow-lg z-10">
+              {isFull ? '100%' : `${progress} / ${total}`}
+            </p>
+          </div>
+        </div>
       </div>
-      <span className="font-bold text-xs whitespace-nowrap text-white">
-        {label}: <span className={textColor}>{value}</span>
-      </span>
     </div>
+  );
+}
+
+function ActionButton({ icon, label }: { icon: string; label: string }) {
+  return (
+    <button className="bg-[#0a1628]/90 backdrop-blur-sm rounded-xl p-4 hover:bg-[#0a1628]/100 transition-all active:scale-95">
+      <div className="flex flex-col items-center gap-2">
+        <div className="text-3xl">{icon}</div>
+        <p className="text-white font-bold text-sm">{label}</p>
+      </div>
+    </button>
   );
 }
