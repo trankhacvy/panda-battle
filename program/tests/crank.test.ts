@@ -45,11 +45,11 @@ describe("Crank Instructions", () => {
   before(async () => {
     // Setup cranker
     cranker = Keypair.generate();
-    await airdrop(provider.connection, cranker.publicKey, 2);
+    await airdrop(provider.connection, cranker.publicKey, 2, admin.payer);
 
     // Setup player
     player1 = Keypair.generate();
-    await airdrop(provider.connection, player1.publicKey, 5);
+    await airdrop(provider.connection, player1.publicKey, 5, admin.payer);
 
     // Create mint
     mint = await createMint(
@@ -78,9 +78,9 @@ describe("Crank Instructions", () => {
     );
 
     // Initialize game
-    globalConfigPDA = getGlobalConfigPDA(program);
+    globalConfigPDA = getGlobalConfigPDA(program, 1);
     await program.methods
-      .initializeGame(mint)
+      .initializeGame(1)
       .accountsPartial({
         admin: admin.publicKey,
         globalConfig: globalConfigPDA,
@@ -94,12 +94,7 @@ describe("Crank Instructions", () => {
     leaderboardPDA = getLeaderboardPDA(program, roundPDA);
 
     await program.methods
-      .createRound(
-        new BN(1_990_000),
-        new BN(100_000),
-        new BN(86400),
-        1
-      )
+      .createRound(new BN(1_990_000), new BN(100_000), new BN(86400), 1)
       .accountsPartial({
         admin: admin.publicKey,
         mint: mint,
@@ -130,7 +125,10 @@ describe("Crank Instructions", () => {
 
       console.log("Turn regeneration successful");
     } catch (err: any) {
-      console.log("Turn regen failed (expected if < 1 hour passed):", err.message);
+      console.log(
+        "Turn regen failed (expected if < 1 hour passed):",
+        err.message
+      );
     }
   });
 
@@ -180,9 +178,16 @@ describe("Crank Instructions", () => {
 
       const leaderboard = await getLeaderboard(program, leaderboardPDA);
       assert.equal(leaderboard.isRevealed, true);
-      console.log("Leaderboard revealed with", leaderboard.entries.length, "entries");
+      console.log(
+        "Leaderboard revealed with",
+        leaderboard.entries.length,
+        "entries"
+      );
     } catch (err: any) {
-      console.log("Leaderboard reveal failed (may not be time yet):", err.message);
+      console.log(
+        "Leaderboard reveal failed (may not be time yet):",
+        err.message
+      );
     }
   });
 

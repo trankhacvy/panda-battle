@@ -183,7 +183,7 @@ pub fn hourly_jackpot(ctx: Context<HourlyJackpot>, client_seed: u8) -> Result<()
     let global_config = &ctx.accounts.global_config;
     let global_config_key = global_config.key();
     let vault_seeds = &[
-        VAULT_SEED,
+        TOKEN_VAULT_SEED,
         global_config_key.as_ref(),
         &[global_config.vault_bump],
     ];
@@ -217,7 +217,7 @@ pub struct RegenerateTurns<'info> {
     pub caller: Signer<'info>,
 
     #[account(
-        seeds = [GLOBAL_CONFIG_SEED],
+        seeds = [GLOBAL_CONFIG_SEED, &global_config.id.to_le_bytes()],
         bump = global_config.bump
     )]
     pub global_config: Account<'info, GlobalConfig>,
@@ -250,7 +250,7 @@ pub struct ResetPacksIfNewHour<'info> {
     pub caller: Signer<'info>,
 
     #[account(
-        seeds = [GLOBAL_CONFIG_SEED],
+        seeds = [GLOBAL_CONFIG_SEED, &global_config.id.to_le_bytes()],
         bump = global_config.bump
     )]
     pub global_config: Account<'info, GlobalConfig>,
@@ -284,7 +284,7 @@ pub struct RevealLeaderboard<'info> {
     pub caller: Signer<'info>,
 
     #[account(
-        seeds = [GLOBAL_CONFIG_SEED],
+        seeds = [GLOBAL_CONFIG_SEED, &global_config.id.to_le_bytes()],
         bump = global_config.bump
     )]
     pub global_config: Account<'info, GlobalConfig>,
@@ -321,7 +321,7 @@ pub struct HourlyJackpot<'info> {
     pub caller: Signer<'info>,
 
     #[account(
-        seeds = [GLOBAL_CONFIG_SEED],
+        seeds = [GLOBAL_CONFIG_SEED, &global_config.id.to_le_bytes()],
         bump = global_config.bump
     )]
     pub global_config: Account<'info, GlobalConfig>,
@@ -348,7 +348,7 @@ pub struct HourlyJackpot<'info> {
 
     #[account(
         mut,
-        seeds = [VAULT_SEED, global_config.key().as_ref()],
+        seeds = [TOKEN_VAULT_SEED, global_config.key().as_ref()],
         bump = global_config.vault_bump
     )]
     pub vault: Account<'info, TokenAccount>,
@@ -494,7 +494,7 @@ pub struct DistributePrizes<'info> {
     pub caller: Signer<'info>,
 
     #[account(
-        seeds = [GLOBAL_CONFIG_SEED],
+        seeds = [GLOBAL_CONFIG_SEED, &global_config.id.to_le_bytes()],
         bump = global_config.bump
     )]
     pub global_config: Account<'info, GlobalConfig>,

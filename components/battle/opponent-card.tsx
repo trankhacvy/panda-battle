@@ -1,6 +1,7 @@
 import { Flame, Zap, Wind, Brain } from "lucide-react";
 import type { OpponentPanda } from "@/lib/mock/battles";
 import { Button3D } from "../ui/button-3d";
+import { StatBadge } from "@/app/(game)/home/page";
 
 interface OpponentCardProps {
   opponent: OpponentPanda;
@@ -28,14 +29,6 @@ export function OpponentCard({
       <div className="flex-1 relative z-10">
         <h3 className="text-white font-bold text-base sm:text-lg mb-1">{opponent.name}</h3>
         <div className="grid grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-1 text-xs sm:text-sm">
-          <div className="flex items-center gap-1">
-            <span className="w-5 h-5 bg-red-500 rounded flex items-center justify-center">
-              <Flame className="w-3 h-3 text-white" />
-            </span>
-            <span className="text-white font-medium">
-              STA: {opponent.attributes.endurance}
-            </span>
-          </div>
           <div className="flex items-center gap-1">
             <span className="w-5 h-5 bg-orange-400 rounded flex items-center justify-center">
               <Zap className="w-3 h-3 text-white" />

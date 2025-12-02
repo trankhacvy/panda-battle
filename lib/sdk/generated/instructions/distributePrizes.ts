@@ -120,7 +120,7 @@ export type DistributePrizesAsyncInput<
 > = {
   /** Anyone can call this (crank) */
   caller: TransactionSigner<TAccountCaller>;
-  globalConfig?: Address<TAccountGlobalConfig>;
+  globalConfig: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
   leaderboard?: Address<TAccountLeaderboard>;
   systemProgram?: Address<TAccountSystemProgram>;
@@ -169,18 +169,6 @@ export async function getDistributePrizesInstructionAsync<
   >;
 
   // Resolve default values.
-  if (!accounts.globalConfig.value) {
-    accounts.globalConfig.value = await getProgramDerivedAddress({
-      programAddress,
-      seeds: [
-        getBytesEncoder().encode(
-          new Uint8Array([
-            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
-          ])
-        ),
-      ],
-    });
-  }
   if (!accounts.leaderboard.value) {
     accounts.leaderboard.value = await getProgramDerivedAddress({
       programAddress,

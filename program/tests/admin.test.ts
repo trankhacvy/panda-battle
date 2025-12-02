@@ -14,6 +14,8 @@ import {
   getGameRoundPDA,
   getGlobalConfig,
   getGameRound,
+  getTokenVaultPDA,
+  getGameAuthorityPDA,
 } from "./utils";
 
 export const DELEGATION_PROGRAM_ID = new PublicKey(
@@ -26,26 +28,30 @@ describe("Admin Instructions", () => {
 
   const program = anchor.workspace.PandaBattle as Program<PandaBattle>;
   const admin = provider.wallet as anchor.Wallet;
+  const configId = Date.now();
+  console.log("Using config ID:", configId);
 
   let globalConfigPDA: PublicKey;
-  let mint: PublicKey;
+  // let mint: PublicKey;
+  let mint = new PublicKey("Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr");
 
   before(async () => {
     // Create test mint (simulating USDC)
-    mint = await createMint(
-      provider.connection,
-      admin.payer,
-      admin.publicKey,
-      null,
-      6 // USDC decimals
-    );
+    // mint = await createMint(
+    //   provider.connection,
+    //   admin.payer,
+    //   admin.publicKey,
+    //   null,
+    //   6 // USDC decimals
+    // );
 
-    globalConfigPDA = getGlobalConfigPDA(program);
+    globalConfigPDA = getGlobalConfigPDA(program, configId);
+    console.log("globalConfigPDA", globalConfigPDA.toBase58());
   });
 
-  it.skip("Initialize game", async () => {
+  it("Initialize game", async () => {
     await program.methods
-      .initializeGame(mint)
+      .initializeGame(new BN(configId))
       .accountsPartial({
         admin: admin.publicKey,
         globalConfig: globalConfigPDA,
@@ -55,15 +61,15 @@ describe("Admin Instructions", () => {
 
     const globalConfig = await getGlobalConfig(program, globalConfigPDA);
     assert.equal(globalConfig.admin.toString(), admin.publicKey.toString());
-    assert.equal(globalConfig.tokenMint.toString(), mint.toString());
+    // assert.equal(globalConfig.tokenMint.toString(), mint.toString());
     assert.equal(globalConfig.currentRound.toString(), "0");
     assert.equal(globalConfig.totalRounds.toString(), "0");
   });
 
   it("Create round", async () => {
-    const entryFee = new BN(1_990_000); // $1.99 with 6 decimals
+    const entryFee = new BN(0.5 * 10 ** 6); // $0.50 with 6 decimals
     const attackPackPrice = new BN(100_000); // $0.10 with 6 decimals
-    const durationSecs = new BN(86400); // 24 hours
+    const durationSecs = new BN(86400 * 10); // 24 hours
     const entryHourlyIncPct = 1;
 
     const configAccount = await program.account.globalConfig.fetch(
@@ -76,39 +82,23 @@ describe("Admin Instructions", () => {
       globalConfigPDA,
       configAccount.currentRound.add(new BN(1)).toNumber()
     );
-    const vaultPDA = await getAssociatedTokenAddress(mint, roundPDA, true);
+    console.log("roundPDA", roundPDA.toBase58());
+    const vaultPDA = await getTokenVaultPDA(program, mint, roundPDA);
 
-    const [playerBufferPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("buffer"), roundPDA.toBuffer()],
-      program.programId
-    );
-
-    const [delegationRecordPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("delegation"), roundPDA.toBuffer()],
-      DELEGATION_PROGRAM_ID
-    );
-
-    const [delegationMetadataPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("delegation-metadata"), roundPDA.toBuffer()],
-      DELEGATION_PROGRAM_ID
-    );
+    const gameAuthPda = await getGameAuthorityPDA(program);
 
     await program.methods
       .createRound(entryFee, attackPackPrice, durationSecs, entryHourlyIncPct)
       .accountsPartial({
         admin: admin.publicKey,
-        mint: mint,
+        tokenMint: mint,
         globalConfig: globalConfigPDA,
+        gameAuthority: gameAuthPda,
         gameRound: roundPDA,
-        vault: vaultPDA,
+        tokenVault: vaultPDA,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-        ownerProgram: program.programId,
-        bufferAccount: playerBufferPda,
-        delegationRecordAccount: delegationRecordPda,
-        delegationMetadataAccount: delegationMetadataPda,
-        delegationProgram: DELEGATION_PROGRAM_ID,
       })
       .rpc();
 
@@ -171,6 +161,6 @@ describe("Admin Instructions", () => {
       .rpc();
 
     const globalConfig = await getGlobalConfig(program, globalConfigPDA);
-    assert.equal(globalConfig.tokenMint.toString(), newMint.toString());
+    // assert.equal(globalConfig.tokenMint.toString(), newMint.toString());
   });
 });

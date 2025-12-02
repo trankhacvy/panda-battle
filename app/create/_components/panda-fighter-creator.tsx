@@ -1,10 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useSessionSigners } from "@privy-io/react-auth";
+import { useState, useRef, useEffect } from "react";
 import { Flame, Dumbbell, Zap, Brain } from "lucide-react";
 import { Button3D } from "@/components/ui/button-3d";
 import { AttributeCard } from "./attribute-card";
 import { useRouter } from "next/navigation";
+import { useWallet } from "@/hooks/use-wallet";
+import { sdk } from "@/lib/sdk";
+import { useRpc } from "@/components/providers/rpc-provider";
+import { address, TransactionSigner, type Address } from "@solana/kit";
+import { buildAndSendTransactionWithPrivy } from "@/lib/tx";
+import { toast } from "sonner";
+import { fetchPlayerState } from "@/lib/sdk/generated/accounts";
 
 interface PandaAttributes {
   sta: number;
@@ -18,42 +26,215 @@ export function PandaFighterCreator() {
   const [isCreated, setIsCreated] = useState(false);
   const [attributes, setAttributes] = useState<PandaAttributes | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { wallet } = useWallet();
+  const { rpc } = useRpc();
+  const { addSessionSigners } = useSessionSigners();
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const createPanda = async () => {
-    setIsLoading(true);
+  console.log("wallet", wallet?.address);
 
-    // Mock API call to create panda
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  /**
+   * Poll the player state to check if attributes have been updated by VRF callback
+   * @param playerStateAddress - The address of the player state account
+   * @param previousAttributes - Optional previous attributes to compare against (for reroll)
+   */
+  const pollPlayerState = async (
+    playerStateAddress: Address,
+    previousAttributes?: PandaAttributes
+  ) => {
+    const maxAttempts = 60; // Poll for up to 60 seconds
+    let attempts = 0;
 
-    // Generate random attributes
-    const newAttributes: PandaAttributes = {
-      sta: Math.floor(Math.random() * 50) + 50, // 50-99
-      str: Math.floor(Math.random() * 50) + 50,
-      agi: Math.floor(Math.random() * 50) + 50,
-      int: Math.floor(Math.random() * 50) + 50,
-    };
+    return new Promise<void>((resolve, reject) => {
+      pollingIntervalRef.current = setInterval(async () => {
+        attempts++;
 
-    setAttributes(newAttributes);
-    setIsCreated(true);
-    setIsLoading(false);
+        try {
+          const playerState = await fetchPlayerState(rpc, playerStateAddress);
+
+          const currentAttributes: PandaAttributes = {
+            sta: 0, // Not used in the current schema
+            str: playerState.data.str,
+            agi: playerState.data.agi,
+            int: playerState.data.int,
+          };
+
+          let attributesUpdated = false;
+
+          if (previousAttributes) {
+            // For reroll: Check if attributes have changed from previous values
+            attributesUpdated =
+              currentAttributes.str !== previousAttributes.str ||
+              currentAttributes.agi !== previousAttributes.agi ||
+              currentAttributes.int !== previousAttributes.int;
+          } else {
+            // For initial creation: Check if any attribute is greater than 0
+            attributesUpdated =
+              currentAttributes.str > 0 ||
+              currentAttributes.agi > 0 ||
+              currentAttributes.int > 0;
+          }
+
+          if (attributesUpdated) {
+            // Attributes have been updated!
+            setAttributes(currentAttributes);
+            setIsCreated(true);
+            setIsLoading(false);
+
+            // Clear the interval
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+              pollingIntervalRef.current = null;
+            }
+
+            toast.success(
+              previousAttributes
+                ? "Panda attributes rerolled successfully!"
+                : "Panda created successfully!"
+            );
+            resolve();
+          } else if (attempts >= maxAttempts) {
+            // Timeout after max attempts
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+              pollingIntervalRef.current = null;
+            }
+
+            setIsLoading(false);
+            toast.error(
+              "Timeout waiting for panda attributes. Please try again."
+            );
+            reject(new Error("Timeout waiting for VRF callback"));
+          }
+        } catch (error) {
+          console.error("Error polling player state:", error);
+
+          // Continue polling on error, but stop after max attempts
+          if (attempts >= maxAttempts) {
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+              pollingIntervalRef.current = null;
+            }
+
+            setIsLoading(false);
+            toast.error("Failed to fetch panda attributes");
+            reject(error);
+          }
+        }
+      }, 1000); // Poll every 1 second
+    });
   };
 
-  const handleReroll = async () => {
+  const createPanda = async (): Promise<void> => {
+    if (!wallet) {
+      throw new Error("Wallet not connected");
+    }
+
     setIsLoading(true);
 
-    // Mock API call to reroll
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const { playerStateAddress, instruction } =
+        await sdk.generatePandaAttributesIx({
+          rpc,
+          player: { address: address(wallet.address) } as TransactionSigner,
+          roundNumber: 0,
+        });
 
-    // Generate new random attributes
-    const newAttributes: PandaAttributes = {
-      sta: Math.floor(Math.random() * 50) + 50,
-      str: Math.floor(Math.random() * 50) + 50,
-      agi: Math.floor(Math.random() * 50) + 50,
-      int: Math.floor(Math.random() * 50) + 50,
+      const signature = await buildAndSendTransactionWithPrivy(
+        rpc,
+        [instruction],
+        wallet
+      );
+
+      console.log("[createPanda] tx", signature);
+      toast.success(
+        "Transaction sent! Waiting for VRF to generate attributes..."
+      );
+
+      // Start polling for attribute updates
+      await pollPlayerState(playerStateAddress);
+    } catch (error) {
+      console.error("Error creating panda:", error);
+      setIsLoading(false);
+      toast.error("Failed to create panda");
+      throw error;
+    }
+  };
+
+  // Cleanup polling interval on component unmount
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
     };
+  }, []);
 
-    setAttributes(newAttributes);
-    setIsLoading(false);
+  const handleReroll = async () => {
+    if (!wallet) {
+      throw new Error("Wallet not connected");
+    }
+
+    if (!attributes) {
+      toast.error("No attributes to reroll");
+      return;
+    }
+
+    setIsLoading(true);
+
+    // Store current attributes to compare against after reroll
+    const previousAttributes = { ...attributes };
+
+    try {
+      const { playerStateAddress, instruction } = await sdk.rerollAttributesIx({
+        rpc,
+        player: { address: address(wallet.address) } as TransactionSigner,
+      });
+
+      const signature = await buildAndSendTransactionWithPrivy(
+        rpc,
+        [instruction],
+        wallet
+      );
+
+      console.log("[handleReroll] tx", signature);
+      toast.success(
+        "Transaction sent! Waiting for VRF to reroll attributes..."
+      );
+
+      // Start polling for attribute updates, passing previous attributes for comparison
+      await pollPlayerState(playerStateAddress, previousAttributes);
+    } catch (error) {
+      console.error("Error rerolling panda:", error);
+      setIsLoading(false);
+      toast.error("Failed to reroll panda");
+      throw error;
+    }
+  };
+
+  const handleDelegateWallet = async () => {
+    if (!wallet) {
+      toast.error("No game wallet found");
+      return;
+    }
+
+    try {
+      await addSessionSigners({
+        address: wallet.address,
+        signers: [
+          {
+            signerId: process.env.NEXT_PUBLIC_PRIVY_AUTH_ID!,
+          },
+        ],
+        //   chainType: "solana",
+      });
+
+      toast.success("Game wallet delegated successfully!");
+    } catch (error) {
+      console.error("Failed to delegate game wallet:", error);
+      toast.error("Failed to delegate game wallet. Please try again.");
+    }
   };
 
   const handleStartGame = () => {
@@ -63,7 +244,7 @@ export function PandaFighterCreator() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center gap-4 px-4 py-8 relative overflow-hidden">
+    <div className="h-full flex flex-col items-center justify-center gap-4 p-4 relative overflow-hidden">
       {/* Stars background */}
       <div className="absolute inset-0 z-[-1] overflow-hidden pointer-events-none">
         {[...Array(50)].map((_, i) => (
@@ -80,7 +261,7 @@ export function PandaFighterCreator() {
       </div>
 
       {/* Title Section */}
-      <div className="text-center mb-6 relative">
+      <div className="text-center mb-5 relative">
         <h1
           className="text-3xl sm:text-4xl font-extrabold tracking-wide"
           style={{
@@ -106,7 +287,7 @@ export function PandaFighterCreator() {
       {/* Panda Image */}
       <div className="flex flex-1 w-full flex-col items-center justify-center">
         {!isCreated ? (
-          <div className="w-full max-w-md mx-auto aspect-square rounded-2xl overflow-hidden relative z-10 mb-6 border-4 border-[#3a7a5a]/50">
+          <div className="w-full max-w-xs mx-auto aspect-square rounded-2xl overflow-hidden relative z-10 mb-6 border-4 border-[#3a7a5a]/50">
             <img
               src="/images/who-that-panda.png"
               alt="Mystery Panda Fighter"
@@ -115,7 +296,7 @@ export function PandaFighterCreator() {
           </div>
         ) : (
           <div className="w-full">
-            <div className="max-w-md mx-auto mb-6 aspect-square rounded-2xl overflow-hidden relative border-4 border-[#3a7a5a]/50">
+            <div className="max-w-xs mx-auto mb-6 aspect-square rounded-2xl overflow-hidden relative border-4 border-[#3a7a5a]/50">
               <img
                 src="/images/fighter-frame.png"
                 alt="Panda Background"
@@ -155,9 +336,17 @@ export function PandaFighterCreator() {
         )}
       </div>
 
+      <Button3D onClick={handleDelegateWallet} disabled={isLoading}>
+        Delegate
+      </Button3D>
+
       {/* Buttons */}
       {!isCreated ? (
-        <Button3D onClick={createPanda} disabled={isLoading} className="w-full max-w-md text-sm sm:text-base">
+        <Button3D
+          onClick={createPanda}
+          disabled={isLoading}
+          className="w-full max-w-md text-sm sm:text-base"
+        >
           {isLoading ? "Creating..." : "Create Panda Fighter"}
         </Button3D>
       ) : (

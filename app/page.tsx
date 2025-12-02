@@ -1,53 +1,93 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { Button3D } from "@/components/ui/button-3d";
 import { useWallet } from "@/hooks/use-wallet";
-import { useLogin } from "@privy-io/react-auth";
+import { useLogin, type WalletWithMetadata } from "@privy-io/react-auth";
+import { useSolBalance, useSplTokenBalance } from "@/hooks/use-balance";
+import { useEffect, useState } from "react";
+import { USDC_MINT_ADDRESS } from "@/configs/constants";
 
-const DURATION = 1000;
+// Fake USDC address for now - replace with actual USDC mint address
+const MIN_SOL_BALANCE = 0.001; // Minimum SOL required
+const MIN_USDC_BALANCE = 0.01; // Minimum USDC required
 
 export default function Home() {
   const router = useRouter();
-  const { ready } = useWallet();
+  const { ready, user } = useWallet();
+  const [isCheckingBalance, setIsCheckingBalance] = useState(false);
+
+  const embededWallet = user?.linkedAccounts?.find(
+    (account) =>
+      (account as WalletWithMetadata).chainType === "solana" &&
+      (account as WalletWithMetadata).connectorType === "embedded"
+  ) as WalletWithMetadata | undefined;
+
+  const { balanceInSol, isLoading: isLoadingSol } = useSolBalance(
+    embededWallet?.address
+  );
+  const { balanceInToken: usdcBalance, isLoading: isLoadingUsdc } =
+    useSplTokenBalance(embededWallet?.address, USDC_MINT_ADDRESS);
+
+  useEffect(() => {
+    if (!user || !embededWallet) return;
+
+    // Check if user already joined
+    const customMetadata = user.customMetadata as
+      | { joined?: boolean }
+      | undefined;
+    if (customMetadata?.joined === true) {
+      router.push("/home");
+      return;
+    }
+
+    // Check balances once they're loaded
+    if (!isLoadingSol && !isLoadingUsdc && !isCheckingBalance) {
+      setIsCheckingBalance(true);
+
+      // Check if user has sufficient balance
+      // const hasSufficientBalance =
+      //   balanceInSol >= MIN_SOL_BALANCE && usdcBalance >= MIN_USDC_BALANCE;
+      const hasSufficientBalance = balanceInSol >= MIN_SOL_BALANCE;
+
+      if (!hasSufficientBalance) {
+        router.push("/top-up");
+      } else {
+        router.push("/create");
+      }
+    }
+  }, [
+    user,
+    embededWallet,
+    balanceInSol,
+    usdcBalance,
+    isLoadingSol,
+    isLoadingUsdc,
+    isCheckingBalance,
+    router,
+  ]);
+
   const { login } = useLogin({
-    onComplete: () => {
-      router.push("/create");
+    onComplete: ({ user }) => {
+      const embededWallet = user?.linkedAccounts?.find(
+        (account) =>
+          (account as WalletWithMetadata).chainType === "solana" &&
+          (account as WalletWithMetadata).connectorType === "embedded"
+      ) as WalletWithMetadata | undefined;
+
+      if (!embededWallet) {
+        alert(
+          "Error: No embedded wallet found. Please try again or contact support."
+        );
+        return;
+      }
+
+      // The useEffect will handle the navigation after checking balances
     },
   });
 
-  const [progress, setProgress] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
-
-  useEffect(() => {
-    // Progress animation
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 2;
-      });
-    }, DURATION / 50);
-
-    // Auto complete after duration
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-      setTimeout(() => {
-        // onComplete?.();
-      }, 500);
-    }, DURATION);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timer);
-    };
-  }, []);
-
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4">
+    <div className="flex h-full flex-col items-center justify-center px-4">
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden">
         <div
@@ -111,22 +151,6 @@ export default function Home() {
           />
         </div>
 
-        {/* Loading Section */}
-        {/* <div className="hidden flex flex-col items-center space-y-4 w-full max-w-xs">
-          <div className="text-5xl animate-pulse">🐾</div>
-
-          <div className="w-full bg-gray-700/50 rounded-full h-3 overflow-hidden border-2 border-yellow-900/50">
-            <div
-              className="h-full bg-linear-to-r from-yellow-600 via-yellow-400 to-yellow-600 rounded-full transition-all duration-300 ease-out shadow-[0_0_20px_rgba(250,204,21,0.8)]"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-
-          <p className="text-gray-300 text-lg font-semibold tracking-widest animate-pulse">
-            Loading...
-          </p>
-        </div> */}
-
         <Button3D className="max-w-md w-full" disabled={!ready} onClick={login}>
           Play
         </Button3D>
@@ -162,15 +186,6 @@ export default function Home() {
           animation: bounce-slow 2s ease-in-out infinite;
         }
       `}</style>
-      {/* <div className="text-center space-y-4 sm:space-y-6">
-        <div className="text-6xl sm:text-8xl">🐼</div>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-linear-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent px-2">
-          Bamboo Panda Battles
-        </h1>
-        <Button3D disabled={!ready} onClick={login}>
-          Play
-        </Button3D>
-      </div> */}
     </div>
   );
 }

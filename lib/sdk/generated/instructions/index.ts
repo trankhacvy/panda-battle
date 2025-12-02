@@ -7,20 +7,21 @@
  */
 
 export * from './buyAttackPacks';
-export * from './callbackJoinRound';
+export * from './callbackGenerateAttributes';
 export * from './callbackRerollAttributes';
 export * from './callbackResolveBattle';
 export * from './claimPrize';
+export * from './confirmJoinRound';
 export * from './createRound';
 export * from './delegateRound';
 export * from './distributePrizes';
 export * from './endRound';
+export * from './generatePandaAttributes';
 export * from './hourlyJackpot';
 export * from './initializeGame';
 export * from './initiateBattle';
 export * from './processUndelegation';
 export * from './regenerateTurns';
-export * from './requestJoinRound';
 export * from './rerollAttributes';
 export * from './resetPacksIfNewHour';
 export * from './revealLeaderboard';

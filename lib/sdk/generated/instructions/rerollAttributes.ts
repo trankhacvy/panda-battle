@@ -54,7 +54,7 @@ export function getRerollAttributesDiscriminatorBytes() {
 export type RerollAttributesInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountPlayer extends string | AccountMeta<string> = string,
-  TAccountGlobalConfig extends string | AccountMeta<string> = string,
+  TAccountGameAuthority extends string | AccountMeta<string> = string,
   TAccountGameRound extends string | AccountMeta<string> = string,
   TAccountPlayerState extends string | AccountMeta<string> = string,
   TAccountPlayerTokenAccount extends string | AccountMeta<string> = string,
@@ -79,9 +79,9 @@ export type RerollAttributesInstruction<
         ? WritableSignerAccount<TAccountPlayer> &
             AccountSignerMeta<TAccountPlayer>
         : TAccountPlayer,
-      TAccountGlobalConfig extends string
-        ? ReadonlyAccount<TAccountGlobalConfig>
-        : TAccountGlobalConfig,
+      TAccountGameAuthority extends string
+        ? ReadonlyAccount<TAccountGameAuthority>
+        : TAccountGameAuthority,
       TAccountGameRound extends string
         ? WritableAccount<TAccountGameRound>
         : TAccountGameRound,
@@ -152,7 +152,7 @@ export function getRerollAttributesInstructionDataCodec(): FixedSizeCodec<
 
 export type RerollAttributesAsyncInput<
   TAccountPlayer extends string = string,
-  TAccountGlobalConfig extends string = string,
+  TAccountGameAuthority extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
   TAccountPlayerTokenAccount extends string = string,
@@ -165,12 +165,10 @@ export type RerollAttributesAsyncInput<
   TAccountSlotHashes extends string = string,
 > = {
   player: TransactionSigner<TAccountPlayer>;
-  globalConfig?: Address<TAccountGlobalConfig>;
+  gameAuthority?: Address<TAccountGameAuthority>;
   gameRound: Address<TAccountGameRound>;
   playerState?: Address<TAccountPlayerState>;
-  /** Player's token account */
   playerTokenAccount: Address<TAccountPlayerTokenAccount>;
-  /** Vault token account for this round (ATA owned by game_round) */
   vault: Address<TAccountVault>;
   oracleQueue?: Address<TAccountOracleQueue>;
   systemProgram?: Address<TAccountSystemProgram>;
@@ -183,7 +181,7 @@ export type RerollAttributesAsyncInput<
 
 export async function getRerollAttributesInstructionAsync<
   TAccountPlayer extends string,
-  TAccountGlobalConfig extends string,
+  TAccountGameAuthority extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
   TAccountPlayerTokenAccount extends string,
@@ -198,7 +196,7 @@ export async function getRerollAttributesInstructionAsync<
 >(
   input: RerollAttributesAsyncInput<
     TAccountPlayer,
-    TAccountGlobalConfig,
+    TAccountGameAuthority,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
@@ -215,7 +213,7 @@ export async function getRerollAttributesInstructionAsync<
   RerollAttributesInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGlobalConfig,
+    TAccountGameAuthority,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
@@ -234,7 +232,7 @@ export async function getRerollAttributesInstructionAsync<
   // Original accounts.
   const originalAccounts = {
     player: { value: input.player ?? null, isWritable: true },
-    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
+    gameAuthority: { value: input.gameAuthority ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
     playerState: { value: input.playerState ?? null, isWritable: true },
     playerTokenAccount: {
@@ -261,13 +259,13 @@ export async function getRerollAttributesInstructionAsync<
   const args = { ...input };
 
   // Resolve default values.
-  if (!accounts.globalConfig.value) {
-    accounts.globalConfig.value = await getProgramDerivedAddress({
+  if (!accounts.gameAuthority.value) {
+    accounts.gameAuthority.value = await getProgramDerivedAddress({
       programAddress,
       seeds: [
         getBytesEncoder().encode(
           new Uint8Array([
-            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
+            103, 97, 109, 101, 95, 97, 117, 116, 104, 111, 114, 105, 116, 121,
           ])
         ),
       ],
@@ -322,7 +320,7 @@ export async function getRerollAttributesInstructionAsync<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.player),
-      getAccountMeta(accounts.globalConfig),
+      getAccountMeta(accounts.gameAuthority),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
       getAccountMeta(accounts.playerTokenAccount),
@@ -341,7 +339,7 @@ export async function getRerollAttributesInstructionAsync<
   } as RerollAttributesInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGlobalConfig,
+    TAccountGameAuthority,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
@@ -357,7 +355,7 @@ export async function getRerollAttributesInstructionAsync<
 
 export type RerollAttributesInput<
   TAccountPlayer extends string = string,
-  TAccountGlobalConfig extends string = string,
+  TAccountGameAuthority extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
   TAccountPlayerTokenAccount extends string = string,
@@ -370,12 +368,10 @@ export type RerollAttributesInput<
   TAccountSlotHashes extends string = string,
 > = {
   player: TransactionSigner<TAccountPlayer>;
-  globalConfig: Address<TAccountGlobalConfig>;
+  gameAuthority: Address<TAccountGameAuthority>;
   gameRound: Address<TAccountGameRound>;
   playerState: Address<TAccountPlayerState>;
-  /** Player's token account */
   playerTokenAccount: Address<TAccountPlayerTokenAccount>;
-  /** Vault token account for this round (ATA owned by game_round) */
   vault: Address<TAccountVault>;
   oracleQueue?: Address<TAccountOracleQueue>;
   systemProgram?: Address<TAccountSystemProgram>;
@@ -388,7 +384,7 @@ export type RerollAttributesInput<
 
 export function getRerollAttributesInstruction<
   TAccountPlayer extends string,
-  TAccountGlobalConfig extends string,
+  TAccountGameAuthority extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
   TAccountPlayerTokenAccount extends string,
@@ -403,7 +399,7 @@ export function getRerollAttributesInstruction<
 >(
   input: RerollAttributesInput<
     TAccountPlayer,
-    TAccountGlobalConfig,
+    TAccountGameAuthority,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
@@ -419,7 +415,7 @@ export function getRerollAttributesInstruction<
 ): RerollAttributesInstruction<
   TProgramAddress,
   TAccountPlayer,
-  TAccountGlobalConfig,
+  TAccountGameAuthority,
   TAccountGameRound,
   TAccountPlayerState,
   TAccountPlayerTokenAccount,
@@ -437,7 +433,7 @@ export function getRerollAttributesInstruction<
   // Original accounts.
   const originalAccounts = {
     player: { value: input.player ?? null, isWritable: true },
-    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
+    gameAuthority: { value: input.gameAuthority ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
     playerState: { value: input.playerState ?? null, isWritable: true },
     playerTokenAccount: {
@@ -489,7 +485,7 @@ export function getRerollAttributesInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.player),
-      getAccountMeta(accounts.globalConfig),
+      getAccountMeta(accounts.gameAuthority),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
       getAccountMeta(accounts.playerTokenAccount),
@@ -508,7 +504,7 @@ export function getRerollAttributesInstruction<
   } as RerollAttributesInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGlobalConfig,
+    TAccountGameAuthority,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountPlayerTokenAccount,
@@ -529,12 +525,10 @@ export type ParsedRerollAttributesInstruction<
   programAddress: Address<TProgram>;
   accounts: {
     player: TAccountMetas[0];
-    globalConfig: TAccountMetas[1];
+    gameAuthority: TAccountMetas[1];
     gameRound: TAccountMetas[2];
     playerState: TAccountMetas[3];
-    /** Player's token account */
     playerTokenAccount: TAccountMetas[4];
-    /** Vault token account for this round (ATA owned by game_round) */
     vault: TAccountMetas[5];
     oracleQueue: TAccountMetas[6];
     systemProgram: TAccountMetas[7];
@@ -568,7 +562,7 @@ export function parseRerollAttributesInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       player: getNextAccount(),
-      globalConfig: getNextAccount(),
+      gameAuthority: getNextAccount(),
       gameRound: getNextAccount(),
       playerState: getNextAccount(),
       playerTokenAccount: getNextAccount(),

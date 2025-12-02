@@ -9,8 +9,80 @@ use crate::constants::*;
 use crate::errors::PandaBattleError;
 use crate::state::*;
 
-/// Request to join the current round (Step 1: Request VRF)
-pub fn request_join_round(ctx: Context<RequestJoinRound>, client_seed: u8) -> Result<()> {
+#[vrf]
+#[derive(Accounts)]
+pub struct GeneratePandaAttributes<'info> {
+    #[account(mut)]
+    pub player: Signer<'info>,
+
+    #[account(
+        seeds = [GLOBAL_CONFIG_SEED, &global_config.id.to_le_bytes()],
+        bump = global_config.bump
+    )]
+    pub global_config: Box<Account<'info, GlobalConfig>>,
+
+    /// CHECK: game authority PDA - only required for paid games
+    #[account(
+        seeds = [
+            GAME_AUTHORITY_SEED.as_ref(),
+        ],
+        bump,
+    )]
+    pub game_authority: UncheckedAccount<'info>,
+
+    #[account(
+        mut,
+        seeds = [
+            GAME_ROUND_SEED,
+            global_config.key().as_ref(),
+            game_round.round_number.to_le_bytes().as_ref()
+        ],
+        bump = game_round.bump,
+        constraint = game_round.is_active @ PandaBattleError::RoundNotActive
+    )]
+    pub game_round: Box<Account<'info, GameRound>>,
+
+    #[account(
+        init_if_needed,
+        payer = player,
+        space = 8 + PlayerState::INIT_SPACE,
+        seeds = [
+            PLAYER_STATE_SEED,
+            game_round.key().as_ref(),
+            player.key().as_ref()
+        ],
+        bump
+    )]
+    pub player_state: Box<Account<'info, PlayerState>>,
+
+    #[account(
+        mut,
+        associated_token::mint = game_round.token_mint,
+        associated_token::authority = player,
+        associated_token::token_program = token_program
+    )]
+    pub player_token_account: Box<Account<'info, TokenAccount>>,
+
+    #[account(
+        mut,
+        token::mint = game_round.token_mint,
+        token::authority = game_authority,
+        token::token_program = token_program,
+    )]
+    pub vault: Box<Account<'info, TokenAccount>>,
+
+    /// CHECK: The oracle queue for VRF
+    #[account(mut, address = ephemeral_vrf_sdk::consts::DEFAULT_QUEUE)]
+    pub oracle_queue: AccountInfo<'info>,
+
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+}
+
+pub fn generate_panda_attributes(
+    ctx: Context<GeneratePandaAttributes>,
+    client_seed: u8,
+) -> Result<()> {
     {
         let game_round = &mut ctx.accounts.game_round;
         let clock = Clock::get()?;
@@ -52,12 +124,13 @@ pub fn request_join_round(ctx: Context<RequestJoinRound>, client_seed: u8) -> Re
     {
         msg!("Requesting randomness for player attributes...");
 
-        // Request randomness from VRF
+        // Request randomness from VRF (only need player_state account)
         let ix = create_request_randomness_ix(RequestRandomnessParams {
             payer: ctx.accounts.player.key(),
             oracle_queue: ctx.accounts.oracle_queue.key(),
             callback_program_id: crate::ID,
-            callback_discriminator: crate::instruction::CallbackJoinRound::DISCRIMINATOR.to_vec(),
+            callback_discriminator: crate::instruction::CallbackGenerateAttributes::DISCRIMINATOR
+                .to_vec(),
             caller_seed: [client_seed; 32],
             accounts_metas: Some(vec![
                 SerializableAccountMeta {
@@ -70,31 +143,6 @@ pub fn request_join_round(ctx: Context<RequestJoinRound>, client_seed: u8) -> Re
                     is_signer: false,
                     is_writable: false,
                 },
-                SerializableAccountMeta {
-                    pubkey: ctx.accounts.buffer.key(),
-                    is_signer: false,
-                    is_writable: true,
-                },
-                SerializableAccountMeta {
-                    pubkey: ctx.accounts.delegation_record.key(),
-                    is_signer: false,
-                    is_writable: true,
-                },
-                SerializableAccountMeta {
-                    pubkey: ctx.accounts.delegation_metadata.key(),
-                    is_signer: false,
-                    is_writable: true,
-                },
-                SerializableAccountMeta {
-                    pubkey: ctx.accounts.owner_program.key(),
-                    is_signer: false,
-                    is_writable: false,
-                },
-                SerializableAccountMeta {
-                    pubkey: ctx.accounts.delegation_program.key(),
-                    is_signer: false,
-                    is_writable: false,
-                },
             ]),
             ..Default::default()
         });
@@ -103,7 +151,7 @@ pub fn request_join_round(ctx: Context<RequestJoinRound>, client_seed: u8) -> Re
             .invoke_signed_vrf(&ctx.accounts.player.to_account_info(), &ix)?;
 
         msg!(
-            "Player {} requested to join round {}. Waiting for VRF callback...",
+            "Player {} requested panda generation for round {}. Waiting for VRF callback...",
             ctx.accounts.player.key(),
             ctx.accounts.game_round.round_number
         );
@@ -112,97 +160,248 @@ pub fn request_join_round(ctx: Context<RequestJoinRound>, client_seed: u8) -> Re
     Ok(())
 }
 
-/// Callback to complete join round (Step 2: Consume VRF randomness)
-pub fn callback_join_round(ctx: Context<CallbackJoinRound>, randomness: [u8; 32]) -> Result<()> {
-    {
-        let player_state = &mut ctx.accounts.player_state;
-        let game_round = &ctx.accounts.game_round;
-        let clock = Clock::get()?;
+#[derive(Accounts)]
+pub struct CallbackGenerateAttributes<'info> {
+    /// VRF program identity ensures callback is from VRF program
+    #[account(address = ephemeral_vrf_sdk::consts::VRF_PROGRAM_IDENTITY)]
+    pub vrf_program_identity: Signer<'info>,
 
-        // Generate attributes using VRF randomness (3 * u8 % 11 + 5 = range 5-15)
-        let str_val = (randomness[0] % 11) + 5;
-        let agi_val = (randomness[1] % 11) + 5;
-        let int_val = (randomness[2] % 11) + 5;
+    #[account(mut)]
+    pub player_state: Account<'info, PlayerState>,
 
-        // Initialize player state
-        player_state.str = str_val;
-        player_state.agi = agi_val;
-        player_state.int = int_val;
-        player_state.level = 0;
-        player_state.xp = 0;
-        player_state.points = 0;
-        player_state.turns = STARTING_TURNS;
-        player_state.last_turn_regen = clock.unix_timestamp;
-        player_state.rerolls_used = 0;
-        player_state.packs_bought_hour = 0;
-        player_state.last_battle = clock.unix_timestamp;
-        player_state.battles_fought = 0;
-        player_state.wins = 0;
-        player_state.losses = 0;
-        player_state.prize_share = 0;
-        player_state.prize_claimed = false;
-        player_state.joined_at = clock.unix_timestamp;
+    pub game_round: Account<'info, GameRound>,
+}
 
-        // Early bird bonus: +2 turns if joined within first 6 hours
-        let hours_since_start = (clock.unix_timestamp - game_round.start_time) / 3600;
-        if hours_since_start < 6 {
-            player_state.turns = player_state.turns.saturating_add(2);
-            if player_state.turns > player_state.max_turns {
-                player_state.turns = player_state.max_turns;
-            }
+pub fn callback_generate_attributes(
+    ctx: Context<CallbackGenerateAttributes>,
+    randomness: [u8; 32],
+) -> Result<()> {
+    msg!(
+        "VRF callback received for panda attribute generation.{:?}",
+        randomness
+    );
+    let player_state = &mut ctx.accounts.player_state;
+    let game_round = &ctx.accounts.game_round;
+    let clock = Clock::get()?;
+
+    // Generate attributes using VRF randomness (3 * u8 % 11 + 5 = range 5-15)
+    let str_val = (randomness[0] % 11) + 5;
+    let agi_val = (randomness[1] % 11) + 5;
+    let int_val = (randomness[2] % 11) + 5;
+
+    // Initialize player state
+    player_state.str = str_val;
+    player_state.agi = agi_val;
+    player_state.int = int_val;
+    player_state.level = 0;
+    player_state.xp = 0;
+    player_state.points = 0;
+    player_state.turns = STARTING_TURNS;
+    player_state.last_turn_regen = clock.unix_timestamp;
+    player_state.rerolls_used = 0;
+    player_state.packs_bought_hour = 0;
+    player_state.last_battle = clock.unix_timestamp;
+    player_state.battles_fought = 0;
+    player_state.wins = 0;
+    player_state.losses = 0;
+    player_state.prize_share = 0;
+    player_state.prize_claimed = false;
+    player_state.joined_at = clock.unix_timestamp;
+
+    // Early bird bonus: +2 turns if joined within first 6 hours
+    let hours_since_start = (clock.unix_timestamp - game_round.start_time) / 3600;
+    if hours_since_start < 6 {
+        player_state.turns = player_state.turns.saturating_add(2);
+        if player_state.turns > player_state.max_turns {
+            player_state.turns = player_state.max_turns;
         }
-
-        msg!(
-            "Player {} joined round {} with VRF attributes: STR:{} AGI:{} INT:{}",
-            player_state.player,
-            game_round.round_number,
-            str_val,
-            agi_val,
-            int_val
-        );
     }
 
-    {
-        msg!("Delegating player_state to Ephemeral Rollups...");
-
-        let player_state = &ctx.accounts.player_state;
-        let game_round = &ctx.accounts.game_round;
-        let player_key = player_state.player;
-        let game_round_key = game_round.key();
-
-        let del_accounts = ephemeral_rollups_sdk::cpi::DelegateAccounts {
-            payer: &ctx.accounts.vrf_program_identity.to_account_info(),
-            pda: &player_state.to_account_info(),
-            owner_program: &ctx.accounts.owner_program.to_account_info(),
-            buffer: &ctx.accounts.buffer.to_account_info(),
-            delegation_record: &ctx.accounts.delegation_record.to_account_info(),
-            delegation_metadata: &ctx.accounts.delegation_metadata.to_account_info(),
-            delegation_program: &ctx.accounts.delegation_program.to_account_info(),
-            system_program: &ctx.accounts.system_program.to_account_info(),
-        };
-
-        let seeds = &[
-            PLAYER_STATE_SEED,
-            game_round_key.as_ref(),
-            player_key.as_ref(),
-        ];
-
-        let config = DelegateConfig {
-            commit_frequency_ms: 30_000,
-            validator: Some(pubkey!("MAS1Dt9qreoRMQ14YQuhg8UTZMMzDdKhmkZMECCzk57")),
-        };
-
-        player_state.exit(&crate::ID)?;
-        ephemeral_rollups_sdk::cpi::delegate_account(del_accounts, seeds, config)?;
-
-        msg!("Player state delegated successfully");
-    }
+    msg!(
+        "Panda attributes generated for player {}: STR:{} AGI:{} INT:{} - Player can now confirm to join or regenerate",
+        player_state.player,
+        str_val,
+        agi_val,
+        int_val
+    );
 
     Ok(())
 }
 
-/// Buy attack packs (replaces purchase_turns)
-/// Each pack gives 10 turns, price increases by 50% per pack bought in current hour
+#[derive(Accounts)]
+pub struct ConfirmJoinRound<'info> {
+    #[account(mut)]
+    pub player: Signer<'info>,
+
+    #[account(
+        seeds = [GLOBAL_CONFIG_SEED, &global_config.id.to_le_bytes()],
+        bump = global_config.bump
+    )]
+    pub global_config: Box<Account<'info, GlobalConfig>>,
+
+    #[account(
+        seeds = [
+            GAME_ROUND_SEED,
+            global_config.key().as_ref(),
+            game_round.round_number.to_le_bytes().as_ref()
+        ],
+        bump = game_round.bump,
+        constraint = game_round.is_active @ PandaBattleError::RoundNotActive
+    )]
+    pub game_round: Box<Account<'info, GameRound>>,
+
+    #[account(
+        mut,
+        seeds = [
+            PLAYER_STATE_SEED,
+            game_round.key().as_ref(),
+            player.key().as_ref()
+        ],
+        bump = player_state.bump,
+        constraint = player_state.player == player.key() @ PandaBattleError::Unauthorized
+    )]
+    pub player_state: Box<Account<'info, PlayerState>>,
+
+    /// CHECK: The buffer account for delegation
+    #[account(
+        mut,
+        seeds = [ephemeral_rollups_sdk::consts::BUFFER, player_state.key().as_ref()],
+        bump,
+        seeds::program = crate::id()
+    )]
+    pub buffer: UncheckedAccount<'info>,
+
+    /// CHECK: The delegation record account
+    #[account(
+        mut,
+        seeds = [ephemeral_rollups_sdk::consts::DELEGATION_RECORD, player_state.key().as_ref()],
+        bump,
+        seeds::program = delegation_program.key()
+    )]
+    pub delegation_record: UncheckedAccount<'info>,
+
+    /// CHECK: The delegation metadata account
+    #[account(
+        mut,
+        seeds = [ephemeral_rollups_sdk::consts::DELEGATION_METADATA, player_state.key().as_ref()],
+        bump,
+        seeds::program = delegation_program.key()
+    )]
+    pub delegation_metadata: UncheckedAccount<'info>,
+
+    /// CHECK: The owner program of the pda
+    #[account(address = crate::id())]
+    pub owner_program: UncheckedAccount<'info>,
+
+    /// CHECK: The delegation program
+    #[account(address = ::ephemeral_rollups_sdk::id())]
+    pub delegation_program: UncheckedAccount<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+pub fn confirm_join_round(ctx: Context<ConfirmJoinRound>) -> Result<()> {
+    msg!("Delegating player_state to Ephemeral Rollups...");
+
+    let player_state = &ctx.accounts.player_state;
+    let game_round = &ctx.accounts.game_round;
+    let player_key = player_state.player;
+    let game_round_key = game_round.key();
+
+    // Verify that attributes have been set (str should not be 0)
+    // require!(player_state.str > 0, PandaBattleError::RoundNotActive); // Reusing error for now
+
+    let del_accounts = ephemeral_rollups_sdk::cpi::DelegateAccounts {
+        payer: &ctx.accounts.player.to_account_info(),
+        pda: &player_state.to_account_info(),
+        owner_program: &ctx.accounts.owner_program.to_account_info(),
+        buffer: &ctx.accounts.buffer.to_account_info(),
+        delegation_record: &ctx.accounts.delegation_record.to_account_info(),
+        delegation_metadata: &ctx.accounts.delegation_metadata.to_account_info(),
+        delegation_program: &ctx.accounts.delegation_program.to_account_info(),
+        system_program: &ctx.accounts.system_program.to_account_info(),
+    };
+
+    let seeds = &[
+        PLAYER_STATE_SEED,
+        game_round_key.as_ref(),
+        player_key.as_ref(),
+    ];
+
+    let config = DelegateConfig {
+        commit_frequency_ms: 30_000,
+        validator: Some(pubkey!("MAS1Dt9qreoRMQ14YQuhg8UTZMMzDdKhmkZMECCzk57")),
+    };
+
+    player_state.exit(&crate::ID)?;
+    ephemeral_rollups_sdk::cpi::delegate_account(del_accounts, seeds, config)?;
+
+    msg!(
+        "Player {} successfully joined round {} with panda STR:{} AGI:{} INT:{}",
+        player_state.player,
+        game_round.round_number,
+        player_state.str,
+        player_state.agi,
+        player_state.int
+    );
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct BuyAttackPacks<'info> {
+    #[account(mut)]
+    pub player: Signer<'info>,
+
+    #[account(
+        seeds = [GLOBAL_CONFIG_SEED, &global_config.id.to_le_bytes()],
+        bump = global_config.bump
+    )]
+    pub global_config: Account<'info, GlobalConfig>,
+
+    #[account(
+        mut,
+        seeds = [
+            GAME_ROUND_SEED,
+            global_config.key().as_ref(),
+            game_round.round_number.to_le_bytes().as_ref()
+        ],
+        bump = game_round.bump
+    )]
+    pub game_round: Account<'info, GameRound>,
+
+    #[account(
+        mut,
+        seeds = [
+            PLAYER_STATE_SEED,
+            game_round.key().as_ref(),
+            player.key().as_ref()
+        ],
+        bump = player_state.bump,
+        constraint = player_state.player == player.key() @ PandaBattleError::NotJoined
+    )]
+    pub player_state: Account<'info, PlayerState>,
+
+    /// Player's token account
+    #[account(
+        mut,
+        constraint = player_token_account.owner == player.key() @ PandaBattleError::Unauthorized,
+        constraint = player_token_account.mint == game_round.token_mint @ PandaBattleError::InvalidMint
+    )]
+    pub player_token_account: Account<'info, TokenAccount>,
+
+    /// Vault token account for this round (ATA owned by game_round)
+    #[account(
+        mut,
+        constraint = vault.owner == game_round.key() @ PandaBattleError::Unauthorized,
+        constraint = vault.mint == game_round.token_mint @ PandaBattleError::InvalidMint
+    )]
+    pub vault: Account<'info, TokenAccount>,
+
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+}
+
 pub fn buy_attack_packs(ctx: Context<BuyAttackPacks>, num_packs: u8) -> Result<()> {
     require!(
         num_packs > 0 && num_packs <= 5,
@@ -262,7 +461,74 @@ pub fn buy_attack_packs(ctx: Context<BuyAttackPacks>, num_packs: u8) -> Result<(
     Ok(())
 }
 
-/// Reroll attributes (costs $1 fixed, max 3 times)
+#[vrf]
+#[derive(Accounts)]
+pub struct RerollAttributes<'info> {
+    #[account(mut)]
+    pub player: Signer<'info>,
+
+    // #[account(
+    //     seeds = [GLOBAL_CONFIG_SEED, &global_config.id.to_le_bytes()],
+    //     bump = global_config.bump
+    // )]
+    // pub global_config: Account<'info, GlobalConfig>,
+    /// CHECK: game authority PDA - only required for paid games
+    #[account(
+        seeds = [
+            GAME_AUTHORITY_SEED.as_ref(),
+        ],
+        bump,
+    )]
+    pub game_authority: UncheckedAccount<'info>,
+
+    #[account(
+        mut,
+        seeds = [
+            GAME_ROUND_SEED,
+            game_round.global_config.as_ref(),
+            game_round.round_number.to_le_bytes().as_ref()
+        ],
+        bump = game_round.bump,
+        constraint = game_round.is_active @ PandaBattleError::RoundNotActive
+    )]
+    pub game_round: Account<'info, GameRound>,
+
+    #[account(
+        mut,
+        seeds = [
+            PLAYER_STATE_SEED,
+            game_round.key().as_ref(),
+            player.key().as_ref()
+        ],
+        bump = player_state.bump,
+        constraint = player_state.player == player.key() @ PandaBattleError::NotJoined
+    )]
+    pub player_state: Account<'info, PlayerState>,
+
+    #[account(
+        mut,
+        associated_token::mint = game_round.token_mint,
+        associated_token::authority = player,
+        associated_token::token_program = token_program
+    )]
+    pub player_token_account: Box<Account<'info, TokenAccount>>,
+
+    #[account(
+        mut,
+        token::mint = game_round.token_mint,
+        token::authority = game_authority,
+        token::token_program = token_program,
+    )]
+    pub vault: Box<Account<'info, TokenAccount>>,
+
+    /// CHECK: The oracle queue for VRF
+    #[account(mut, address = ephemeral_vrf_sdk::consts::DEFAULT_QUEUE)]
+    pub oracle_queue: AccountInfo<'info>,
+
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+}
+
 pub fn reroll_attributes(ctx: Context<RerollAttributes>, client_seed: u8) -> Result<()> {
     {
         let player_state = &mut ctx.accounts.player_state;
@@ -330,7 +596,16 @@ pub fn reroll_attributes(ctx: Context<RerollAttributes>, client_seed: u8) -> Res
     Ok(())
 }
 
-/// Callback to complete attribute reroll (Step 2: Consume VRF randomness)
+#[derive(Accounts)]
+pub struct CallbackRerollAttributes<'info> {
+    /// VRF program identity ensures callback is from VRF program
+    #[account(address = ephemeral_vrf_sdk::consts::VRF_PROGRAM_IDENTITY)]
+    pub vrf_program_identity: Signer<'info>,
+
+    #[account(mut)]
+    pub player_state: Account<'info, PlayerState>,
+}
+
 pub fn callback_reroll_attributes(
     ctx: Context<CallbackRerollAttributes>,
     randomness: [u8; 32],
@@ -358,7 +633,59 @@ pub fn callback_reroll_attributes(
     Ok(())
 }
 
-/// Initiate a battle against another player (Step 1: Request VRF for battle resolution)
+#[vrf]
+#[derive(Accounts)]
+pub struct InitiateBattle<'info> {
+    #[account(mut)]
+    pub player: Signer<'info>,
+
+    #[account(
+        seeds = [GLOBAL_CONFIG_SEED, &global_config.id.to_le_bytes()],
+        bump = global_config.bump
+    )]
+    pub global_config: Account<'info, GlobalConfig>,
+
+    #[account(
+        mut,
+        seeds = [
+            GAME_ROUND_SEED,
+            global_config.key().as_ref(),
+            game_round.round_number.to_le_bytes().as_ref()
+        ],
+        bump = game_round.bump
+    )]
+    pub game_round: Account<'info, GameRound>,
+
+    #[account(
+        mut,
+        seeds = [
+            PLAYER_STATE_SEED,
+            game_round.key().as_ref(),
+            player.key().as_ref()
+        ],
+        bump = attacker_state.bump,
+        constraint = attacker_state.player == player.key() @ PandaBattleError::NotJoined
+    )]
+    pub attacker_state: Account<'info, PlayerState>,
+
+    #[account(
+        mut,
+        seeds = [
+            PLAYER_STATE_SEED,
+            game_round.key().as_ref(),
+            defender_state.player.as_ref()
+        ],
+        bump = defender_state.bump
+    )]
+    pub defender_state: Account<'info, PlayerState>,
+
+    /// CHECK: The oracle queue for VRF
+    #[account(mut, address = ephemeral_vrf_sdk::consts::DEFAULT_QUEUE)]
+    pub oracle_queue: AccountInfo<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
 pub fn initiate_battle(ctx: Context<InitiateBattle>, client_seed: u8) -> Result<()> {
     {
         let game_round = &ctx.accounts.game_round;
@@ -420,7 +747,22 @@ pub fn initiate_battle(ctx: Context<InitiateBattle>, client_seed: u8) -> Result<
     Ok(())
 }
 
-/// Callback to resolve battle (Step 2: Full battle simulation with VRF randomness)
+#[derive(Accounts)]
+pub struct CallbackResolveBattle<'info> {
+    /// VRF program identity ensures callback is from VRF program
+    #[account(address = ephemeral_vrf_sdk::consts::VRF_PROGRAM_IDENTITY)]
+    pub vrf_program_identity: Signer<'info>,
+
+    #[account(mut)]
+    pub attacker_state: Account<'info, PlayerState>,
+
+    #[account(mut)]
+    pub defender_state: Account<'info, PlayerState>,
+
+    #[account(mut)]
+    pub game_round: Account<'info, GameRound>,
+}
+
 pub fn callback_resolve_battle(
     ctx: Context<CallbackResolveBattle>,
     randomness: [u8; 32],
@@ -617,7 +959,6 @@ pub fn callback_resolve_battle(
     Ok(())
 }
 
-/// Check if player should level up and apply stat boosts
 fn check_and_apply_levelup(player: &mut PlayerState) -> Result<()> {
     let current_level = player.level as usize;
 
@@ -674,7 +1015,62 @@ fn check_and_apply_levelup(player: &mut PlayerState) -> Result<()> {
     Ok(())
 }
 
-/// Claim prize after round ends
+#[derive(Accounts)]
+pub struct ClaimPrize<'info> {
+    #[account(mut)]
+    pub player: Signer<'info>,
+
+    #[account(
+        seeds = [GLOBAL_CONFIG_SEED, &global_config.id.to_le_bytes()],
+        bump = global_config.bump
+    )]
+    pub global_config: Account<'info, GlobalConfig>,
+
+    #[account(
+        mut,
+        seeds = [
+            GAME_ROUND_SEED,
+            global_config.key().as_ref(),
+            game_round.round_number.to_le_bytes().as_ref()
+        ],
+        bump = game_round.bump,
+        constraint = !game_round.is_active @ PandaBattleError::RoundNotEnded,
+        constraint = game_round.payouts_processed @ PandaBattleError::NoRewardsAvailable
+    )]
+    pub game_round: Account<'info, GameRound>,
+
+    #[account(
+        mut,
+        seeds = [
+            PLAYER_STATE_SEED,
+            game_round.key().as_ref(),
+            player.key().as_ref()
+        ],
+        bump = player_state.bump,
+        constraint = player_state.player == player.key() @ PandaBattleError::NotJoined
+    )]
+    pub player_state: Account<'info, PlayerState>,
+
+    /// Player's token account
+    #[account(
+        mut,
+        constraint = player_token_account.owner == player.key() @ PandaBattleError::Unauthorized,
+        constraint = player_token_account.mint == game_round.token_mint @ PandaBattleError::InvalidMint
+    )]
+    pub player_token_account: Account<'info, TokenAccount>,
+
+    /// Vault token account for this round (ATA owned by game_round)
+    #[account(
+        mut,
+        constraint = vault.owner == game_round.key() @ PandaBattleError::Unauthorized,
+        constraint = vault.mint == game_round.token_mint @ PandaBattleError::InvalidMint
+    )]
+    pub vault: Account<'info, TokenAccount>,
+
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+}
+
 pub fn claim_prize(ctx: Context<ClaimPrize>) -> Result<()> {
     let game_round = &ctx.accounts.game_round;
     let player_state = &mut ctx.accounts.player_state;
@@ -725,400 +1121,4 @@ pub fn claim_prize(ctx: Context<ClaimPrize>) -> Result<()> {
     );
 
     Ok(())
-}
-
-// ============== CONTEXTS ==============
-
-#[vrf]
-#[derive(Accounts)]
-pub struct RequestJoinRound<'info> {
-    #[account(mut)]
-    pub player: Signer<'info>,
-
-    #[account(
-        seeds = [GLOBAL_CONFIG_SEED],
-        bump = global_config.bump
-    )]
-    pub global_config: Box<Account<'info, GlobalConfig>>,
-
-    #[account(
-        mut,
-        seeds = [
-            GAME_ROUND_SEED,
-            global_config.key().as_ref(),
-            game_round.round_number.to_le_bytes().as_ref()
-        ],
-        bump = game_round.bump,
-        constraint = game_round.is_active @ PandaBattleError::RoundNotActive
-    )]
-    pub game_round: Box<Account<'info, GameRound>>,
-
-    #[account(
-        init,
-        payer = player,
-        space = 8 + PlayerState::INIT_SPACE,
-        seeds = [
-            PLAYER_STATE_SEED,
-            game_round.key().as_ref(),
-            player.key().as_ref()
-        ],
-        bump
-    )]
-    pub player_state: Box<Account<'info, PlayerState>>,
-
-    /// Player's token account
-    #[account(
-        mut,
-        constraint = player_token_account.owner == player.key() @ PandaBattleError::Unauthorized,
-        constraint = player_token_account.mint == global_config.token_mint @ PandaBattleError::InvalidMint
-    )]
-    pub player_token_account: Box<Account<'info, TokenAccount>>,
-
-    /// Vault token account for this round (ATA owned by game_round)
-    #[account(
-        mut,
-        constraint = vault.owner == game_round.key() @ PandaBattleError::Unauthorized,
-        constraint = vault.mint == global_config.token_mint @ PandaBattleError::InvalidMint
-    )]
-    pub vault: Box<Account<'info, TokenAccount>>,
-
-    /// CHECK: The oracle queue for VRF
-    #[account(mut, address = ephemeral_vrf_sdk::consts::DEFAULT_QUEUE)]
-    pub oracle_queue: AccountInfo<'info>,
-
-    /// CHECK: The buffer account for delegation
-    #[account(
-        mut,
-        seeds = [ephemeral_rollups_sdk::consts::BUFFER, player_state.key().as_ref()],
-        bump,
-        seeds::program = crate::id()
-    )]
-    pub buffer: UncheckedAccount<'info>,
-
-    /// CHECK: The delegation record account
-    #[account(
-        mut,
-        seeds = [ephemeral_rollups_sdk::consts::DELEGATION_RECORD, player_state.key().as_ref()],
-        bump,
-        seeds::program = delegation_program.key()
-    )]
-    pub delegation_record: UncheckedAccount<'info>,
-
-    /// CHECK: The delegation metadata account
-    #[account(
-        mut,
-        seeds = [ephemeral_rollups_sdk::consts::DELEGATION_METADATA, player_state.key().as_ref()],
-        bump,
-        seeds::program = delegation_program.key()
-    )]
-    pub delegation_metadata: UncheckedAccount<'info>,
-
-    /// CHECK: The owner program of the pda
-    #[account(address = crate::id())]
-    pub owner_program: UncheckedAccount<'info>,
-
-    /// CHECK: The delegation program
-    #[account(address = ::ephemeral_rollups_sdk::id())]
-    pub delegation_program: UncheckedAccount<'info>,
-
-    pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
-}
-
-#[derive(Accounts)]
-pub struct CallbackJoinRound<'info> {
-    /// VRF program identity ensures callback is from VRF program
-    #[account(mut, address = ephemeral_vrf_sdk::consts::VRF_PROGRAM_IDENTITY)]
-    pub vrf_program_identity: Signer<'info>,
-
-    #[account(mut)]
-    pub player_state: Account<'info, PlayerState>,
-
-    pub game_round: Account<'info, GameRound>,
-
-    /// CHECK: The buffer account
-    #[account(
-        mut,
-        seeds = [ephemeral_rollups_sdk::consts::BUFFER, player_state.key().as_ref()],
-        bump,
-        seeds::program = crate::id()
-    )]
-    pub buffer: UncheckedAccount<'info>,
-
-    /// CHECK: The delegation record account
-    #[account(
-        mut,
-        seeds = [ephemeral_rollups_sdk::consts::DELEGATION_RECORD, player_state.key().as_ref()],
-        bump,
-        seeds::program = delegation_program.key()
-    )]
-    pub delegation_record: UncheckedAccount<'info>,
-
-    /// CHECK: The delegation metadata account
-    #[account(
-        mut,
-        seeds = [ephemeral_rollups_sdk::consts::DELEGATION_METADATA, player_state.key().as_ref()],
-        bump,
-        seeds::program = delegation_program.key()
-    )]
-    pub delegation_metadata: UncheckedAccount<'info>,
-
-    /// CHECK: The owner program of the pda
-    #[account(address = crate::id())]
-    pub owner_program: UncheckedAccount<'info>,
-
-    /// CHECK: The delegation program
-    #[account(address = ::ephemeral_rollups_sdk::id())]
-    pub delegation_program: UncheckedAccount<'info>,
-
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-pub struct BuyAttackPacks<'info> {
-    #[account(mut)]
-    pub player: Signer<'info>,
-
-    #[account(
-        seeds = [GLOBAL_CONFIG_SEED],
-        bump = global_config.bump
-    )]
-    pub global_config: Account<'info, GlobalConfig>,
-
-    #[account(
-        mut,
-        seeds = [
-            GAME_ROUND_SEED,
-            global_config.key().as_ref(),
-            game_round.round_number.to_le_bytes().as_ref()
-        ],
-        bump = game_round.bump
-    )]
-    pub game_round: Account<'info, GameRound>,
-
-    #[account(
-        mut,
-        seeds = [
-            PLAYER_STATE_SEED,
-            game_round.key().as_ref(),
-            player.key().as_ref()
-        ],
-        bump = player_state.bump,
-        constraint = player_state.player == player.key() @ PandaBattleError::NotJoined
-    )]
-    pub player_state: Account<'info, PlayerState>,
-
-    /// Player's token account
-    #[account(
-        mut,
-        constraint = player_token_account.owner == player.key() @ PandaBattleError::Unauthorized,
-        constraint = player_token_account.mint == global_config.token_mint @ PandaBattleError::InvalidMint
-    )]
-    pub player_token_account: Account<'info, TokenAccount>,
-
-    /// Vault token account for this round (ATA owned by game_round)
-    #[account(
-        mut,
-        constraint = vault.owner == game_round.key() @ PandaBattleError::Unauthorized,
-        constraint = vault.mint == global_config.token_mint @ PandaBattleError::InvalidMint
-    )]
-    pub vault: Account<'info, TokenAccount>,
-
-    pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
-}
-
-#[vrf]
-#[derive(Accounts)]
-pub struct RerollAttributes<'info> {
-    #[account(mut)]
-    pub player: Signer<'info>,
-
-    #[account(
-        seeds = [GLOBAL_CONFIG_SEED],
-        bump = global_config.bump
-    )]
-    pub global_config: Account<'info, GlobalConfig>,
-
-    #[account(
-        mut,
-        seeds = [
-            GAME_ROUND_SEED,
-            global_config.key().as_ref(),
-            game_round.round_number.to_le_bytes().as_ref()
-        ],
-        bump = game_round.bump,
-        constraint = game_round.is_active @ PandaBattleError::RoundNotActive
-    )]
-    pub game_round: Account<'info, GameRound>,
-
-    #[account(
-        mut,
-        seeds = [
-            PLAYER_STATE_SEED,
-            game_round.key().as_ref(),
-            player.key().as_ref()
-        ],
-        bump = player_state.bump,
-        constraint = player_state.player == player.key() @ PandaBattleError::NotJoined
-    )]
-    pub player_state: Account<'info, PlayerState>,
-
-    /// Player's token account
-    #[account(
-        mut,
-        constraint = player_token_account.owner == player.key() @ PandaBattleError::Unauthorized,
-        constraint = player_token_account.mint == global_config.token_mint @ PandaBattleError::InvalidMint
-    )]
-    pub player_token_account: Account<'info, TokenAccount>,
-
-    /// Vault token account for this round (ATA owned by game_round)
-    #[account(
-        mut,
-        constraint = vault.owner == game_round.key() @ PandaBattleError::Unauthorized,
-        constraint = vault.mint == global_config.token_mint @ PandaBattleError::InvalidMint
-    )]
-    pub vault: Account<'info, TokenAccount>,
-
-    /// CHECK: The oracle queue for VRF
-    #[account(mut, address = ephemeral_vrf_sdk::consts::DEFAULT_QUEUE)]
-    pub oracle_queue: AccountInfo<'info>,
-
-    pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
-}
-
-#[derive(Accounts)]
-pub struct CallbackRerollAttributes<'info> {
-    /// VRF program identity ensures callback is from VRF program
-    #[account(address = ephemeral_vrf_sdk::consts::VRF_PROGRAM_IDENTITY)]
-    pub vrf_program_identity: Signer<'info>,
-
-    #[account(mut)]
-    pub player_state: Account<'info, PlayerState>,
-}
-
-#[vrf]
-#[derive(Accounts)]
-pub struct InitiateBattle<'info> {
-    #[account(mut)]
-    pub player: Signer<'info>,
-
-    #[account(
-        seeds = [GLOBAL_CONFIG_SEED],
-        bump = global_config.bump
-    )]
-    pub global_config: Account<'info, GlobalConfig>,
-
-    #[account(
-        mut,
-        seeds = [
-            GAME_ROUND_SEED,
-            global_config.key().as_ref(),
-            game_round.round_number.to_le_bytes().as_ref()
-        ],
-        bump = game_round.bump
-    )]
-    pub game_round: Account<'info, GameRound>,
-
-    #[account(
-        mut,
-        seeds = [
-            PLAYER_STATE_SEED,
-            game_round.key().as_ref(),
-            player.key().as_ref()
-        ],
-        bump = attacker_state.bump,
-        constraint = attacker_state.player == player.key() @ PandaBattleError::NotJoined
-    )]
-    pub attacker_state: Account<'info, PlayerState>,
-
-    #[account(
-        mut,
-        seeds = [
-            PLAYER_STATE_SEED,
-            game_round.key().as_ref(),
-            defender_state.player.as_ref()
-        ],
-        bump = defender_state.bump
-    )]
-    pub defender_state: Account<'info, PlayerState>,
-
-    /// CHECK: The oracle queue for VRF
-    #[account(mut, address = ephemeral_vrf_sdk::consts::DEFAULT_QUEUE)]
-    pub oracle_queue: AccountInfo<'info>,
-
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-pub struct CallbackResolveBattle<'info> {
-    /// VRF program identity ensures callback is from VRF program
-    #[account(address = ephemeral_vrf_sdk::consts::VRF_PROGRAM_IDENTITY)]
-    pub vrf_program_identity: Signer<'info>,
-
-    #[account(mut)]
-    pub attacker_state: Account<'info, PlayerState>,
-
-    #[account(mut)]
-    pub defender_state: Account<'info, PlayerState>,
-
-    #[account(mut)]
-    pub game_round: Account<'info, GameRound>,
-}
-
-#[derive(Accounts)]
-pub struct ClaimPrize<'info> {
-    #[account(mut)]
-    pub player: Signer<'info>,
-
-    #[account(
-        seeds = [GLOBAL_CONFIG_SEED],
-        bump = global_config.bump
-    )]
-    pub global_config: Account<'info, GlobalConfig>,
-
-    #[account(
-        mut,
-        seeds = [
-            GAME_ROUND_SEED,
-            global_config.key().as_ref(),
-            game_round.round_number.to_le_bytes().as_ref()
-        ],
-        bump = game_round.bump,
-        constraint = !game_round.is_active @ PandaBattleError::RoundNotEnded,
-        constraint = game_round.payouts_processed @ PandaBattleError::NoRewardsAvailable
-    )]
-    pub game_round: Account<'info, GameRound>,
-
-    #[account(
-        mut,
-        seeds = [
-            PLAYER_STATE_SEED,
-            game_round.key().as_ref(),
-            player.key().as_ref()
-        ],
-        bump = player_state.bump,
-        constraint = player_state.player == player.key() @ PandaBattleError::NotJoined
-    )]
-    pub player_state: Account<'info, PlayerState>,
-
-    /// Player's token account
-    #[account(
-        mut,
-        constraint = player_token_account.owner == player.key() @ PandaBattleError::Unauthorized,
-        constraint = player_token_account.mint == global_config.token_mint @ PandaBattleError::InvalidMint
-    )]
-    pub player_token_account: Account<'info, TokenAccount>,
-
-    /// Vault token account for this round (ATA owned by game_round)
-    #[account(
-        mut,
-        constraint = vault.owner == game_round.key() @ PandaBattleError::Unauthorized,
-        constraint = vault.mint == global_config.token_mint @ PandaBattleError::InvalidMint
-    )]
-    pub vault: Account<'info, TokenAccount>,
-
-    pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
 }

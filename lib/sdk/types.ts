@@ -20,18 +20,10 @@ export enum AttributeType {
  * Frontend-friendly GameConfig type
  */
 export interface GameConfig {
+  /** Unique ID for this game instance */
+  id: number;
   /** Admin authority address */
   admin: string;
-  /** Entry fee in SOL */
-  // entryFee: number;
-  /** Base price for purchasing turns in SOL */
-  // turnBasePrice: number;
-  /** Round duration in seconds */
-  // roundDuration: number;
-  /** Percentage of attribute stolen on win (0-25) */
-  // stealPercentage: number;
-  /** Percentage of attribute decay per hour when idle (0-10) */
-  // idleDecayPercentage: number;
   /** Current active round number */
   currentRound: number;
   /** Total rounds played */
@@ -48,13 +40,25 @@ export interface GameConfig {
 export interface GameRound {
   /** Reference to game config address */
   gameConfig: string;
+  /** Token mint for the game */
+  tokenMint: string;
   /** Round number */
   roundNumber: number;
+  /** Entry fee in tokens */
+  entryFee: number;
+  /** Attack pack base price in tokens */
+  attackPackPrice: number;
+  /** Round duration in seconds */
+  durationSecs: number;
+  /** Entry fee hourly increase percentage */
+  entryHourlyIncPct: number;
   /** Round start timestamp (Unix timestamp in seconds) */
   startTime: number;
   /** Round end timestamp (Unix timestamp in seconds) */
   endTime: number;
-  /** Total prize pool in SOL */
+  /** Leaderboard reveal timestamp (Unix timestamp in seconds) */
+  leaderboardRevealTs: number;
+  /** Total prize pool in tokens */
   prizePool: number;
   /** Number of players in this round */
   playerCount: number;
@@ -77,19 +81,29 @@ export interface PlayerState {
   /** Reference to the game round address */
   round: string;
   /** Strength attribute (damage output) */
-  strength: number;
-  /** Speed attribute (turn order, dodge chance) */
-  speed: number;
-  /** Endurance attribute (HP, damage absorption) */
-  endurance: number;
-  /** Luck attribute (crit chance, steal success) */
-  luck: number;
+  str: number;
+  /** Agility attribute (turn order, dodge chance, crit chance) */
+  agi: number;
+  /** Intelligence attribute (damage mitigation) */
+  int: number;
+  /** Current level (0-10, starts at 0) */
+  level: number;
+  /** Current experience points */
+  xp: number;
+  /** Leaderboard points (wins = +1 point) */
+  points: number;
   /** Current available turns */
   turns: number;
   /** Maximum turn storage */
   maxTurns: number;
   /** Last turn regeneration timestamp (Unix timestamp in seconds) */
   lastTurnRegen: number;
+  /** Number of rerolls used (max 3) */
+  rerollsUsed: number;
+  /** Number of attack packs bought in current hour */
+  packsBoughtHour: number;
+  /** Last hour when pack was bought (unix timestamp) */
+  lastPackHour: number;
   /** Last battle/action timestamp (Unix timestamp in seconds) */
   lastBattle: number;
   /** Total battles fought */
@@ -98,15 +112,13 @@ export interface PlayerState {
   wins: number;
   /** Battles lost */
   losses: number;
-  /** Rewards earned this round in SOL */
-  rewardsEarned: number;
-  /** Whether rewards have been claimed */
-  rewardsClaimed: boolean;
+  /** Prize share for this round (calculated at end) */
+  prizeShare: number;
+  /** Whether prize has been claimed */
+  prizeClaimed: boolean;
   /** When player joined the round (Unix timestamp in seconds) */
   joinedAt: number;
-  /** Last idle decay application (Unix timestamp in seconds) */
-  lastDecay: number;
-  /** Entry fee paid in SOL */
+  /** Entry fee paid in tokens */
   entryFeePaid: number;
   /** Bump seed for PDA */
   bump: number;
@@ -115,20 +127,14 @@ export interface PlayerState {
 /**
  * Convert generated GameConfig to frontend-friendly format
  */
-export function mapGameConfig(
-  generated: GlobalConfig
-): GameConfig {
+export function mapGameConfig(generated: GlobalConfig): GameConfig {
   return {
+    id: Number(generated.id),
     admin: generated.admin,
-    // entryFee: Number(generated.entryFee) / 1e9,
-    // turnBasePrice: Number(generated.turnBasePrice) / 1e9,
-    // roundDuration: Number(generated.roundDuration),
-    // stealPercentage: generated.stealPercentage,
-    // idleDecayPercentage: generated.idleDecayPercentage,
     currentRound: Number(generated.currentRound),
     totalRounds: Number(generated.totalRounds),
     bump: generated.bump,
-    vaultBump: 0 //generated.vaultBump,
+    vaultBump: generated.vaultBump,
   };
 }
 
@@ -140,10 +146,16 @@ export function mapGameRound(
 ): GameRound {
   return {
     gameConfig: generated.globalConfig,
+    tokenMint: generated.tokenMint,
     roundNumber: Number(generated.roundNumber),
+    entryFee: Number(generated.entryFee) / 1e6, // Assuming 6 decimals for tokens
+    attackPackPrice: Number(generated.attackPackPrice) / 1e6,
+    durationSecs: Number(generated.durationSecs),
+    entryHourlyIncPct: generated.entryHourlyIncPct,
     startTime: Number(generated.startTime),
     endTime: Number(generated.endTime),
-    prizePool: Number(generated.prizePool) / 1e9,
+    leaderboardRevealTs: Number(generated.leaderboardRevealTs),
+    prizePool: Number(generated.prizePool) / 1e6,
     playerCount: generated.playerCount,
     totalBattles: generated.totalBattles,
     isActive: generated.isActive,
@@ -161,22 +173,26 @@ export function mapPlayerState(
   return {
     player: generated.player,
     round: generated.round,
-    strength: generated.str,
-    speed: generated.str,
-    endurance: generated.str,
-    luck: generated.str,
+    str: generated.str,
+    agi: generated.agi,
+    int: generated.int,
+    level: generated.level,
+    xp: generated.xp,
+    points: generated.points,
     turns: generated.turns,
     maxTurns: generated.maxTurns,
     lastTurnRegen: Number(generated.lastTurnRegen),
+    rerollsUsed: generated.rerollsUsed,
+    packsBoughtHour: generated.packsBoughtHour,
+    lastPackHour: Number(generated.lastPackHour),
     lastBattle: Number(generated.lastBattle),
     battlesFought: generated.battlesFought,
     wins: generated.wins,
     losses: generated.losses,
-    rewardsEarned: Number(generated.rerollsUsed) / 1e9,
-    rewardsClaimed: generated.rerollsUsed as any,
+    prizeShare: Number(generated.prizeShare) / 1e6,
+    prizeClaimed: generated.prizeClaimed,
     joinedAt: Number(generated.joinedAt),
-    lastDecay: Number(generated.joinedAt),
-    entryFeePaid: Number(generated.entryFeePaid) / 1e9,
+    entryFeePaid: Number(generated.entryFeePaid) / 1e6,
     bump: generated.bump,
   };
 }

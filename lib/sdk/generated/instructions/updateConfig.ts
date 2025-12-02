@@ -16,7 +16,6 @@ import {
   getBytesEncoder,
   getOptionDecoder,
   getOptionEncoder,
-  getProgramDerivedAddress,
   getStructDecoder,
   getStructEncoder,
   transformEncoder,
@@ -103,72 +102,6 @@ export function getUpdateConfigInstructionDataCodec(): Codec<
     getUpdateConfigInstructionDataEncoder(),
     getUpdateConfigInstructionDataDecoder()
   );
-}
-
-export type UpdateConfigAsyncInput<
-  TAccountAdmin extends string = string,
-  TAccountGlobalConfig extends string = string,
-> = {
-  admin: TransactionSigner<TAccountAdmin>;
-  globalConfig?: Address<TAccountGlobalConfig>;
-  tokenMint: UpdateConfigInstructionDataArgs['tokenMint'];
-};
-
-export async function getUpdateConfigInstructionAsync<
-  TAccountAdmin extends string,
-  TAccountGlobalConfig extends string,
-  TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
->(
-  input: UpdateConfigAsyncInput<TAccountAdmin, TAccountGlobalConfig>,
-  config?: { programAddress?: TProgramAddress }
-): Promise<
-  UpdateConfigInstruction<TProgramAddress, TAccountAdmin, TAccountGlobalConfig>
-> {
-  // Program address.
-  const programAddress = config?.programAddress ?? PANDA_BATTLE_PROGRAM_ADDRESS;
-
-  // Original accounts.
-  const originalAccounts = {
-    admin: { value: input.admin ?? null, isWritable: false },
-    globalConfig: { value: input.globalConfig ?? null, isWritable: true },
-  };
-  const accounts = originalAccounts as Record<
-    keyof typeof originalAccounts,
-    ResolvedAccount
-  >;
-
-  // Original args.
-  const args = { ...input };
-
-  // Resolve default values.
-  if (!accounts.globalConfig.value) {
-    accounts.globalConfig.value = await getProgramDerivedAddress({
-      programAddress,
-      seeds: [
-        getBytesEncoder().encode(
-          new Uint8Array([
-            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
-          ])
-        ),
-      ],
-    });
-  }
-
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
-  return Object.freeze({
-    accounts: [
-      getAccountMeta(accounts.admin),
-      getAccountMeta(accounts.globalConfig),
-    ],
-    data: getUpdateConfigInstructionDataEncoder().encode(
-      args as UpdateConfigInstructionDataArgs
-    ),
-    programAddress,
-  } as UpdateConfigInstruction<
-    TProgramAddress,
-    TAccountAdmin,
-    TAccountGlobalConfig
-  >);
 }
 
 export type UpdateConfigInput<

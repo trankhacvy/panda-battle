@@ -10,13 +10,13 @@ import {
   combineCodec,
   fixDecoderSize,
   fixEncoderSize,
-  getAddressDecoder,
-  getAddressEncoder,
   getBytesDecoder,
   getBytesEncoder,
   getProgramDerivedAddress,
   getStructDecoder,
   getStructEncoder,
+  getU64Decoder,
+  getU64Encoder,
   transformEncoder,
   type AccountMeta,
   type AccountSignerMeta,
@@ -34,7 +34,11 @@ import {
   type WritableSignerAccount,
 } from '@solana/kit';
 import { PANDA_BATTLE_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import {
+  expectSome,
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared';
 
 export const INITIALIZE_GAME_DISCRIMINATOR = new Uint8Array([
   44, 62, 102, 247, 126, 208, 130, 215,
@@ -73,16 +77,16 @@ export type InitializeGameInstruction<
 
 export type InitializeGameInstructionData = {
   discriminator: ReadonlyUint8Array;
-  tokenMint: Address;
+  id: bigint;
 };
 
-export type InitializeGameInstructionDataArgs = { tokenMint: Address };
+export type InitializeGameInstructionDataArgs = { id: number | bigint };
 
 export function getInitializeGameInstructionDataEncoder(): FixedSizeEncoder<InitializeGameInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['tokenMint', getAddressEncoder()],
+      ['id', getU64Encoder()],
     ]),
     (value) => ({ ...value, discriminator: INITIALIZE_GAME_DISCRIMINATOR })
   );
@@ -91,7 +95,7 @@ export function getInitializeGameInstructionDataEncoder(): FixedSizeEncoder<Init
 export function getInitializeGameInstructionDataDecoder(): FixedSizeDecoder<InitializeGameInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['tokenMint', getAddressDecoder()],
+    ['id', getU64Decoder()],
   ]);
 }
 
@@ -113,7 +117,7 @@ export type InitializeGameAsyncInput<
   admin: TransactionSigner<TAccountAdmin>;
   globalConfig?: Address<TAccountGlobalConfig>;
   systemProgram?: Address<TAccountSystemProgram>;
-  tokenMint: InitializeGameInstructionDataArgs['tokenMint'];
+  id: InitializeGameInstructionDataArgs['id'];
 };
 
 export async function getInitializeGameInstructionAsync<
@@ -163,6 +167,7 @@ export async function getInitializeGameInstructionAsync<
             103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
           ])
         ),
+        getU64Encoder().encode(expectSome(args.id)),
       ],
     });
   }
@@ -198,7 +203,7 @@ export type InitializeGameInput<
   admin: TransactionSigner<TAccountAdmin>;
   globalConfig: Address<TAccountGlobalConfig>;
   systemProgram?: Address<TAccountSystemProgram>;
-  tokenMint: InitializeGameInstructionDataArgs['tokenMint'];
+  id: InitializeGameInstructionDataArgs['id'];
 };
 
 export function getInitializeGameInstruction<

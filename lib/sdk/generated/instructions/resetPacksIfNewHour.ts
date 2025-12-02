@@ -12,7 +12,6 @@ import {
   fixEncoderSize,
   getBytesDecoder,
   getBytesEncoder,
-  getProgramDerivedAddress,
   getStructDecoder,
   getStructEncoder,
   transformEncoder,
@@ -102,90 +101,6 @@ export function getResetPacksIfNewHourInstructionDataCodec(): FixedSizeCodec<
     getResetPacksIfNewHourInstructionDataEncoder(),
     getResetPacksIfNewHourInstructionDataDecoder()
   );
-}
-
-export type ResetPacksIfNewHourAsyncInput<
-  TAccountCaller extends string = string,
-  TAccountGlobalConfig extends string = string,
-  TAccountGameRound extends string = string,
-  TAccountPlayerState extends string = string,
-> = {
-  /** Anyone can call this (crank) */
-  caller: TransactionSigner<TAccountCaller>;
-  globalConfig?: Address<TAccountGlobalConfig>;
-  gameRound: Address<TAccountGameRound>;
-  playerState: Address<TAccountPlayerState>;
-};
-
-export async function getResetPacksIfNewHourInstructionAsync<
-  TAccountCaller extends string,
-  TAccountGlobalConfig extends string,
-  TAccountGameRound extends string,
-  TAccountPlayerState extends string,
-  TProgramAddress extends Address = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
->(
-  input: ResetPacksIfNewHourAsyncInput<
-    TAccountCaller,
-    TAccountGlobalConfig,
-    TAccountGameRound,
-    TAccountPlayerState
-  >,
-  config?: { programAddress?: TProgramAddress }
-): Promise<
-  ResetPacksIfNewHourInstruction<
-    TProgramAddress,
-    TAccountCaller,
-    TAccountGlobalConfig,
-    TAccountGameRound,
-    TAccountPlayerState
-  >
-> {
-  // Program address.
-  const programAddress = config?.programAddress ?? PANDA_BATTLE_PROGRAM_ADDRESS;
-
-  // Original accounts.
-  const originalAccounts = {
-    caller: { value: input.caller ?? null, isWritable: false },
-    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
-    gameRound: { value: input.gameRound ?? null, isWritable: false },
-    playerState: { value: input.playerState ?? null, isWritable: true },
-  };
-  const accounts = originalAccounts as Record<
-    keyof typeof originalAccounts,
-    ResolvedAccount
-  >;
-
-  // Resolve default values.
-  if (!accounts.globalConfig.value) {
-    accounts.globalConfig.value = await getProgramDerivedAddress({
-      programAddress,
-      seeds: [
-        getBytesEncoder().encode(
-          new Uint8Array([
-            103, 108, 111, 98, 97, 108, 95, 99, 111, 110, 102, 105, 103,
-          ])
-        ),
-      ],
-    });
-  }
-
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
-  return Object.freeze({
-    accounts: [
-      getAccountMeta(accounts.caller),
-      getAccountMeta(accounts.globalConfig),
-      getAccountMeta(accounts.gameRound),
-      getAccountMeta(accounts.playerState),
-    ],
-    data: getResetPacksIfNewHourInstructionDataEncoder().encode({}),
-    programAddress,
-  } as ResetPacksIfNewHourInstruction<
-    TProgramAddress,
-    TAccountCaller,
-    TAccountGlobalConfig,
-    TAccountGameRound,
-    TAccountPlayerState
-  >);
 }
 
 export type ResetPacksIfNewHourInput<

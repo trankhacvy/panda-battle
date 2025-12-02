@@ -85,15 +85,16 @@ export default function HomePage() {
 
           {/* XP Progress Bar */}
           <div className="relative">
-            <Progress 
-              value={(player.experience / player.experienceToNextLevel) * 100} 
-              variant="game" 
-              showShell 
+            <Progress
+              value={(player.experience / player.experienceToNextLevel) * 100}
+              variant="game"
+              showShell
               className="h-8"
             />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span className="text-white font-bold text-sm drop-shadow-lg z-10">
-                XP: {player.experience.toLocaleString()} / {player.experienceToNextLevel.toLocaleString()}
+                XP: {player.experience.toLocaleString()} /{" "}
+                {player.experienceToNextLevel.toLocaleString()}
               </span>
             </div>
           </div>
@@ -149,7 +150,9 @@ export default function HomePage() {
             />
           </div>
           <div>
-            <p className="text-white font-bold text-sm">New Event: Bamboo Festival</p>
+            <p className="text-white font-bold text-sm">
+              New Event: Bamboo Festival
+            </p>
           </div>
         </div>
       </div>
@@ -181,15 +184,15 @@ function QuestCard({
           {title}
         </p>
         <div className="w-full relative">
-          <Progress 
-            value={(progress / total) * 100} 
-            variant="game" 
-            showShell 
+          <Progress
+            value={(progress / total) * 100}
+            variant="game"
+            showShell
             className="h-5"
           />
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <p className="text-white text-xs font-bold drop-shadow-lg z-10">
-              {isFull ? '100%' : `${progress} / ${total}`}
+              {isFull ? "100%" : `${progress} / ${total}`}
             </p>
           </div>
         </div>

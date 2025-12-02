@@ -51,10 +51,10 @@ export function getGlobalConfigDiscriminatorBytes() {
 
 export type GlobalConfig = {
   discriminator: ReadonlyUint8Array;
+  /** Unique ID for this game instance */
+  id: bigint;
   /** Admin authority */
   admin: Address;
-  /** Token mint for the game */
-  tokenMint: Address;
   /** Current active round number */
   currentRound: bigint;
   /** Total rounds played */
@@ -66,10 +66,10 @@ export type GlobalConfig = {
 };
 
 export type GlobalConfigArgs = {
+  /** Unique ID for this game instance */
+  id: number | bigint;
   /** Admin authority */
   admin: Address;
-  /** Token mint for the game */
-  tokenMint: Address;
   /** Current active round number */
   currentRound: number | bigint;
   /** Total rounds played */
@@ -85,8 +85,8 @@ export function getGlobalConfigEncoder(): FixedSizeEncoder<GlobalConfigArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
+      ['id', getU64Encoder()],
       ['admin', getAddressEncoder()],
-      ['tokenMint', getAddressEncoder()],
       ['currentRound', getU64Encoder()],
       ['totalRounds', getU64Encoder()],
       ['bump', getU8Encoder()],
@@ -100,8 +100,8 @@ export function getGlobalConfigEncoder(): FixedSizeEncoder<GlobalConfigArgs> {
 export function getGlobalConfigDecoder(): FixedSizeDecoder<GlobalConfig> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
+    ['id', getU64Decoder()],
     ['admin', getAddressDecoder()],
-    ['tokenMint', getAddressDecoder()],
     ['currentRound', getU64Decoder()],
     ['totalRounds', getU64Decoder()],
     ['bump', getU8Decoder()],
@@ -171,5 +171,5 @@ export async function fetchAllMaybeGlobalConfig(
 }
 
 export function getGlobalConfigSize(): number {
-  return 90;
+  return 66;
 }

@@ -62,7 +62,7 @@ export function Navigation() {
 
   return (
     <nav
-      className="h-20 flex items-center justify-center border-t-2 border-[#030911] bg-[#030911]"
+      className="h-16 flex items-center justify-center border-t-4 border-[#030911] bg-[#030911]"
       role="navigation"
       aria-label="Main navigation"
     >
