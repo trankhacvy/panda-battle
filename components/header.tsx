@@ -88,7 +88,7 @@ export default function Header() {
   };
 
   return (
-    <div className="flex items-center justify-between p-4 h-20 bg-cover bg-center relative">
+    <div className="flex items-center justify-between p-4 h-20 bg-cover bg-center relative z-50">
       <div className="relative z-10 flex items-center justify-between w-full">
         {renderLeft()}
 

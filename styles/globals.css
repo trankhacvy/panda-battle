@@ -224,6 +224,48 @@
     }
   }
 
+  @keyframes shake {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+      transform: translateX(-4px);
+    }
+    20%, 40%, 60%, 80% {
+      transform: translateX(4px);
+    }
+  }
+
+  @keyframes punch-right {
+    0% {
+      transform: translateX(0) translateY(-50%) scale(1);
+      opacity: 1;
+    }
+    60% {
+      transform: translateX(120px) translateY(-50%) scale(1.3);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(140px) translateY(-50%) scale(1.5);
+      opacity: 0;
+    }
+  }
+
+  @keyframes punch-left {
+    0% {
+      transform: translateX(0) translateY(-50%) scale(1);
+      opacity: 1;
+    }
+    60% {
+      transform: translateX(-120px) translateY(-50%) scale(1.3);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(-140px) translateY(-50%) scale(1.5);
+      opacity: 0;
+    }
+  }
+
   .animate-pulse-slow {
     animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
@@ -235,6 +277,51 @@
   .animate-shimmer {
     background-size: 200% auto;
     animation: shimmer 3s linear infinite;
+  }
+
+  .animate-shake {
+    animation: shake 0.3s ease-in-out;
+  }
+
+  .animate-punch-right {
+    animation: punch-right 0.5s ease-out forwards;
+  }
+
+  .animate-punch-left {
+    animation: punch-left 0.5s ease-out forwards;
+  }
+
+  /* Custom range slider styles */
+  input[type="range"].slider-thumb::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #a855f7 0%, #7e3fb8 100%);
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+  }
+
+  input[type="range"].slider-thumb::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 8px rgba(168, 85, 247, 0.4);
+  }
+
+  input[type="range"].slider-thumb::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #a855f7 0%, #7e3fb8 100%);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+  }
+
+  input[type="range"].slider-thumb::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 8px rgba(168, 85, 247, 0.4);
   }
 
   /* Game-themed hover effects */

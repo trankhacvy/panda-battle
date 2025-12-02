@@ -34,7 +34,7 @@ const Progress = React.forwardRef<
         ref={ref}
         className={cn(
           "relative h-3 w-full overflow-hidden rounded-full bg-primary/20 border border-primary/30 transition-all duration-200",
-          showShell && "h-5 bg-[#3b0764] border-0",
+          showShell && "h-4 bg-[#1a0b2e] border-0",
           className
         )}
         {...props}
@@ -53,7 +53,7 @@ const Progress = React.forwardRef<
       return (
         <div className="relative">
           {/* Outer White Container - Creates thick white border effect */}
-          <div className="bg-white p-1.5 rounded-full shadow-md">
+          <div className="bg-white p-[3px] rounded-full">
             {progressBar}
           </div>
         </div>
@@ -84,7 +84,7 @@ const SimpleProgress: React.FC<SimpleProgressProps> = ({
   const progressBar = (
     <div
       className={cn(
-        "w-full h-5 bg-[#3b0764] rounded-full overflow-hidden relative",
+        "w-full h-4 bg-[#1a0b2e] rounded-full overflow-hidden relative",
         !showShell && "border border-primary/30",
         className
       )}
@@ -102,7 +102,7 @@ const SimpleProgress: React.FC<SimpleProgressProps> = ({
   if (showShell) {
     return (
       <div className="relative">
-        <div className="bg-white p-1.5 rounded-full shadow-md">
+        <div className="bg-white p-[3px] rounded-full">
           {progressBar}
         </div>
       </div>

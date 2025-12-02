@@ -58,7 +58,7 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
         </div>
 
         {showProgress && (
-          <Progress value={percentage} variant={variant} className="h-2" />
+          <Progress value={percentage} variant={variant} showShell className="h-2" />
         )}
       </div>
     );

@@ -17,8 +17,9 @@ const bgColors = [
 export default function BattlePage() {
   const displayOpponents = mockOpponents.slice(0, 5);
   const { play, SOUNDS } = useSound();
-
+ 
   const handleBattle = (opponentId: string) => {
+    play(SOUNDS.GAME_START);
     play(SOUNDS.GAME_START);
     console.log("Battle with opponent:", opponentId);
     // TODO: Navigate to battle screen or start battle
@@ -34,11 +35,13 @@ export default function BattlePage() {
     console.log("Filter opponents");
   };
 
+ 
+
   return (
     <div className="flex-1 px-4 pb-6 relative z-10">
       {/* Title and filters */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-white font-bold text-xl">Battle Opponent List</h1>
+        <h1 className="text-white font-bold text-base sm:text-xl">Battle Opponent List</h1>
         <div className="flex gap-2">
           <Button3D
             className="size-8"
@@ -60,7 +63,7 @@ export default function BattlePage() {
       </div>
 
       {/* Opponent List */}
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {displayOpponents.map((opponent, index) => (
           <OpponentCard
             key={opponent.id}

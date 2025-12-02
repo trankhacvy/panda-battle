@@ -82,7 +82,7 @@ export function PandaFighterCreator() {
       {/* Title Section */}
       <div className="text-center mb-6 relative">
         <h1
-          className="text-4xl font-extrabold tracking-wide"
+          className="text-3xl sm:text-4xl font-extrabold tracking-wide"
           style={{
             color: "#4dd8ff",
             textShadow: "0 0 10px rgba(77, 216, 255, 0.5), 2px 2px 0 #1a5a7a",
@@ -92,7 +92,7 @@ export function PandaFighterCreator() {
           Create Your
         </h1>
         <h2
-          className="text-5xl font-black tracking-wide mt-1"
+          className="text-4xl sm:text-5xl font-black tracking-wide mt-1"
           style={{
             color: "#ffd93d",
             textShadow: "0 4px 0 #c9a227, 0 6px 10px rgba(0,0,0,0.3)",
@@ -130,24 +130,24 @@ export function PandaFighterCreator() {
 
             {/* Attributes Display - Only show when panda is created (3 attributes only) */}
             {isCreated && attributes && (
-              <div className="w-full grid grid-cols-3 max-w-md mx-auto gap-2 relative z-10">
+              <div className="w-full grid grid-cols-3 max-w-md mx-auto gap-2 sm:gap-3 relative z-10">
                 <AttributeCard
                   label="STR"
                   value={attributes.str}
-                  icon="/images/attributes/str-att.png"
-                  color="orange"
+                  icon="💪"
+                  textColor="text-orange-500"
                 />
                 <AttributeCard
                   label="AGI"
                   value={attributes.agi}
-                  icon="/images/attributes/agt-att.png"
-                  color="green"
+                  icon="⚡"
+                  textColor="text-green-500"
                 />
                 <AttributeCard
                   label="INT"
                   value={attributes.int}
-                  icon="/images/attributes/int-att.png"
-                  color="blue"
+                  icon="🧠"
+                  textColor="text-blue-500"
                 />
               </div>
             )}
@@ -157,16 +157,16 @@ export function PandaFighterCreator() {
 
       {/* Buttons */}
       {!isCreated ? (
-        <Button3D onClick={createPanda} disabled={isLoading}>
+        <Button3D onClick={createPanda} disabled={isLoading} className="w-full max-w-md text-sm sm:text-base">
           {isLoading ? "Creating..." : "Create Panda Fighter"}
         </Button3D>
       ) : (
-        <div className="flex w-full gap-4 relative z-10">
+        <div className="flex w-full max-w-md gap-3 sm:gap-4 relative z-10">
           <Button3D
             onClick={handleReroll}
             disabled={isLoading}
             variant="3d-orange"
-            className="w-full"
+            className="w-full text-sm sm:text-base"
           >
             {isLoading ? "Rerolling..." : "Reroll"}
           </Button3D>
@@ -174,7 +174,7 @@ export function PandaFighterCreator() {
             onClick={handleStartGame}
             disabled={isLoading}
             variant="3d-green"
-            className="w-full"
+            className="w-full text-sm sm:text-base"
           >
             Start Game
           </Button3D>

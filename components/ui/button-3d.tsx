@@ -6,24 +6,24 @@ import { cn } from "@/lib/utils";
 import { useSound } from "@/hooks/use-sound";
 
 const button3DVariants = cva(
-  "relative inline-flex items-center justify-center gap-2 whitespace-nowrap font-black rounded-lg text-white transition-all duration-150 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "relative inline-flex items-center justify-center gap-2 whitespace-nowrap font-black rounded-full text-white transition-all duration-150 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border-0",
   {
     variants: {
       variant: {
         "3d-green":
-          "bg-[#74D700] hover:bg-[#7ce006] shadow-[0_8px_0_#4ca600,0_12px_20px_rgba(116,215,0,0.4)] active:shadow-none active:translate-y-[8px]",
+          "bg-[#74D700] hover:bg-[#7ce006] shadow-[0_0_8px_rgba(0,0,0,0.1),0_6px_0_#4ca600] active:shadow-[0_0_4px_rgba(0,0,0,0.1)] active:translate-y-[6px]",
         "3d-blue":
-          "bg-[#00A3FF] hover:bg-[#00B3FF] shadow-[0_8px_0_#0073B3,0_12px_20px_rgba(0,163,255,0.4)] active:shadow-none active:translate-y-[8px]",
+          "bg-[#00A3FF] hover:bg-[#00B3FF] shadow-[0_0_8px_rgba(0,0,0,0.1),0_6px_0_#0073B3] active:shadow-[0_0_4px_rgba(0,0,0,0.1)] active:translate-y-[6px]",
         "3d-red":
-          "bg-[#FF4757] hover:bg-[#FF5767] shadow-[0_8px_0_#CC3946,0_12px_20px_rgba(255,71,87,0.4)] active:shadow-none active:translate-y-[8px]",
+          "bg-[#FF4757] hover:bg-[#FF5767] shadow-[0_0_8px_rgba(0,0,0,0.1),0_6px_0_#CC3946] active:shadow-[0_0_4px_rgba(0,0,0,0.1)] active:translate-y-[6px]",
         "3d-purple":
-          "bg-[#A855F7] hover:bg-[#B865F7] shadow-[0_8px_0_#7E3FB8,0_12px_20px_rgba(168,85,247,0.4)] active:shadow-none active:translate-y-[8px]",
+          "bg-[#A855F7] hover:bg-[#B865F7] shadow-[0_0_8px_rgba(0,0,0,0.1),0_6px_0_#7E3FB8] active:shadow-[0_0_4px_rgba(0,0,0,0.1)] active:translate-y-[6px]",
         "3d-orange":
-          "bg-[#FF9500] hover:bg-[#FFA500] shadow-[0_8px_0_#CC7700,0_12px_20px_rgba(255,149,0,0.4)] active:shadow-none active:translate-y-[8px]",
+          "bg-[#FF9500] hover:bg-[#FFA500] shadow-[0_0_8px_rgba(0,0,0,0.1),0_6px_0_#CC7700] active:shadow-[0_0_4px_rgba(0,0,0,0.1)] active:translate-y-[6px]",
         "3d-yellow":
-          "bg-[#FFD700] hover:bg-[#FFE700] shadow-[0_8px_0_#CCB000,0_12px_20px_rgba(255,215,0,0.4)] active:shadow-none active:translate-y-[8px]",
+          "bg-[#FFD700] hover:bg-[#FFE700] shadow-[0_0_8px_rgba(0,0,0,0.1),0_6px_0_#CCB000] active:shadow-[0_0_4px_rgba(0,0,0,0.1)] active:translate-y-[6px]",
         "header-action":
-          "bg-[#A855F7] hover:bg-[#B865F7] shadow-[0_8px_0_#7E3FB8,0_12px_20px_rgba(168,85,247,0.4)] active:shadow-none active:translate-y-[8px] size-10 aspect-square",
+          "bg-[#A855F7] hover:bg-[#B865F7] shadow-[0_0_8px_rgba(0,0,0,0.1),0_6px_0_#7E3FB8] active:shadow-[0_0_4px_rgba(0,0,0,0.1)] active:translate-y-[6px] size-8 aspect-square",
       },
       size: {
         "3d-tiny": "h-10 px-2.5 text-sm",
