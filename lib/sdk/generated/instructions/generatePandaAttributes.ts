@@ -54,7 +54,6 @@ export function getGeneratePandaAttributesDiscriminatorBytes() {
 export type GeneratePandaAttributesInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountPlayer extends string | AccountMeta<string> = string,
-  TAccountGlobalConfig extends string | AccountMeta<string> = string,
   TAccountGameAuthority extends string | AccountMeta<string> = string,
   TAccountGameRound extends string | AccountMeta<string> = string,
   TAccountPlayerState extends string | AccountMeta<string> = string,
@@ -80,9 +79,6 @@ export type GeneratePandaAttributesInstruction<
         ? WritableSignerAccount<TAccountPlayer> &
             AccountSignerMeta<TAccountPlayer>
         : TAccountPlayer,
-      TAccountGlobalConfig extends string
-        ? ReadonlyAccount<TAccountGlobalConfig>
-        : TAccountGlobalConfig,
       TAccountGameAuthority extends string
         ? ReadonlyAccount<TAccountGameAuthority>
         : TAccountGameAuthority,
@@ -159,7 +155,6 @@ export function getGeneratePandaAttributesInstructionDataCodec(): FixedSizeCodec
 
 export type GeneratePandaAttributesAsyncInput<
   TAccountPlayer extends string = string,
-  TAccountGlobalConfig extends string = string,
   TAccountGameAuthority extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
@@ -173,7 +168,6 @@ export type GeneratePandaAttributesAsyncInput<
   TAccountSlotHashes extends string = string,
 > = {
   player: TransactionSigner<TAccountPlayer>;
-  globalConfig: Address<TAccountGlobalConfig>;
   gameAuthority?: Address<TAccountGameAuthority>;
   gameRound: Address<TAccountGameRound>;
   playerState?: Address<TAccountPlayerState>;
@@ -190,7 +184,6 @@ export type GeneratePandaAttributesAsyncInput<
 
 export async function getGeneratePandaAttributesInstructionAsync<
   TAccountPlayer extends string,
-  TAccountGlobalConfig extends string,
   TAccountGameAuthority extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
@@ -206,7 +199,6 @@ export async function getGeneratePandaAttributesInstructionAsync<
 >(
   input: GeneratePandaAttributesAsyncInput<
     TAccountPlayer,
-    TAccountGlobalConfig,
     TAccountGameAuthority,
     TAccountGameRound,
     TAccountPlayerState,
@@ -224,7 +216,6 @@ export async function getGeneratePandaAttributesInstructionAsync<
   GeneratePandaAttributesInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGlobalConfig,
     TAccountGameAuthority,
     TAccountGameRound,
     TAccountPlayerState,
@@ -244,7 +235,6 @@ export async function getGeneratePandaAttributesInstructionAsync<
   // Original accounts.
   const originalAccounts = {
     player: { value: input.player ?? null, isWritable: true },
-    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameAuthority: { value: input.gameAuthority ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
     playerState: { value: input.playerState ?? null, isWritable: true },
@@ -333,7 +323,6 @@ export async function getGeneratePandaAttributesInstructionAsync<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.player),
-      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameAuthority),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
@@ -353,7 +342,6 @@ export async function getGeneratePandaAttributesInstructionAsync<
   } as GeneratePandaAttributesInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGlobalConfig,
     TAccountGameAuthority,
     TAccountGameRound,
     TAccountPlayerState,
@@ -370,7 +358,6 @@ export async function getGeneratePandaAttributesInstructionAsync<
 
 export type GeneratePandaAttributesInput<
   TAccountPlayer extends string = string,
-  TAccountGlobalConfig extends string = string,
   TAccountGameAuthority extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
@@ -384,7 +371,6 @@ export type GeneratePandaAttributesInput<
   TAccountSlotHashes extends string = string,
 > = {
   player: TransactionSigner<TAccountPlayer>;
-  globalConfig: Address<TAccountGlobalConfig>;
   gameAuthority: Address<TAccountGameAuthority>;
   gameRound: Address<TAccountGameRound>;
   playerState: Address<TAccountPlayerState>;
@@ -401,7 +387,6 @@ export type GeneratePandaAttributesInput<
 
 export function getGeneratePandaAttributesInstruction<
   TAccountPlayer extends string,
-  TAccountGlobalConfig extends string,
   TAccountGameAuthority extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
@@ -417,7 +402,6 @@ export function getGeneratePandaAttributesInstruction<
 >(
   input: GeneratePandaAttributesInput<
     TAccountPlayer,
-    TAccountGlobalConfig,
     TAccountGameAuthority,
     TAccountGameRound,
     TAccountPlayerState,
@@ -434,7 +418,6 @@ export function getGeneratePandaAttributesInstruction<
 ): GeneratePandaAttributesInstruction<
   TProgramAddress,
   TAccountPlayer,
-  TAccountGlobalConfig,
   TAccountGameAuthority,
   TAccountGameRound,
   TAccountPlayerState,
@@ -453,7 +436,6 @@ export function getGeneratePandaAttributesInstruction<
   // Original accounts.
   const originalAccounts = {
     player: { value: input.player ?? null, isWritable: true },
-    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameAuthority: { value: input.gameAuthority ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: true },
     playerState: { value: input.playerState ?? null, isWritable: true },
@@ -506,7 +488,6 @@ export function getGeneratePandaAttributesInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.player),
-      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameAuthority),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
@@ -526,7 +507,6 @@ export function getGeneratePandaAttributesInstruction<
   } as GeneratePandaAttributesInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGlobalConfig,
     TAccountGameAuthority,
     TAccountGameRound,
     TAccountPlayerState,
@@ -548,18 +528,17 @@ export type ParsedGeneratePandaAttributesInstruction<
   programAddress: Address<TProgram>;
   accounts: {
     player: TAccountMetas[0];
-    globalConfig: TAccountMetas[1];
-    gameAuthority: TAccountMetas[2];
-    gameRound: TAccountMetas[3];
-    playerState: TAccountMetas[4];
-    playerTokenAccount: TAccountMetas[5];
-    vault: TAccountMetas[6];
-    oracleQueue: TAccountMetas[7];
-    systemProgram: TAccountMetas[8];
-    tokenProgram: TAccountMetas[9];
-    programIdentity: TAccountMetas[10];
-    vrfProgram: TAccountMetas[11];
-    slotHashes: TAccountMetas[12];
+    gameAuthority: TAccountMetas[1];
+    gameRound: TAccountMetas[2];
+    playerState: TAccountMetas[3];
+    playerTokenAccount: TAccountMetas[4];
+    vault: TAccountMetas[5];
+    oracleQueue: TAccountMetas[6];
+    systemProgram: TAccountMetas[7];
+    tokenProgram: TAccountMetas[8];
+    programIdentity: TAccountMetas[9];
+    vrfProgram: TAccountMetas[10];
+    slotHashes: TAccountMetas[11];
   };
   data: GeneratePandaAttributesInstructionData;
 };
@@ -572,7 +551,7 @@ export function parseGeneratePandaAttributesInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedGeneratePandaAttributesInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 13) {
+  if (instruction.accounts.length < 12) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -586,7 +565,6 @@ export function parseGeneratePandaAttributesInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       player: getNextAccount(),
-      globalConfig: getNextAccount(),
       gameAuthority: getNextAccount(),
       gameRound: getNextAccount(),
       playerState: getNextAccount(),

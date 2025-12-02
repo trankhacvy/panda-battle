@@ -52,7 +52,6 @@ export function getConfirmJoinRoundDiscriminatorBytes() {
 export type ConfirmJoinRoundInstruction<
   TProgram extends string = typeof PANDA_BATTLE_PROGRAM_ADDRESS,
   TAccountPlayer extends string | AccountMeta<string> = string,
-  TAccountGlobalConfig extends string | AccountMeta<string> = string,
   TAccountGameRound extends string | AccountMeta<string> = string,
   TAccountPlayerState extends string | AccountMeta<string> = string,
   TAccountBuffer extends string | AccountMeta<string> = string,
@@ -73,9 +72,6 @@ export type ConfirmJoinRoundInstruction<
         ? WritableSignerAccount<TAccountPlayer> &
             AccountSignerMeta<TAccountPlayer>
         : TAccountPlayer,
-      TAccountGlobalConfig extends string
-        ? ReadonlyAccount<TAccountGlobalConfig>
-        : TAccountGlobalConfig,
       TAccountGameRound extends string
         ? ReadonlyAccount<TAccountGameRound>
         : TAccountGameRound,
@@ -135,7 +131,6 @@ export function getConfirmJoinRoundInstructionDataCodec(): FixedSizeCodec<
 
 export type ConfirmJoinRoundAsyncInput<
   TAccountPlayer extends string = string,
-  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
   TAccountBuffer extends string = string,
@@ -146,7 +141,6 @@ export type ConfirmJoinRoundAsyncInput<
   TAccountSystemProgram extends string = string,
 > = {
   player: TransactionSigner<TAccountPlayer>;
-  globalConfig: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
   playerState?: Address<TAccountPlayerState>;
   buffer?: Address<TAccountBuffer>;
@@ -159,7 +153,6 @@ export type ConfirmJoinRoundAsyncInput<
 
 export async function getConfirmJoinRoundInstructionAsync<
   TAccountPlayer extends string,
-  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
   TAccountBuffer extends string,
@@ -172,7 +165,6 @@ export async function getConfirmJoinRoundInstructionAsync<
 >(
   input: ConfirmJoinRoundAsyncInput<
     TAccountPlayer,
-    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountBuffer,
@@ -187,7 +179,6 @@ export async function getConfirmJoinRoundInstructionAsync<
   ConfirmJoinRoundInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountBuffer,
@@ -204,7 +195,6 @@ export async function getConfirmJoinRoundInstructionAsync<
   // Original accounts.
   const originalAccounts = {
     player: { value: input.player ?? null, isWritable: true },
-    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: false },
     playerState: { value: input.playerState ?? null, isWritable: true },
     buffer: { value: input.buffer ?? null, isWritable: true },
@@ -295,7 +285,6 @@ export async function getConfirmJoinRoundInstructionAsync<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.player),
-      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
       getAccountMeta(accounts.buffer),
@@ -310,7 +299,6 @@ export async function getConfirmJoinRoundInstructionAsync<
   } as ConfirmJoinRoundInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountBuffer,
@@ -324,7 +312,6 @@ export async function getConfirmJoinRoundInstructionAsync<
 
 export type ConfirmJoinRoundInput<
   TAccountPlayer extends string = string,
-  TAccountGlobalConfig extends string = string,
   TAccountGameRound extends string = string,
   TAccountPlayerState extends string = string,
   TAccountBuffer extends string = string,
@@ -335,7 +322,6 @@ export type ConfirmJoinRoundInput<
   TAccountSystemProgram extends string = string,
 > = {
   player: TransactionSigner<TAccountPlayer>;
-  globalConfig: Address<TAccountGlobalConfig>;
   gameRound: Address<TAccountGameRound>;
   playerState: Address<TAccountPlayerState>;
   buffer: Address<TAccountBuffer>;
@@ -348,7 +334,6 @@ export type ConfirmJoinRoundInput<
 
 export function getConfirmJoinRoundInstruction<
   TAccountPlayer extends string,
-  TAccountGlobalConfig extends string,
   TAccountGameRound extends string,
   TAccountPlayerState extends string,
   TAccountBuffer extends string,
@@ -361,7 +346,6 @@ export function getConfirmJoinRoundInstruction<
 >(
   input: ConfirmJoinRoundInput<
     TAccountPlayer,
-    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountBuffer,
@@ -375,7 +359,6 @@ export function getConfirmJoinRoundInstruction<
 ): ConfirmJoinRoundInstruction<
   TProgramAddress,
   TAccountPlayer,
-  TAccountGlobalConfig,
   TAccountGameRound,
   TAccountPlayerState,
   TAccountBuffer,
@@ -391,7 +374,6 @@ export function getConfirmJoinRoundInstruction<
   // Original accounts.
   const originalAccounts = {
     player: { value: input.player ?? null, isWritable: true },
-    globalConfig: { value: input.globalConfig ?? null, isWritable: false },
     gameRound: { value: input.gameRound ?? null, isWritable: false },
     playerState: { value: input.playerState ?? null, isWritable: true },
     buffer: { value: input.buffer ?? null, isWritable: true },
@@ -433,7 +415,6 @@ export function getConfirmJoinRoundInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.player),
-      getAccountMeta(accounts.globalConfig),
       getAccountMeta(accounts.gameRound),
       getAccountMeta(accounts.playerState),
       getAccountMeta(accounts.buffer),
@@ -448,7 +429,6 @@ export function getConfirmJoinRoundInstruction<
   } as ConfirmJoinRoundInstruction<
     TProgramAddress,
     TAccountPlayer,
-    TAccountGlobalConfig,
     TAccountGameRound,
     TAccountPlayerState,
     TAccountBuffer,
@@ -467,15 +447,14 @@ export type ParsedConfirmJoinRoundInstruction<
   programAddress: Address<TProgram>;
   accounts: {
     player: TAccountMetas[0];
-    globalConfig: TAccountMetas[1];
-    gameRound: TAccountMetas[2];
-    playerState: TAccountMetas[3];
-    buffer: TAccountMetas[4];
-    delegationRecord: TAccountMetas[5];
-    delegationMetadata: TAccountMetas[6];
-    ownerProgram: TAccountMetas[7];
-    delegationProgram: TAccountMetas[8];
-    systemProgram: TAccountMetas[9];
+    gameRound: TAccountMetas[1];
+    playerState: TAccountMetas[2];
+    buffer: TAccountMetas[3];
+    delegationRecord: TAccountMetas[4];
+    delegationMetadata: TAccountMetas[5];
+    ownerProgram: TAccountMetas[6];
+    delegationProgram: TAccountMetas[7];
+    systemProgram: TAccountMetas[8];
   };
   data: ConfirmJoinRoundInstructionData;
 };
@@ -488,7 +467,7 @@ export function parseConfirmJoinRoundInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedConfirmJoinRoundInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 10) {
+  if (instruction.accounts.length < 9) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -502,7 +481,6 @@ export function parseConfirmJoinRoundInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       player: getNextAccount(),
-      globalConfig: getNextAccount(),
       gameRound: getNextAccount(),
       playerState: getNextAccount(),
       buffer: getNextAccount(),

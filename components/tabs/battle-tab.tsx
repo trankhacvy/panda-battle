@@ -298,6 +298,7 @@ export function BattleTab() {
               {filteredAndSortedOpponents.map((opponent) => (
                 <OpponentCard
                   key={opponent.id}
+                  // @ts-expect-error
                   opponent={opponent}
                   // @ts-expect-error
                   onBattle={handleChallenge}

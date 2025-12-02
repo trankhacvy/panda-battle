@@ -9,6 +9,8 @@ import {
   type Instruction,
   type TransactionSigner,
   address,
+  getProgramDerivedAddress,
+  getAddressEncoder,
 } from "@solana/kit";
 import {
   getCreateAssociatedTokenInstructionAsync,
@@ -31,6 +33,7 @@ import {
   getRevealLeaderboardInstructionAsync,
   getEndRoundInstruction,
   getUpdateConfigInstruction,
+  PANDA_BATTLE_PROGRAM_ADDRESS,
 } from "./generated";
 import {
   fetchGlobalConfig,
@@ -60,7 +63,11 @@ import {
   mapGameRound,
   mapPlayerState,
 } from "./types";
-import { DEFAULT_QUEUE, PLATFORM_CONFIG } from "@/configs/constants";
+import {
+  DEFAULT_QUEUE,
+  DELEGATION_PROGRAM_ID,
+  PLATFORM_CONFIG,
+} from "@/configs/constants";
 
 // ============== TYPES ==============
 
@@ -80,14 +87,13 @@ export interface CreateRoundParams {
 
 export interface ConfirmJoinRoundParams {
   player: TransactionSigner;
-  roundNumber: number;
-  playerTokenAccount: Address;
+  gameRound: Address;
 }
 
 export interface GeneratePandaAttributesParams {
   rpc: Rpc<SolanaRpcApi>;
   player: TransactionSigner;
-  roundNumber: number;
+  gameRound: Address;
 }
 
 export interface BuyAttackPacksParams {
@@ -141,152 +147,55 @@ export interface UpdateConfigParams {
 // ============== SDK CLASS ==============
 
 export class PandaBattleSDK {
-  constructor() {}
-
-  // ============== ADMIN INSTRUCTIONS ==============
-
-  /**
-   * Initialize the game configuration (one-time setup)
-   */
-  async initializeGameIx(params: InitializeGameParams): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-
-    return await getInitializeGameInstructionAsync({
-      admin: params.admin,
-      globalConfig: gameConfigPDA,
-      id: BigInt(params.id),
-    });
-  }
-
-  /**
-   * Create a new game round
-   */
-  async createRoundIx(params: CreateRoundParams): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-    const gameConfig = await this.getGameConfig();
-    const nextRoundNumber = gameConfig.currentRound + 1;
-    const [gameRoundPDA] = await getGameRoundPDA(
-      gameConfigPDA,
-      nextRoundNumber
-    );
-    const [vaultPDA] = await getVaultPDA(gameConfigPDA);
-
-    return await getCreateRoundInstructionAsync({
-      admin: params.admin,
-      mint: params.tokenMint,
-      globalConfig: gameConfigPDA,
-      gameRound: gameRoundPDA,
-      vault: vaultPDA,
-      entryFee: BigInt(Math.floor(params.entryFee * 1e6)), // Assuming 6 decimals
-      attackPackPrice: BigInt(Math.floor(params.attackPackPrice * 1e6)),
-      durationSecs: BigInt(params.durationSecs),
-      entryHourlyIncPct: params.entryHourlyIncPct,
-    });
-  }
-
-  /**
-   * End the current round
-   */
-  async endRoundIx(params: EndRoundParams): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-    const [gameRoundPDA] = await getGameRoundPDA(
-      gameConfigPDA,
-      params.roundNumber
-    );
-
-    return getEndRoundInstruction({
-      admin: params.admin,
-      globalConfig: gameConfigPDA,
-      gameRound: gameRoundPDA,
-    });
-  }
-
-  /**
-   * Distribute prizes to top players after round ends
-   */
-  async distributePrizesIx(
-    params: DistributePrizesParams
-  ): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-    const [gameRoundPDA] = await getGameRoundPDA(
-      gameConfigPDA,
-      params.roundNumber
-    );
-    const [leaderboardPDA] = await getLeaderboardPDA(gameRoundPDA);
-    // const [vaultPDA] = await getVaultPDA(gameConfigPDA);
-
-    return await getDistributePrizesInstructionAsync({
-      caller: params.admin,
-      globalConfig: gameConfigPDA,
-      gameRound: gameRoundPDA,
-      leaderboard: leaderboardPDA,
-      // vault: vaultPDA,
-    });
-  }
-
-  /**
-   * Update game configuration parameters
-   */
-  async updateConfigIx(params: UpdateConfigParams): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-
-    return getUpdateConfigInstruction({
-      admin: params.admin,
-      globalConfig: gameConfigPDA,
-      // id: params.id ? BigInt(params.id) : undefined,
-      tokenMint: address("123"),
-    });
-  }
-
-  // ============== PLAYER INSTRUCTIONS ==============
-
-  /**
-   * Confirm joining the current round by paying entry fee
-   */
   async confirmJoinRoundIx(
     params: ConfirmJoinRoundParams
   ): Promise<Instruction> {
-    const [gameConfigPDA] = await getGameConfigPDA();
-    const [gameRoundPDA] = await getGameRoundPDA(
-      gameConfigPDA,
-      params.roundNumber
-    );
     const [playerStatePDA] = await getPlayerStatePDA(
-      gameRoundPDA,
+      params.gameRound,
       params.player.address
     );
 
+    const [buffer] = await getProgramDerivedAddress({
+      programAddress: PANDA_BATTLE_PROGRAM_ADDRESS,
+      seeds: ["buffer", getAddressEncoder().encode(playerStatePDA)],
+    });
+
+    const [delegationRecord] = await getProgramDerivedAddress({
+      programAddress: DELEGATION_PROGRAM_ID,
+      seeds: ["delegation", getAddressEncoder().encode(playerStatePDA)],
+    });
+
+    const [delegationMetadata] = await getProgramDerivedAddress({
+      programAddress: DELEGATION_PROGRAM_ID,
+      seeds: [
+        "delegation-metadata",
+        getAddressEncoder().encode(playerStatePDA),
+      ],
+    });
+
     return await getConfirmJoinRoundInstructionAsync({
       player: params.player,
-      globalConfig: gameConfigPDA,
-      gameRound: gameRoundPDA,
+      gameRound: params.gameRound,
       playerState: playerStatePDA,
+      buffer,
+      delegationRecord,
+      delegationMetadata,
+      delegationProgram: DELEGATION_PROGRAM_ID,
     });
   }
 
-  /**
-   * Generate panda attributes for a new player (requires VRF)
-   */
   async generatePandaAttributesIx(
     params: GeneratePandaAttributesParams
   ): Promise<{
     instruction: Instruction;
     playerStateAddress: Address;
   }> {
-    const config = await fetchGlobalConfig(params.rpc, PLATFORM_CONFIG);
-    if (!config) throw new Error("Global config not found");
-
-    const [gameRoundPDA] = await getGameRoundPDA(
-      PLATFORM_CONFIG,
-      Number(config.data.currentRound)
-    );
-
-    const gameRound = await fetchGameRound(params.rpc, gameRoundPDA);
+    const gameRound = await fetchGameRound(params.rpc, params.gameRound);
 
     if (!gameRound) throw new Error("Game round not found");
 
     const [playerStatePDA] = await getPlayerStatePDA(
-      gameRoundPDA,
+      params.gameRound,
       params.player.address
     );
 
@@ -298,7 +207,7 @@ export class PandaBattleSDK {
     // const vaultPDA = await getAssociatedTokenAddress(mint, roundPDA, true);
     const [vaultPDA] = await getTokenVaultPda(
       gameRound.data.tokenMint,
-      gameRoundPDA
+      params.gameRound
     );
     console.log("vaultPDA", vaultPDA);
 
@@ -313,9 +222,8 @@ export class PandaBattleSDK {
 
     const ix = await getGeneratePandaAttributesInstructionAsync({
       player: params.player,
-      globalConfig: PLATFORM_CONFIG,
       gameAuthority: gameAuthority,
-      gameRound: gameRoundPDA,
+      gameRound: params.gameRound,
       playerState: playerStatePDA,
       playerTokenAccount,
       vault: vaultPDA,
@@ -330,9 +238,6 @@ export class PandaBattleSDK {
     };
   }
 
-  /**
-   * Buy attack packs (additional turns)
-   */
   async buyAttackPacksIx(params: BuyAttackPacksParams): Promise<Instruction> {
     const [gameConfigPDA] = await getGameConfigPDA();
     const [gameRoundPDA] = await getGameRoundPDA(
@@ -356,9 +261,6 @@ export class PandaBattleSDK {
     });
   }
 
-  /**
-   * Reroll attributes (limited rerolls available)
-   */
   async rerollAttributesIx(
     params: RerollAttributesParams
   ): Promise<{ instruction: Instruction; playerStateAddress: Address }> {
@@ -416,9 +318,6 @@ export class PandaBattleSDK {
     return { instruction: ix, playerStateAddress: playerStatePDA };
   }
 
-  /**
-   * Initiate a battle against another player
-   */
   async initiateBattleIx(params: InitiateBattleParams): Promise<Instruction> {
     const [gameConfigPDA] = await getGameConfigPDA();
     const [gameRoundPDA] = await getGameRoundPDA(
@@ -434,6 +333,7 @@ export class PandaBattleSDK {
       params.defenderAddress
     );
 
+    // @ts-expect-error
     return await getInitiateBattleInstructionAsync({
       player: params.player,
       globalConfig: gameConfigPDA,
@@ -484,6 +384,7 @@ export class PandaBattleSDK {
       params.playerAddress
     );
 
+    // @ts-expect-error
     return await getRegenerateTurnsInstructionAsync({
       globalConfig: gameConfigPDA,
       gameRound: gameRoundPDA,
@@ -504,6 +405,7 @@ export class PandaBattleSDK {
     );
     const [leaderboardPDA] = await getLeaderboardPDA(gameRoundPDA);
 
+    // @ts-expect-error
     return await getRevealLeaderboardInstructionAsync({
       globalConfig: gameConfigPDA,
       gameRound: gameRoundPDA,
@@ -518,6 +420,7 @@ export class PandaBattleSDK {
    */
   async getGameConfig(): Promise<GameConfig> {
     const [gameConfigPDA] = await getGameConfigPDA();
+    // @ts-expect-error
     const account = await fetchGlobalConfig(this.rpc, gameConfigPDA);
     return mapGameConfig(account.data);
   }
@@ -528,6 +431,7 @@ export class PandaBattleSDK {
   async getGameRound(roundNumber: number): Promise<GameRound> {
     const [gameConfigPDA] = await getGameConfigPDA();
     const [gameRoundPDA] = await getGameRoundPDA(gameConfigPDA, roundNumber);
+    // @ts-expect-error
     const account = await fetchGameRound(this.rpc, gameRoundPDA);
     return mapGameRound(account.data);
   }
@@ -545,6 +449,7 @@ export class PandaBattleSDK {
       gameRoundPDA,
       playerAddress
     );
+    // @ts-expect-error
     const account = await fetchPlayerState(this.rpc, playerStatePDA);
     return mapPlayerState(account.data);
   }
@@ -556,6 +461,7 @@ export class PandaBattleSDK {
     const [gameConfigPDA] = await getGameConfigPDA();
     const [gameRoundPDA] = await getGameRoundPDA(gameConfigPDA, roundNumber);
     const [leaderboardPDA] = await getLeaderboardPDA(gameRoundPDA);
+    // @ts-expect-error
     const account = await fetchLeaderboard(this.rpc, leaderboardPDA);
     return account.data;
   }

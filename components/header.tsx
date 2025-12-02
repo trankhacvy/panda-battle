@@ -74,9 +74,9 @@ export default function Header() {
       default:
         return (
           <div className="flex items-center gap-2">
-            <IconButton color="red" size="md">
+            {/* <IconButton color="red" size="md">
               <XIcon />
-            </IconButton>
+            </IconButton> */}
             {/* <div className="bg-[#1a3a5c]/80 border-2 border-[#2a5a8c] rounded-xl px-4 py-2 flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-linear-to-b from-[#ffd700] to-[#daa520] flex items-center justify-center">
                 <span className="text-[#8b6914] font-bold text-lg">C</span>

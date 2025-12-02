@@ -34,6 +34,7 @@ const iconButtonVariants = cva(
   }
 );
 
+// @ts-expect-error
 export interface IconButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof iconButtonVariants> {
@@ -66,6 +67,7 @@ const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
 
     return (
       <Comp
+        // @ts-expect-error
         className={cn(iconButtonVariants({ color, size, className }))}
         ref={ref}
         onClick={handleClick}

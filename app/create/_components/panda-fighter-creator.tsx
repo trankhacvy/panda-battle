@@ -13,6 +13,7 @@ import { address, TransactionSigner, type Address } from "@solana/kit";
 import { buildAndSendTransactionWithPrivy } from "@/lib/tx";
 import { toast } from "sonner";
 import { fetchPlayerState } from "@/lib/sdk/generated/accounts";
+import { useCurrentGameRound, usePlayerState } from "@/hooks/use-game-data";
 
 interface PandaAttributes {
   sta: number;
@@ -23,21 +24,21 @@ interface PandaAttributes {
 
 export function PandaFighterCreator() {
   const router = useRouter();
-  const [isCreated, setIsCreated] = useState(false);
+  // const [isCreated, setIsCreated] = useState(false);
   const [attributes, setAttributes] = useState<PandaAttributes | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { wallet } = useWallet();
   const { rpc } = useRpc();
   const { addSessionSigners } = useSessionSigners();
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const { gameRound } = useCurrentGameRound();
+  const { playerState, refetch: refetchPlayerState } = usePlayerState(
+    wallet?.address ? address(wallet.address) : undefined
+  );
 
   console.log("wallet", wallet?.address);
+  console.log("gameRound", gameRound);
 
-  /**
-   * Poll the player state to check if attributes have been updated by VRF callback
-   * @param playerStateAddress - The address of the player state account
-   * @param previousAttributes - Optional previous attributes to compare against (for reroll)
-   */
   const pollPlayerState = async (
     playerStateAddress: Address,
     previousAttributes?: PandaAttributes
@@ -78,7 +79,6 @@ export function PandaFighterCreator() {
           if (attributesUpdated) {
             // Attributes have been updated!
             setAttributes(currentAttributes);
-            setIsCreated(true);
             setIsLoading(false);
 
             // Clear the interval
@@ -126,7 +126,7 @@ export function PandaFighterCreator() {
   };
 
   const createPanda = async (): Promise<void> => {
-    if (!wallet) {
+    if (!wallet || !gameRound) {
       throw new Error("Wallet not connected");
     }
 
@@ -137,7 +137,7 @@ export function PandaFighterCreator() {
         await sdk.generatePandaAttributesIx({
           rpc,
           player: { address: address(wallet.address) } as TransactionSigner,
-          roundNumber: 0,
+          gameRound: gameRound.address,
         });
 
       const signature = await buildAndSendTransactionWithPrivy(
@@ -147,9 +147,10 @@ export function PandaFighterCreator() {
       );
 
       console.log("[createPanda] tx", signature);
-      toast.success(
-        "Transaction sent! Waiting for VRF to generate attributes..."
-      );
+      await refetchPlayerState();
+      // toast.success(
+      //   "Transaction sent! Waiting for VRF to generate attributes..."
+      // );
 
       // Start polling for attribute updates
       await pollPlayerState(playerStateAddress);
@@ -161,7 +162,39 @@ export function PandaFighterCreator() {
     }
   };
 
-  // Cleanup polling interval on component unmount
+  const handleStartGame = async (): Promise<void> => {
+    if (!wallet || !gameRound || !playerState) {
+      throw new Error("Wallet not connected");
+    }
+
+    setIsLoading(true);
+
+    try {
+      const instruction = await sdk.confirmJoinRoundIx({
+        player: { address: address(wallet.address) } as TransactionSigner,
+        gameRound: gameRound.address,
+      });
+
+      const signature = await buildAndSendTransactionWithPrivy(
+        rpc,
+        [instruction],
+        wallet
+      );
+
+      console.log("[handleStartGame] tx", signature);
+      // toast.success(
+      //   "Transaction sent! Waiting for VRF to generate attributes..."
+      // );
+
+      router.push("/home");
+    } catch (error) {
+      console.error("Error creating panda:", error);
+      setIsLoading(false);
+      toast.error("Failed to create panda");
+      throw error;
+    }
+  };
+
   useEffect(() => {
     return () => {
       if (pollingIntervalRef.current) {
@@ -199,10 +232,10 @@ export function PandaFighterCreator() {
       );
 
       console.log("[handleReroll] tx", signature);
-      toast.success(
-        "Transaction sent! Waiting for VRF to reroll attributes..."
-      );
-
+      // toast.success(
+      //   "Transaction sent! Waiting for VRF to reroll attributes..."
+      // );
+      await refetchPlayerState();
       // Start polling for attribute updates, passing previous attributes for comparison
       await pollPlayerState(playerStateAddress, previousAttributes);
     } catch (error) {
@@ -212,6 +245,18 @@ export function PandaFighterCreator() {
       throw error;
     }
   };
+
+  useEffect(() => {
+    if (playerState) {
+      const currentAttributes: PandaAttributes = {
+        sta: 0, // Not used in the current schema
+        str: playerState.data.str,
+        agi: playerState.data.agi,
+        int: playerState.data.int,
+      };
+      setAttributes(currentAttributes);
+    }
+  }, [playerState]);
 
   const handleDelegateWallet = async () => {
     if (!wallet) {
@@ -235,12 +280,6 @@ export function PandaFighterCreator() {
       console.error("Failed to delegate game wallet:", error);
       toast.error("Failed to delegate game wallet. Please try again.");
     }
-  };
-
-  const handleStartGame = () => {
-    // Navigate to game or handle start game logic
-    console.log("Starting game with attributes:", attributes);
-    router.push("/home");
   };
 
   return (
@@ -286,7 +325,7 @@ export function PandaFighterCreator() {
 
       {/* Panda Image */}
       <div className="flex flex-1 w-full flex-col items-center justify-center">
-        {!isCreated ? (
+        {!playerState ? (
           <div className="w-full max-w-xs mx-auto aspect-square rounded-2xl overflow-hidden relative z-10 mb-6 border-4 border-[#3a7a5a]/50">
             <img
               src="/images/who-that-panda.png"
@@ -310,7 +349,7 @@ export function PandaFighterCreator() {
             </div>
 
             {/* Attributes Display - Only show when panda is created (3 attributes only) */}
-            {isCreated && attributes && (
+            {!!playerState && attributes && (
               <div className="w-full grid grid-cols-3 max-w-md mx-auto gap-2 sm:gap-3 relative z-10">
                 <AttributeCard
                   label="STR"
@@ -341,7 +380,7 @@ export function PandaFighterCreator() {
       </Button3D>
 
       {/* Buttons */}
-      {!isCreated ? (
+      {!playerState ? (
         <Button3D
           onClick={createPanda}
           disabled={isLoading}
@@ -361,7 +400,7 @@ export function PandaFighterCreator() {
           </Button3D>
           <Button3D
             onClick={handleStartGame}
-            disabled={isLoading}
+            disabled={isLoading || !playerState}
             variant="3d-green"
             className="w-full text-sm sm:text-base"
           >

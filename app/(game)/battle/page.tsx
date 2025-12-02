@@ -6,6 +6,7 @@ import { OpponentCard } from "@/components/battle/opponent-card";
 import { useSound } from "@/hooks/use-sound";
 import { Button3D } from "@/components/ui/button-3d";
 import { useRouter } from "next/navigation";
+import { usePlayers } from "@/hooks/use-game-data";
 
 const bgColors = [
   "bg-red-900/60",
@@ -19,6 +20,7 @@ export default function BattlePage() {
   const router = useRouter();
   const displayOpponents = mockOpponents.slice(0, 5);
   const { play, SOUNDS } = useSound();
+  const { players, isLoading } = usePlayers();
 
   const handleBattle = (opponentId: string) => {
     play(SOUNDS.GAME_START);
@@ -67,12 +69,12 @@ export default function BattlePage() {
 
       {/* Opponent List */}
       <div className="space-y-2 sm:space-y-3">
-        {displayOpponents.map((opponent, index) => (
+        {(players || []).map((opponent, index) => (
           <OpponentCard
-            key={opponent.id}
+            key={opponent.bump}
             opponent={opponent}
             bgColor={bgColors[index % bgColors.length]}
-            onBattle={() => handleBattle(opponent.id)}
+            onBattle={() => handleBattle(opponent.bump.toFixed())}
           />
         ))}
       </div>

@@ -7,8 +7,9 @@ import { useLogin, type WalletWithMetadata } from "@privy-io/react-auth";
 import { useSolBalance, useSplTokenBalance } from "@/hooks/use-balance";
 import { useEffect, useState } from "react";
 import { USDC_MINT_ADDRESS } from "@/configs/constants";
+import { usePlayerState } from "@/hooks/use-game-data";
+import { address } from "@solana/kit";
 
-// Fake USDC address for now - replace with actual USDC mint address
 const MIN_SOL_BALANCE = 0.001; // Minimum SOL required
 const MIN_USDC_BALANCE = 0.01; // Minimum USDC required
 
@@ -29,23 +30,29 @@ export default function Home() {
   const { balanceInToken: usdcBalance, isLoading: isLoadingUsdc } =
     useSplTokenBalance(embededWallet?.address, USDC_MINT_ADDRESS);
 
+  const { playerState, isLoading: isLoadingPlayerState } = usePlayerState(
+    embededWallet?.address ? address(embededWallet.address) : undefined
+  );
+  console.log("playerState", playerState);
   useEffect(() => {
     if (!user || !embededWallet) return;
 
-    // Check if user already joined
-    const customMetadata = user.customMetadata as
-      | { joined?: boolean }
-      | undefined;
-    if (customMetadata?.joined === true) {
+    if (isLoadingPlayerState) return;
+
+    if (
+      playerState &&
+      playerState.data.delegated &&
+      (playerState.data.str > 0 ||
+        playerState.data.agi > 0 ||
+        playerState.data.int > 0)
+    ) {
       router.push("/home");
       return;
     }
 
-    // Check balances once they're loaded
     if (!isLoadingSol && !isLoadingUsdc && !isCheckingBalance) {
       setIsCheckingBalance(true);
 
-      // Check if user has sufficient balance
       // const hasSufficientBalance =
       //   balanceInSol >= MIN_SOL_BALANCE && usdcBalance >= MIN_USDC_BALANCE;
       const hasSufficientBalance = balanceInSol >= MIN_SOL_BALANCE;
@@ -63,6 +70,8 @@ export default function Home() {
     usdcBalance,
     isLoadingSol,
     isLoadingUsdc,
+    isLoadingPlayerState,
+    playerState,
     isCheckingBalance,
     router,
   ]);
@@ -81,8 +90,6 @@ export default function Home() {
         );
         return;
       }
-
-      // The useEffect will handle the navigation after checking balances
     },
   });
 
