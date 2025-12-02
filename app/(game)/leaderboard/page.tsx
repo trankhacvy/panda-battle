@@ -47,7 +47,6 @@ const players = [
 export default function LeaderboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const { play, SOUNDS } = useSound();
-  const { play, SOUNDS } = useSound();
 
   const filteredPlayers = players.filter((player) =>
     player.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -60,11 +59,6 @@ export default function LeaderboardPage() {
     // TODO: Navigate to battle screen
   };
 
-  const handleSort = () => {
-    play(SOUNDS.BUTTON_CLICK);
-    console.log("Sort players");
-  };
-
   const handleFilter = () => {
     play(SOUNDS.BUTTON_CLICK);
     console.log("Filter players");
@@ -73,11 +67,6 @@ export default function LeaderboardPage() {
   const handleSort = () => {
     play(SOUNDS.BUTTON_CLICK);
     console.log("Sort players");
-  };
-
-  const handleFilter = () => {
-    play(SOUNDS.BUTTON_CLICK);
-    console.log("Filter players");
   };
 
   return (

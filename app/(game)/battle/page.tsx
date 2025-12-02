@@ -17,8 +17,7 @@ const bgColors = [
 export default function BattlePage() {
   const displayOpponents = mockOpponents.slice(0, 5);
   const { play, SOUNDS } = useSound();
-  const { play, SOUNDS } = useSound();
-
+ 
   const handleBattle = (opponentId: string) => {
     play(SOUNDS.GAME_START);
     play(SOUNDS.GAME_START);
@@ -36,15 +35,7 @@ export default function BattlePage() {
     console.log("Filter opponents");
   };
 
-  const handleSort = () => {
-    play(SOUNDS.BUTTON_CLICK);
-    console.log("Sort opponents");
-  };
-
-  const handleFilter = () => {
-    play(SOUNDS.BUTTON_CLICK);
-    console.log("Filter opponents");
-  };
+ 
 
   return (
     <div className="flex-1 px-4 pb-6 relative z-10">

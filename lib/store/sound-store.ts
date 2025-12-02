@@ -6,11 +6,13 @@ interface SoundState {
   volume: number;
   isMusicEnabled: boolean;
   musicVolume: number;
+  battleEffectVolume: number;
   toggleMute: () => void;
   setVolume: (volume: number) => void;
   toggleMusic: () => void;
   setMusicVolume: (volume: number) => void;
-  playSound: (soundPath: string) => void;
+  setBattleEffectVolume: (volume: number) => void;
+  playSound: (soundPath: string, customVolume?: number) => void;
 }
 
 export const useSoundStore = create<SoundState>()(
@@ -20,6 +22,7 @@ export const useSoundStore = create<SoundState>()(
       volume: 0.5,
       isMusicEnabled: true,
       musicVolume: 0.3,
+      battleEffectVolume: 0.7,
 
       toggleMute: () => set((state) => ({ isMuted: !state.isMuted })),
 
@@ -30,13 +33,15 @@ export const useSoundStore = create<SoundState>()(
 
       setMusicVolume: (musicVolume: number) => set({ musicVolume }),
 
-      playSound: (soundPath: string) => {
+      setBattleEffectVolume: (battleEffectVolume: number) => set({ battleEffectVolume }),
+
+      playSound: (soundPath: string, customVolume?: number) => {
         const { isMuted, volume } = get();
         if (isMuted) return;
 
         try {
           const audio = new Audio(soundPath);
-          audio.volume = volume;
+          audio.volume = customVolume !== undefined ? customVolume : volume;
           audio.play().catch((error) => {
             console.error("Error playing sound:", error);
           });

@@ -15,6 +15,7 @@ interface PandaFighterProps {
   onToggleStats: () => void;
   side: "left" | "right";
   color: "green" | "red";
+  isHit?: boolean;
 }
 
 export function PandaFighter({
@@ -24,6 +25,7 @@ export function PandaFighter({
   onToggleStats,
   side,
   color,
+  isHit = false,
 }: PandaFighterProps) {
   const borderColor = color === "green" ? "border-green-500/50" : "border-red-500/50";
   const shadowColor =
@@ -34,10 +36,16 @@ export function PandaFighter({
   const slideAnimation =
     side === "left" ? "animate-in slide-in-from-left duration-700" : "animate-in slide-in-from-right duration-700";
 
+  const attackAnimation = isAttacking 
+    ? (side === "left" ? "translate-x-16 scale-125" : "-translate-x-16 scale-125")
+    : "";
+  
+  const hitAnimation = isHit ? "animate-shake" : "";
+
   return (
     <div className={`panda-card flex flex-col items-center cursor-pointer ${slideAnimation}`} onClick={onToggleStats}>
-      <div className={cn("relative transition-all duration-300", isAttacking && "scale-110")}>
-        <div className={`w-28 h-28 rounded-2xl overflow-hidden border-4 ${borderColor} ${shadowColor} bg-cover bg-center relative`}>
+      <div className={cn("relative transition-all duration-300", attackAnimation, hitAnimation)}>
+        <div className={`w-36 h-36 rounded-2xl overflow-hidden border-4 ${borderColor} ${shadowColor} bg-cover bg-center relative`}>
           <img src="/images/fighter-frame.png" alt="Fighter" className="w-full h-full object-cover absolute inset-0" />
           <img src="/images/sample-panda.png" alt="Panda" className="w-full h-full object-contain relative z-10" />
         </div>
