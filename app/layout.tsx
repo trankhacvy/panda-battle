@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Rubik } from "next/font/google";
 import "@/styles/globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AppBackground } from "@/components/background/app-background";
 import { AppProviders } from "@/components/providers/app-provider";
 import { cn } from "@/lib/utils";
+import { InstallAppDrawer } from "@/components/global/install-app-drawer";
 
 const rubik = Rubik({
   variable: "--font-rubik",
@@ -14,6 +15,14 @@ const rubik = Rubik({
 export const metadata: Metadata = {
   title: "Bamboo Panda Battles",
   description: "Strategic turn-based panda battles on the blockchain",
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -42,6 +51,7 @@ export default function RootLayout({
           >
             {children}
           </main>
+          <InstallAppDrawer />
           <Toaster className="z-100" position="top-center" />
         </AppProviders>
       </body>

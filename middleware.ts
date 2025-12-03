@@ -5,29 +5,6 @@ const PUBLIC_PAGES = [
   "/refresh", // Token refresh page
 ];
 
-const PUBLIC_ASSETS = [
-  ".svg",
-  ".png",
-  ".jpg",
-  ".jpeg",
-  ".ico",
-  ".webp",
-  ".gif",
-];
-
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except those starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (website icon)
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
-  ],
-};
-
 export async function middleware(req: NextRequest) {
   const cookieAuthToken = req.cookies.get("privy-token");
   const cookieSession = req.cookies.get("privy-session");
@@ -51,11 +28,6 @@ export async function middleware(req: NextRequest) {
 
   // Skip middleware for public pages
   if (PUBLIC_PAGES.includes(pathname)) {
-    return response;
-  }
-
-  // Skip middleware for static assets
-  if (PUBLIC_ASSETS.some((ext) => pathname.toLowerCase().endsWith(ext))) {
     return response;
   }
 
@@ -90,3 +62,18 @@ export async function middleware(req: NextRequest) {
 
   return response;
 }
+
+// Configure which routes the middleware should run on
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static, _next/image (Next.js internal files)
+     * - favicons, fonts, images, pwa (static asset folders)
+     * - favicon.ico, manifest.webmanifest, sitemap.xml, sw.js, robots.txt (metadata files)
+     * - File extensions: svg, png, jpg, jpeg, gif, webp, woff2, ttf, ico
+     */
+    "/((?!api|_next/static|_next/image|favicons|fonts|images|pwa|favicon.ico|sitemap.xml|sw.js|manifest.webmanifest|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2|ttf|ico)).*)",
+  ],
+};
