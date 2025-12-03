@@ -24,7 +24,7 @@ export function BattleResult({ isPlayerWin, onBackToHome }: BattleResultProps) {
           {isPlayerWin ? "You Won the Battle!" : "Better Luck Next Time!"}
         </p>
         <div className="pt-2">
-          <Button variant="game" size="default" onClick={onBackToHome}>
+          <Button variant="game" size="md" onClick={onBackToHome}>
             Back to Home
           </Button>
         </div>

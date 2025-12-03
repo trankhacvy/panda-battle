@@ -20,7 +20,7 @@ export function OpponentCard({
       <CardFrame size="sm" className="shrink-0">
         <div className="w-16 sm:w-20 h-16 sm:h-20 relative overflow-hidden">
           <img
-            src="/images/reated-panda-bg"
+            src="/images/reated-panda-bg.png"
             alt="Background"
             className="absolute inset-0 w-full h-full object-cover"
           />

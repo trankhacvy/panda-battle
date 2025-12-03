@@ -7,29 +7,29 @@ const cardFrameVariants = cva(
     {
         variants: {
             variant: {
-                default: "hover:scale-[1.01]",
-                primary: "hover:scale-[1.01]",
-                secondary: "hover:scale-[1.01]",
-                accent: "hover:scale-[1.01]",
+                default: "hover:scale-[1.02]",
+                primary: "hover:scale-[1.02]",
+                secondary: "hover:scale-[1.02]",
+                accent: "hover:scale-[1.02]",
             },
             size: {
                 default:
-                    "p-[8px] pb-[10px] rounded-[1.75rem] shadow-[0_4px_0_#d0d0d0,0_14px_22px_-6px_rgba(0,0,0,0.18),0_26px_38px_-8px_rgba(0,0,0,0.22),0_42px_60px_-10px_rgba(0,0,0,0.28)]",
+                    "p-[8px] pb-[10px] rounded-[1.75rem] shadow-[0_4px_0_#d0d0d0,0_14px_22px_-6px_rgba(0,0,0,0.18)]",
 
                 tiny:
-                    "p-[3px] pb-[2px] rounded-[0.75rem] shadow-[0_3px_0_#d0d0d0,0_10px_16px_-4px_rgba(0,0,0,0.15),0_20px_30px_-6px_rgba(0,0,0,0.22),0_32px_46px_-8px_rgba(0,0,0,0.28)]",
+                    "p-[3px] pb-[2px] rounded-[0.75rem] shadow-[0_3px_0_#d0d0d0,0_10px_16px_-4px_rgba(0,0,0,0.15)]",
 
                 sm:
-                    "p-[4px] pb-[6px] rounded-[1rem] shadow-[0_3px_0_#d0d0d0,0_12px_20px_-6px_rgba(0,0,0,0.16),0_22px_34px_-8px_rgba(0,0,0,0.22),0_36px_52px_-10px_rgba(0,0,0,0.28)]",
+                    "p-[4px] pb-[6px] rounded-[1rem] shadow-[0_3px_0_#d0d0d0,0_12px_20px_-6px_rgba(0,0,0,0.16)]",
 
                 md:
-                    "p-[4px] pb-[8px] rounded-[1.25rem] shadow-[0_4px_0_#d0d0d0,0_16px_24px_-6px_rgba(0,0,0,0.17),0_26px_40px_-8px_rgba(0,0,0,0.24),0_40px_58px_-10px_rgba(0,0,0,0.30)]",
+                    "p-[4px] pb-[8px] rounded-[1.25rem] shadow-[0_4px_0_#d0d0d0,0_16px_24px_-6px_rgba(0,0,0,0.17)]",
 
                 lg:
-                    "p-[10px] pb-[12px] rounded-[2.25rem] shadow-[0_5px_0_#d0d0d0,0_20px_30px_-6px_rgba(0,0,0,0.20),0_32px_48px_-8px_rgba(0,0,0,0.28),0_48px_70px_-10px_rgba(0,0,0,0.34)]",
+                    "p-[10px] pb-[12px] rounded-[2.25rem] shadow-[0_5px_0_#d0d0d0,0_20px_30px_-6px_rgba(0,0,0,0.2)]",
 
                 xl:
-                    "p-[12px] pb-[14px] rounded-[2.5rem] shadow-[0_6px_0_#d0d0d0,0_22px_34px_-6px_rgba(0,0,0,0.22),0_38px_56px_-8px_rgba(0,0,0,0.30),0_54px_78px_-10px_rgba(0,0,0,0.38)]",
+                    "p-[12px] pb-[14px] rounded-[2.5rem] shadow-[0_6px_0_#d0d0d0,0_22px_34px_-6px_rgba(0,0,0,0.22)]",
             },
         },
         defaultVariants: {
@@ -38,7 +38,6 @@ const cardFrameVariants = cva(
         },
     }
 );
-
 
 const cardInnerVariants = cva("block relative w-full overflow-hidden h-full", {
     variants: {

@@ -52,7 +52,7 @@ export function SettingsDropdown() {
                 <Settings className={cn(
                     "size-4 text-white transition-transform duration-300",
                     isOpen && "rotate-90"
-                )} />
+                )} strokeWidth={3} />
             </RoundButton>
 
             <div
@@ -73,6 +73,7 @@ export function SettingsDropdown() {
                             className={cn(
                                 "size-4 transition-colors text-white"
                             )}
+                            strokeWidth={3}
                         />
                         {isMuted && (
                             <div className="absolute inset-0 flex items-center justify-center">
@@ -92,6 +93,7 @@ export function SettingsDropdown() {
                             className={cn(
                                 "size-4 transition-colors text-white"
                             )}
+                            strokeWidth={3}
                         />
                         {!isMusicEnabled && (
                             <div className="absolute inset-0 flex items-center justify-center">

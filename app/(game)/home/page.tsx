@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { Typography } from "@/components/ui/typography";
 import { useWallet } from "@/hooks/use-wallet";
 import { CardFrame } from "@/components/ui/card-frame";
-// import { BonusCard } from "@/components/ui/bonus-card";
+import { BonusCard } from "@/components/ui/bonus-card";
 
 export default function HomePage() {
   const { logout } = useWallet();

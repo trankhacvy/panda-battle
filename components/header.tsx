@@ -24,7 +24,7 @@ export default function Header() {
             size="sm"
             onClick={() => router.back()}
           >
-            <ArrowLeft className="size-4 text-white" />
+            <ArrowLeft className="size-4 text-white" strokeWidth={3} />
           </RoundButton>
         );
       default:
@@ -34,7 +34,7 @@ export default function Header() {
               <CardFrame size="tiny">
                 <div className="size-12 overflow-hidden flex items-center justify-center relative">
                   <img
-                    src="/images/reated-panda-bg"
+                    src="/images/reated-panda-bg.png"
                     alt="Background"
                     className="absolute inset-0 w-full h-full object-cover"
                   />
@@ -75,20 +75,12 @@ export default function Header() {
       case pathname?.includes("profile"):
         return (
           <RoundButton variant="purple" size="sm">
-            <EllipsisVertical className="size-4 text-white" />
+            <EllipsisVertical className="size-4 text-white" strokeWidth={3} />
           </RoundButton>
         );
       default:
         return (
           <div className="flex items-center gap-2">
-            {/* <div className="bg-[#1a3a5c]/80 border-2 border-[#2a5a8c] rounded-xl px-4 py-2 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-linear-to-b from-[#ffd700] to-[#daa520] flex items-center justify-center">
-                <span className="text-[#8b6914] font-bold text-lg">C</span>
-              </div>
-              <div className="text-white">
-                <p className="text-xl font-bold text-[#ffd700]">500</p>
-              </div>
-            </div> */}
             <SettingsDropdown />
           </div>
         );
