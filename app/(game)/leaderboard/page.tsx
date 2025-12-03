@@ -74,7 +74,7 @@ export default function LeaderboardPage() {
       {/* Prize Pool Banner */}
       <div className="relative rounded-2xl overflow-hidden">
         <img
-          src="/images/attributes/pool-bg.png"
+          src="/images/pool-bg.png"
           alt="Prize Pool"
           className="w-full h-auto object-cover"
         />

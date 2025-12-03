@@ -63,7 +63,7 @@ export function PandaFighterCreator() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center gap-4 px-4 py-8 relative overflow-hidden">
+    <div className="size-full flex flex-col items-center gap-6 px-4 py-8 relative">
       {/* Stars background */}
       <div className="absolute inset-0 z-[-1] overflow-hidden pointer-events-none">
         {[...Array(50)].map((_, i) => (
@@ -79,8 +79,7 @@ export function PandaFighterCreator() {
         ))}
       </div>
 
-      {/* Title Section */}
-      <div className="text-center mb-6 relative">
+      <div className="text-center relative">
         <h1
           className="text-3xl sm:text-4xl font-extrabold tracking-wide"
           style={{
@@ -92,7 +91,7 @@ export function PandaFighterCreator() {
           Create Your
         </h1>
         <h2
-          className="text-4xl sm:text-5xl font-black tracking-wide mt-1"
+          className="text-3xl sm:text-4xl font-black tracking-wide mt-1"
           style={{
             color: "#ffd93d",
             textShadow: "0 4px 0 #c9a227, 0 6px 10px rgba(0,0,0,0.3)",
@@ -103,10 +102,9 @@ export function PandaFighterCreator() {
         </h2>
       </div>
 
-      {/* Panda Image */}
       <div className="flex flex-1 w-full flex-col items-center justify-center">
         {!isCreated ? (
-          <div className="w-full max-w-md mx-auto aspect-square rounded-2xl overflow-hidden relative z-10 mb-6 border-4 border-[#3a7a5a]/50">
+          <div className="w-full max-w-xs mx-auto aspect-square rounded-2xl overflow-hidden relative z-10 border-4 border-[#3a7a5a]/50">
             <img
               src="/images/who-that-panda.png"
               alt="Mystery Panda Fighter"
@@ -115,7 +113,7 @@ export function PandaFighterCreator() {
           </div>
         ) : (
           <div className="w-full">
-            <div className="max-w-md mx-auto mb-6 aspect-square rounded-2xl overflow-hidden relative border-4 border-[#3a7a5a]/50">
+            <div className="max-w-xs mx-auto mb-4 aspect-square rounded-2xl overflow-hidden relative border-4 border-[#3a7a5a]/50">
               <img
                 src="/images/fighter-frame.png"
                 alt="Panda Background"
@@ -128,9 +126,8 @@ export function PandaFighterCreator() {
               />
             </div>
 
-            {/* Attributes Display - Only show when panda is created (3 attributes only) */}
             {isCreated && attributes && (
-              <div className="w-full grid grid-cols-3 max-w-md mx-auto gap-2 sm:gap-3 relative z-10">
+              <div className="w-full grid grid-cols-3 max-w-xs mx-auto gap-2 sm:gap-3 relative z-10">
                 <AttributeCard
                   label="STR"
                   value={attributes.str}
@@ -155,9 +152,12 @@ export function PandaFighterCreator() {
         )}
       </div>
 
-      {/* Buttons */}
       {!isCreated ? (
-        <Button3D onClick={createPanda} disabled={isLoading} className="w-full max-w-md text-sm sm:text-base">
+        <Button3D
+          onClick={createPanda}
+          disabled={isLoading}
+          className="w-full max-w-md text-sm sm:text-base"
+        >
           {isLoading ? "Creating..." : "Create Panda Fighter"}
         </Button3D>
       ) : (

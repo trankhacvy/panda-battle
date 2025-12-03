@@ -77,11 +77,6 @@ const Button3D = React.forwardRef<HTMLButtonElement, Button3DProps>(
         onClick={handleClick}
         {...props}
       >
-        {/* Glossy Top Highlight */}
-        {/* <div className="absolute top-0 left-0 right-0 h-1/2 bg-linear-to-b from-white/40 to-transparent rounded-t-3xl pointer-events-none" /> */}
-        {/* Inner Highlight Ring */}
-        {/* <div className="absolute inset-0 rounded-3xl ring-2 ring-inset ring-white/20 pointer-events-none" /> */}
-        {/* Content */}
         <span
           className="z-10 drop-shadow-md"
           style={{ textShadow: "0px 2px 0px rgba(0,0,0,0.1)" }}

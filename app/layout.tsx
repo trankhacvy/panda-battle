@@ -4,6 +4,7 @@ import "@/styles/globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AppBackground } from "@/components/background/app-background";
 import { AppProviders } from "@/components/providers/app-provider";
+import { cn } from "@/lib/utils";
 
 const rubik = Rubik({
   variable: "--font-rubik",
@@ -21,19 +22,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className="flex h-full flex-col items-center overscroll-none"
-    >
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`flex h-full min-h-0 w-full max-w-(--max-layout-width) flex-col ${rubik.variable}  antialiased`}
+        className={cn(
+          "flex items-center justify-center h-dvh w-full flex-col antialiased",
+          rubik.variable
+        )}
       >
         <AppProviders>
           <AppBackground />
-          {/* <Header /> */}
           <main
-            className="h-full min-h-0 grow overflow-auto overscroll-contain"
+            className="w-full h-full max-w-(--max-layout-width) flex-1 overflow-hidden"
             style={{
               backgroundImage: "url(/images/game-bg.png)",
               backgroundRepeat: "no-repeat",
@@ -43,7 +42,6 @@ export default function RootLayout({
           >
             {children}
           </main>
-          {/* <Navigation /> */}
           <Toaster className="z-100" position="top-center" />
         </AppProviders>
       </body>
