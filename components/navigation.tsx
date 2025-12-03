@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Button3D } from "@/components/ui/button-3d";
 import { Home, Swords, Trophy, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSound } from "@/hooks/use-sound";
+import { CardFrame } from "./ui/card-frame";
 
 interface NavItem {
   id: string;
   label: string;
   path: string;
   icon: string;
+  color: string;
 }
 
 const navItems: NavItem[] = [
@@ -20,26 +21,22 @@ const navItems: NavItem[] = [
     label: "Home",
     path: "/home",
     icon: "/images/home-icon.png",
+    color: "bg-[#00D9FF]",
   },
   {
     id: "battle",
     label: "Battle",
     path: "/battle",
     icon: "/images/battle-icon.png",
+    color: "bg-[#FF6B9D]",
   },
   {
     id: "leaderboard",
     label: "Leaderboard",
     path: "/leaderboard",
     icon: "/images/leaderboard-icon.png",
+    color: "bg-[#FFD700]",
   },
-  // {
-  //   id: "profile",
-  //   label: "Profile",
-  //   path: "/profile",
-  //   icon: <User className="size-15" />,
-  //   variant: "3d-purple",
-  // },
 ];
 
 export function Navigation() {
@@ -62,7 +59,7 @@ export function Navigation() {
 
   return (
     <nav
-      className="h-20 flex items-center justify-center border-t-2 border-[#030911] bg-[#030911]"
+      className=" flex items-center justify-center gap-3 p-3  border-t-4"
       role="navigation"
       aria-label="Main navigation"
     >
@@ -70,32 +67,31 @@ export function Navigation() {
         const active = isActive(item.path);
 
         return (
-          <button
+          <CardFrame
             key={item.id}
+            size="sm"
+            className="flex-1 max-w-[120px] cursor-pointer"
             onClick={() => handleNavClick(item.path)}
-            className={cn(
-              "transition-all duration-200 flex flex-col items-center justify-center w-full h-full flex-1",
-              active && "bg-[#1a3a5c]"
-            )}
-            aria-label={item.label}
-            aria-current={active ? "page" : undefined}
           >
-            <img
-              src={item.icon}
-              width={32}
-              height={32}
-              alt={item.label}
-              className="object-cover"
-            />
-            <span
+            <div
               className={cn(
-                "transition-colors duration-200 text-sm font-bold",
-                active ? "text-white" : "text-white/90"
+                "relative rounded-[0.875rem] overflow-hidden transition-all duration-200 flex flex-col items-center justify-center py-3 px-2",
+                item.color,
+                active && "scale-95"
               )}
             >
-              {item.label}
-            </span>
-          </button>
+              <img
+                src={item.icon}
+                width={36}
+                height={36}
+                alt={item.label}
+                className="object-cover mb-1"
+              />
+              <span className="text-white text-xs font-black tracking-wide uppercase">
+                {item.label}
+              </span>
+            </div>
+          </CardFrame>
         );
       })}
     </nav>

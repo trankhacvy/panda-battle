@@ -10,7 +10,6 @@ import { BattleResult } from "@/components/battle-screen/battle-result";
 import { HPBars } from "@/components/battle-screen/hp-bars";
 import { BattleLog } from "@/components/battle-screen/battle-log";
 
-
 type BattlePhase = "intro" | "ready" | "fighting" | "playerWin" | "opponentWin";
 
 interface PandaStats {
@@ -33,13 +32,15 @@ export default function BattleScreenPage() {
   const [showPlayerStats, setShowPlayerStats] = useState(false);
   const [showOpponentStats, setShowOpponentStats] = useState(false);
   const [battleLogs, setBattleLogs] = useState<string[]>([]);
-  const [flashEffect, setFlashEffect] = useState<"player" | "opponent" | null>(null);
+  const [flashEffect, setFlashEffect] = useState<"player" | "opponent" | null>(
+    null
+  );
   const [isPlayerHit, setIsPlayerHit] = useState(false);
   const [isOpponentHit, setIsOpponentHit] = useState(false);
   const [playerAttackIcon, setPlayerAttackIcon] = useState("👊");
   const [opponentAttackIcon, setOpponentAttackIcon] = useState("👊");
   const [musicStarted, setMusicStarted] = useState(false);
-  
+
   const battleMusicRef = useRef<HTMLAudioElement | null>(null);
 
   const attackIcons = ["👊", "⚔️"];
@@ -93,7 +94,7 @@ export default function BattleScreenPage() {
         setPhase("fighting");
         startBattleSequence();
       }, 2000);
-      
+
       return () => {
         clearTimeout(timer1);
         clearTimeout(timer2);
@@ -113,19 +114,24 @@ export default function BattleScreenPage() {
 
       if (turn % 2 === 1) {
         setIsPlayerAttacking(true);
-        const selectedIcon = attackIcons[Math.floor(Math.random() * attackIcons.length)];
+        const selectedIcon =
+          attackIcons[Math.floor(Math.random() * attackIcons.length)];
         setPlayerAttackIcon(selectedIcon);
-        
-        const soundPath = selectedIcon === "👊" ? SOUNDS.BATTLE_PUNCH : SOUNDS.BATTLE_SWORD;
+
+        const soundPath =
+          selectedIcon === "👊" ? SOUNDS.BATTLE_PUNCH : SOUNDS.BATTLE_SWORD;
         play(soundPath);
-        
+
         setTimeout(() => {
           setIsPlayerAttacking(false);
           const damage = Math.floor(Math.random() * 20) + 10;
           currentOpponentHP = Math.max(0, currentOpponentHP - damage);
           setOpponentHP(currentOpponentHP);
-          setBattleLogs(prev => [...prev, `${playerStats.name} attacks! Dealt ${damage} damage!`]);
-          
+          setBattleLogs((prev) => [
+            ...prev,
+            `${playerStats.name} attacks! Dealt ${damage} damage!`,
+          ]);
+
           setIsOpponentHit(true);
           play(SOUNDS.BATTLE_HIT);
           setTimeout(() => {
@@ -134,26 +140,31 @@ export default function BattleScreenPage() {
 
           if (currentOpponentHP <= 0) {
             clearInterval(battleInterval);
-            setBattleLogs(prev => [...prev, `🏆 ${playerStats.name} wins!`]);
+            setBattleLogs((prev) => [...prev, `🏆 ${playerStats.name} wins!`]);
             if (battleMusicRef.current) battleMusicRef.current.pause();
             setTimeout(() => setPhase("playerWin"), 1000);
           }
         }, 500);
       } else {
         setIsOpponentAttacking(true);
-        const selectedIcon = attackIcons[Math.floor(Math.random() * attackIcons.length)];
+        const selectedIcon =
+          attackIcons[Math.floor(Math.random() * attackIcons.length)];
         setOpponentAttackIcon(selectedIcon);
-        
-        const soundPath = selectedIcon === "👊" ? SOUNDS.BATTLE_PUNCH : SOUNDS.BATTLE_SWORD;
+
+        const soundPath =
+          selectedIcon === "👊" ? SOUNDS.BATTLE_PUNCH : SOUNDS.BATTLE_SWORD;
         play(soundPath);
-        
+
         setTimeout(() => {
           setIsOpponentAttacking(false);
           const damage = Math.floor(Math.random() * 20) + 10;
           currentPlayerHP = Math.max(0, currentPlayerHP - damage);
           setPlayerHP(currentPlayerHP);
-          setBattleLogs(prev => [...prev, `${opponentStats.name} attacks! Dealt ${damage} damage!`]);
-          
+          setBattleLogs((prev) => [
+            ...prev,
+            `${opponentStats.name} attacks! Dealt ${damage} damage!`,
+          ]);
+
           setIsPlayerHit(true);
           setFlashEffect("player");
           play(SOUNDS.BATTLE_HIT);
@@ -164,7 +175,10 @@ export default function BattleScreenPage() {
 
           if (currentPlayerHP <= 0) {
             clearInterval(battleInterval);
-            setBattleLogs(prev => [...prev, `💀 ${opponentStats.name} wins!`]);
+            setBattleLogs((prev) => [
+              ...prev,
+              `💀 ${opponentStats.name} wins!`,
+            ]);
             if (battleMusicRef.current) battleMusicRef.current.pause();
             setTimeout(() => setPhase("opponentWin"), 1000);
           }
@@ -175,10 +189,16 @@ export default function BattleScreenPage() {
         clearInterval(battleInterval);
         if (battleMusicRef.current) battleMusicRef.current.pause();
         if (currentPlayerHP > currentOpponentHP) {
-          setBattleLogs(prev => [...prev, `🏆 ${playerStats.name} wins by HP!`]);
+          setBattleLogs((prev) => [
+            ...prev,
+            `🏆 ${playerStats.name} wins by HP!`,
+          ]);
           setPhase("playerWin");
         } else {
-          setBattleLogs(prev => [...prev, `💀 ${opponentStats.name} wins by HP!`]);
+          setBattleLogs((prev) => [
+            ...prev,
+            `💀 ${opponentStats.name} wins by HP!`,
+          ]);
           setPhase("opponentWin");
         }
       }
@@ -190,14 +210,14 @@ export default function BattleScreenPage() {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.panda-card') && !target.closest('.stats-popup')) {
+      if (!target.closest(".panda-card") && !target.closest(".stats-popup")) {
         setShowPlayerStats(false);
         setShowOpponentStats(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -242,8 +262,15 @@ export default function BattleScreenPage() {
                 </div>
                 {phase === "fighting" && (
                   <>
-                    <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-2xl animate-bounce">💥</div>
-                    <div className="absolute -right-8 top-1/2 -translate-y-1/2 text-2xl animate-bounce" style={{ animationDelay: "0.3s" }}>💥</div>
+                    <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-2xl animate-bounce">
+                      💥
+                    </div>
+                    <div
+                      className="absolute -right-8 top-1/2 -translate-y-1/2 text-2xl animate-bounce"
+                      style={{ animationDelay: "0.3s" }}
+                    >
+                      💥
+                    </div>
                   </>
                 )}
               </div>
@@ -264,14 +291,18 @@ export default function BattleScreenPage() {
           </div>
 
           {isPlayerAttacking && (
-            <div className="absolute left-1/4 top-1/2 -translate-y-1/2 text-6xl pointer-events-none animate-punch-right">{playerAttackIcon}</div>
+            <div className="absolute left-1/4 top-1/2 -translate-y-1/2 text-6xl pointer-events-none animate-punch-right">
+              {playerAttackIcon}
+            </div>
           )}
           {isOpponentAttacking && (
-            <div className="absolute right-1/4 top-1/2 -translate-y-1/2 text-6xl pointer-events-none animate-punch-left">{opponentAttackIcon}</div>
+            <div className="absolute right-1/4 top-1/2 -translate-y-1/2 text-6xl pointer-events-none animate-punch-left">
+              {opponentAttackIcon}
+            </div>
           )}
         </div>
 
-        <BattleLog 
+        <BattleLog
           logs={battleLogs}
           playerName={playerStats.name}
           opponentName={opponentStats.name}

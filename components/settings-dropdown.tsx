@@ -5,7 +5,7 @@ import { Settings, Volume2, Music } from "lucide-react";
 import { useSoundStore } from "@/lib/store/sound-store";
 import { useSound } from "@/hooks/use-sound";
 import { cn } from "@/lib/utils";
-import { Button3D } from "@/components/ui/button-3d";
+import { RoundButton } from "@/components/ui/round-button";
 
 export function SettingsDropdown() {
     const [isOpen, setIsOpen] = useState(false);
@@ -43,17 +43,17 @@ export function SettingsDropdown() {
                 />
             )}
 
-            <Button3D
+            <RoundButton
                 onClick={handleToggle}
-                variant="header-action"
-                disableSound
-                className="relative z-[110] !size-8"
+                variant="purple"
+                size="sm"
+                className="relative z-[110]"
             >
                 <Settings className={cn(
                     "size-4 text-white transition-transform duration-300",
                     isOpen && "rotate-90"
-                )} />
-            </Button3D>
+                )} strokeWidth={3} />
+            </RoundButton>
 
             <div
                 className={cn(
@@ -63,55 +63,45 @@ export function SettingsDropdown() {
                         : "opacity-0 scale-y-0 -translate-y-4 pointer-events-none"
                 )}
             >
-                <Button3D
+                <RoundButton
                     onClick={handleToggleMute}
-                    variant={isMuted ? undefined : "3d-purple"}
-                    size="3d-tiny"
-                    disableSound
-                    className={cn(
-                        "!size-8 !px-0",
-                        isMuted && "!bg-[#6B7280] hover:!bg-[#7B8390] !shadow-[0_0_8px_rgba(0,0,0,0.1),0_6px_0_#4B5563]"
-                    )}
+                    variant={isMuted ? "red" : "purple"}
+                    size="sm"
                 >
                     <div className="relative">
                         <Volume2
                             className={cn(
-                                "size-4 transition-colors",
-                                isMuted ? "text-gray-400" : "text-white"
+                                "size-4 transition-colors text-white"
                             )}
+                            strokeWidth={3}
                         />
                         {isMuted && (
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-6 h-0.5 bg-red-600 rotate-45 rounded-full shadow-[0_0_6px_rgba(220,38,38,0.8)]" />
+                                <div className="w-6 h-0.5 bg-white rotate-45 rounded-full shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
                             </div>
                         )}
                     </div>
-                </Button3D>
+                </RoundButton>
 
-                <Button3D
+                <RoundButton
                     onClick={handleToggleMusic}
-                    variant={!isMusicEnabled ? undefined : "3d-purple"}
-                    size="3d-tiny"
-                    disableSound
-                    className={cn(
-                        "!size-8 !px-0",
-                        !isMusicEnabled && "!bg-[#6B7280] hover:!bg-[#7B8390] !shadow-[0_0_8px_rgba(0,0,0,0.1),0_6px_0_#4B5563]"
-                    )}
+                    variant={!isMusicEnabled ? "red" : "purple"}
+                    size="sm"
                 >
                     <div className="relative">
                         <Music
                             className={cn(
-                                "size-4 transition-colors",
-                                !isMusicEnabled ? "text-gray-400" : "text-white"
+                                "size-4 transition-colors text-white"
                             )}
+                            strokeWidth={3}
                         />
                         {!isMusicEnabled && (
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-6 h-0.5 bg-red-600 rotate-45 rounded-full shadow-[0_0_6px_rgba(220,38,38,0.8)]" />
+                                <div className="w-6 h-0.5 bg-white rotate-45 rounded-full shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
                             </div>
                         )}
                     </div>
-                </Button3D>
+                </RoundButton>
             </div>
         </div>
     );

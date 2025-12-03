@@ -1,4 +1,4 @@
-import { Button3D } from "@/components/ui/button-3d";
+import { Button } from "@/components/ui/button";
 
 interface BattleResultProps {
   isPlayerWin: boolean;
@@ -24,9 +24,9 @@ export function BattleResult({ isPlayerWin, onBackToHome }: BattleResultProps) {
           {isPlayerWin ? "You Won the Battle!" : "Better Luck Next Time!"}
         </p>
         <div className="pt-2">
-          <Button3D onClick={onBackToHome} size="3d-sm">
+          <Button variant="game" size="md" onClick={onBackToHome}>
             Back to Home
-          </Button3D>
+          </Button>
         </div>
       </div>
     </div>

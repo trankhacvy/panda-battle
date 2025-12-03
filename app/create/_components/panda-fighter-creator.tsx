@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Flame, Dumbbell, Zap, Brain } from "lucide-react";
-import { Button3D } from "@/components/ui/button-3d";
+import { Button } from "@/components/ui/button";
 import { AttributeCard } from "./attribute-card";
 import { useRouter } from "next/navigation";
 
@@ -153,31 +153,35 @@ export function PandaFighterCreator() {
       </div>
 
       {!isCreated ? (
-        <Button3D
+        <Button
+          variant="game"
+          size="lg"
           onClick={createPanda}
           disabled={isLoading}
           className="w-full max-w-md text-sm sm:text-base"
         >
           {isLoading ? "Creating..." : "Create Panda Fighter"}
-        </Button3D>
+        </Button>
       ) : (
         <div className="flex w-full max-w-md gap-3 sm:gap-4 relative z-10">
-          <Button3D
+          <Button
             onClick={handleReroll}
             disabled={isLoading}
-            variant="3d-orange"
+            variant="warning"
+            size="lg"
             className="w-full text-sm sm:text-base"
           >
             {isLoading ? "Rerolling..." : "Reroll"}
-          </Button3D>
-          <Button3D
+          </Button>
+          <Button
             onClick={handleStartGame}
             disabled={isLoading}
-            variant="3d-green"
+            variant="game"
+            size="lg"
             className="w-full text-sm sm:text-base"
           >
             Start Game
-          </Button3D>
+          </Button>
         </div>
       )}
     </div>

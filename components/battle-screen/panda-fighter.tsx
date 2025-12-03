@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { CardFrame } from "@/components/ui/card-frame";
 
 interface PandaStats {
   name: string;
@@ -27,44 +28,85 @@ export function PandaFighter({
   color,
   isHit = false,
 }: PandaFighterProps) {
-  const borderColor = color === "green" ? "border-green-500/50" : "border-red-500/50";
+  const borderColor =
+    color === "green" ? "border-green-500/50" : "border-red-500/50";
   const shadowColor =
     color === "green"
       ? "shadow-[0_0_30px_rgba(34,197,94,0.5)]"
       : "shadow-[0_0_30px_rgba(239,68,68,0.5)]";
   const bgColor = color === "green" ? "bg-green-500" : "bg-red-500";
   const slideAnimation =
-    side === "left" ? "animate-in slide-in-from-left duration-700" : "animate-in slide-in-from-right duration-700";
+    side === "left"
+      ? "animate-in slide-in-from-left duration-700"
+      : "animate-in slide-in-from-right duration-700";
 
-  const attackAnimation = isAttacking 
-    ? (side === "left" ? "translate-x-16 scale-125" : "-translate-x-16 scale-125")
+  const attackAnimation = isAttacking
+    ? side === "left"
+      ? "translate-x-16 scale-125"
+      : "-translate-x-16 scale-125"
     : "";
-  
+
   const hitAnimation = isHit ? "animate-shake" : "";
 
   return (
-    <div className={`panda-card flex flex-col items-center cursor-pointer ${slideAnimation}`} onClick={onToggleStats}>
-      <div className={cn("relative transition-all duration-300", attackAnimation, hitAnimation)}>
-        <div className={`w-28 sm:w-36 h-28 sm:h-36 rounded-xl sm:rounded-2xl overflow-hidden border-3 sm:border-4 ${borderColor} ${shadowColor} bg-cover bg-center relative`}>
-          <img src="/images/fighter-frame.png" alt="Fighter" className="w-full h-full object-cover absolute inset-0" />
-          <img src="/images/sample-panda.png" alt="Panda" className="w-full h-full object-contain relative z-10" />
-        </div>
+    <div
+      className={`panda-card flex flex-col items-center cursor-pointer ${slideAnimation}`}
+      onClick={onToggleStats}
+    >
+      <div
+        className={cn(
+          "relative transition-all duration-300",
+          attackAnimation,
+          hitAnimation
+        )}
+      >
+        <CardFrame size="md">
+          <div className="w-28 sm:w-36 h-28 sm:h-36 relative overflow-hidden bg-cover bg-center">
+            <img
+              src="/images/fighter-frame.png"
+              alt="Fighter"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <img
+              src="/images/reated-panda-bg.png"
+              alt="Background"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <img
+              src="/images/sample-panda.png"
+              alt="Panda"
+              className="relative z-10 w-full h-full object-contain"
+            />
+          </div>
+        </CardFrame>
         <div
-          className={`absolute ${side === "left" ? "-top-1 sm:-top-1.5 -left-1 sm:-left-1.5" : "-top-1 sm:-top-1.5 -right-1 sm:-right-1.5"} bg-white text-black px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold `}
+          className={`absolute ${
+            side === "left"
+              ? "-top-1 sm:-top-1.5 -left-1 sm:-left-1.5"
+              : "-top-1 sm:-top-1.5 -right-1 sm:-right-1.5"
+          } bg-white text-black px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold `}
         >
           Lv {stats.level}
         </div>
       </div>
-      <div className={`mt-1.5 sm:mt-2 ${bgColor} text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap`}>
+      <div
+        className={`mt-1.5 sm:mt-2 ${bgColor} text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap`}
+      >
         {stats.name}
       </div>
 
       {showStats && (
         <div
-          className={`stats-popup absolute ${side === "left" ? "left-3" : "right-3"} top-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-sm border-2 border-${color}-500 rounded-xl p-3 z-20 animate-in zoom-in-95 duration-200`}
+          className={`stats-popup absolute ${
+            side === "left" ? "left-3" : "right-3"
+          } top-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-sm border-2 border-${color}-500 rounded-xl p-3 z-20 animate-in zoom-in-95 duration-200`}
         >
           <div className="space-y-2 min-w-[110px]">
-            <div className={`text-white font-bold text-xs border-b border-${color}-500/50 pb-1`}>{stats.name}</div>
+            <div
+              className={`text-white font-bold text-xs border-b border-${color}-500/50 pb-1`}
+            >
+              {stats.name}
+            </div>
             <div className="flex items-center justify-between gap-3 text-xs">
               <span className="text-orange-400 font-semibold">STR:</span>
               <span className="text-white font-bold">{stats.str}</span>
