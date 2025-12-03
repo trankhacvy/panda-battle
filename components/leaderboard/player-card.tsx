@@ -1,4 +1,5 @@
-import { Button3D } from "../ui/button-3d";
+import { Button } from "../ui/button";
+import { CardFrame } from "../ui/card-frame";
 
 interface PlayerCardProps {
   rank: number;
@@ -54,15 +55,20 @@ export function PlayerCard({
         </div>
 
         {/* Avatar */}
-        <div
-          className={`w-12 sm:w-16 h-12 sm:h-16 rounded-lg ${bgColor} overflow-hidden shrink-0`}
-        >
-          <img
-            src="/images/sample-panda.png"
-            alt={name}
-            className="w-full h-full object-cover"
-          />
-        </div>
+        <CardFrame size="sm" className="shrink-0">
+          <div className="w-12 sm:w-16 h-12 sm:h-16 relative overflow-hidden">
+            <img
+              src="/images/reated-panda-bg.png"
+              alt="Background"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <img
+              src="/images/sample-panda.png"
+              alt={name}
+              className="relative z-10 w-full h-full object-cover"
+            />
+          </div>
+        </CardFrame>
 
         {/* Info */}
         <div className="flex-1">
@@ -76,9 +82,9 @@ export function PlayerCard({
         </div>
 
         {/* Battle Button */}
-        <Button3D variant="3d-red" size="3d-tiny" onClick={onBattle}>
+        <Button variant="danger" size="sm" onClick={onBattle}>
           Battle
-        </Button3D>
+        </Button>
       </div>
     </div>
   );

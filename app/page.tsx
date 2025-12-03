@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { Button3D } from "@/components/ui/button-3d";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { useWallet } from "@/hooks/use-wallet";
 import { useLogin } from "@privy-io/react-auth";
 
@@ -75,9 +77,31 @@ export default function Home() {
           />
         </div>
 
-        <Button3D className="max-w-md w-full" disabled={!ready} onClick={login}>
+        {/* Loading Section */}
+        {/* <div className="hidden flex flex-col items-center space-y-4 w-full max-w-xs">
+          <div className="text-5xl animate-pulse">🐾</div>
+
+          <div className="w-full bg-gray-700/50 rounded-full h-3 overflow-hidden border-2 border-yellow-900/50">
+            <div
+              className="h-full bg-linear-to-r from-yellow-600 via-yellow-400 to-yellow-600 rounded-full transition-all duration-300 ease-out shadow-[0_0_20px_rgba(250,204,21,0.8)]"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+
+          <p className="text-gray-300 text-lg font-semibold tracking-widest animate-pulse">
+            Loading...
+          </p>
+        </div> */}
+
+        <Button
+          variant="game"
+          size="lg"
+          className="max-w-md w-full"
+          disabled={!ready}
+          onClick={login}
+        >
           Play
-        </Button3D>
+        </Button>
       </div>
 
       <style jsx>{`

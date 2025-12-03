@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Button3D } from "@/components/ui/button-3d";
 import { Home, Swords, Trophy, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSound } from "@/hooks/use-sound";

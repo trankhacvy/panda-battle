@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { Typography } from "@/components/ui/typography";
 import { useWallet } from "@/hooks/use-wallet";
 import { CardFrame } from "@/components/ui/card-frame";
-import { BonusCard } from "@/components/ui/bonus-card";
+// import { BonusCard } from "@/components/ui/bonus-card";
 
 export default function HomePage() {
   const { logout } = useWallet();
@@ -52,7 +52,6 @@ export default function HomePage() {
   return (
     <div className="p-4 pb-24 space-y-4">
       {/* Panda Image */}
-<<<<<<< HEAD
       <CardFrame size="lg">
         <div
           className="aspect-video flex items-center justify-center relative overflow-hidden"
@@ -70,23 +69,6 @@ export default function HomePage() {
           />
         </div>
       </CardFrame>
-=======
-      <div
-        className="rounded-xl flex items-center justify-center aspect-video overflow-hidden shadow-[0_0_12px_rgba(0,0,0,0.15)]"
-        style={{
-          backgroundImage: "url(/images/fighter-frame.png)",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <img
-          src="/images/sample-panda.png"
-          alt="Panda Warrior"
-          className="w-auto h-full object-cover"
-        />
-      </div>
->>>>>>> fd64cfc (feat: enhance HomePage with new layout, quest cards, and action buttons)
 
       {/* Level and XP Section */}
       <div
@@ -106,27 +88,16 @@ export default function HomePage() {
 
           {/* XP Progress Bar */}
           <div className="relative">
-<<<<<<< HEAD
             <Progress
               value={(player.experience / player.experienceToNextLevel) * 100}
               variant="game"
               showShell
-=======
-            <Progress 
-              value={(player.experience / player.experienceToNextLevel) * 100} 
-              variant="game" 
-              showShell 
->>>>>>> fd64cfc (feat: enhance HomePage with new layout, quest cards, and action buttons)
               className="h-8"
             />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span className="text-white font-bold text-sm drop-shadow-lg z-10">
-<<<<<<< HEAD
                 XP: {player.experience.toLocaleString()} /{" "}
                 {player.experienceToNextLevel.toLocaleString()}
-=======
-                XP: {player.experience.toLocaleString()} / {player.experienceToNextLevel.toLocaleString()}
->>>>>>> fd64cfc (feat: enhance HomePage with new layout, quest cards, and action buttons)
               </span>
             </div>
           </div>
@@ -174,7 +145,6 @@ export default function HomePage() {
       <div>
         <h3 className="text-xl font-bold text-white mb-3">News Feed</h3>
         <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3">
-<<<<<<< HEAD
           <CardFrame size="sm" className="flex-shrink-0">
             <div className="w-12 h-12 relative overflow-hidden">
               <img
@@ -242,73 +212,10 @@ function QuestCard({
             <p className="text-white text-xs font-bold drop-shadow-lg z-10">
               {isFull ? "100%" : `${progress} / ${total}`}
             </p>
-=======
-          <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-            <img
-              src="/images/sample-panda.png"
-              alt="Event"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div>
-            <p className="text-white font-bold text-sm">New Event: Bamboo Festival</p>
->>>>>>> fd64cfc (feat: enhance HomePage with new layout, quest cards, and action buttons)
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-<<<<<<< HEAD
-function ActionButton({ icon, label }: { icon: string; label: string }) {
-  return (
-    <button className="bg-[#0a1628]/90 backdrop-blur-sm rounded-xl p-4 hover:bg-[#0a1628]/100 transition-all active:scale-95">
-      <div className="flex flex-col items-center gap-2">
-        <div className="text-3xl">{icon}</div>
-        <p className="text-white font-bold text-sm">{label}</p>
-      </div>
-    </button>
-=======
-function QuestCard({
-  icon,
-  title,
-  progress,
-  total,
-  color,
-  completed = false,
-}: {
-  icon: string;
-  title: string;
-  progress: number;
-  total: number;
-  color: string;
-  completed?: boolean;
-}) {
-  const isFull = progress >= total;
-  return (
-    <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-xl p-3">
-      <div className="flex flex-col items-center gap-2">
-        <div className="text-2xl">{icon}</div>
-        <p className="text-white text-xs font-medium text-center leading-tight min-h-[2rem]">
-          {title}
-        </p>
-        <div className="w-full relative">
-          <Progress 
-            value={(progress / total) * 100} 
-            variant="game" 
-            showShell 
-            className="h-5"
-          />
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <p className="text-white text-xs font-bold drop-shadow-lg z-10">
-              {isFull ? '100%' : `${progress} / ${total}`}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
->>>>>>> fd64cfc (feat: enhance HomePage with new layout, quest cards, and action buttons)
   );
 }
 

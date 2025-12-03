@@ -6,6 +6,7 @@ import { OpponentCard } from "@/components/battle/opponent-card";
 import { useSound } from "@/hooks/use-sound";
 import { Button3D } from "@/components/ui/button-3d";
 import { useRouter } from "next/navigation";
+import { RoundButton } from "@/components/ui/round-button";
 
 const bgColors = [
   "bg-red-900/60",
@@ -45,22 +46,12 @@ export default function BattlePage() {
           Battle Opponent List
         </h1>
         <div className="flex gap-2">
-          <Button3D
-            className="size-8"
-            variant="3d-green"
-            size="3d-tiny"
-            onClick={handleSort}
-          >
-            <ArrowDownUp />
-          </Button3D>
-          <Button3D
-            variant="3d-green"
-            className="size-8"
-            size="3d-tiny"
-            onClick={handleFilter}
-          >
-            <Filter />
-          </Button3D>
+          <RoundButton variant="green" size="sm" onClick={handleSort}>
+            <ArrowDownUp className="text-white" />
+          </RoundButton>
+          <RoundButton variant="green" size="sm" onClick={handleFilter}>
+            <Filter className="text-white" />
+          </RoundButton>
         </div>
       </div>
 

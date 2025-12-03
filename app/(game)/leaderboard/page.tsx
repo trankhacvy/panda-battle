@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Search, ArrowDownUp, Filter } from "lucide-react";
 import { PlayerCard } from "@/components/leaderboard/player-card";
 import { useSound } from "@/hooks/use-sound";
-import { Button3D } from "@/components/ui/button-3d";
+import { RoundButton } from "@/components/ui/round-button";
+import { CardFrame } from "@/components/ui/card-frame";
 
 const players = [
   {
@@ -72,13 +73,13 @@ export default function LeaderboardPage() {
   return (
     <div className="flex-1 px-3 sm:px-4 py-2 space-y-2 sm:space-y-3 overflow-auto relative z-10 pb-24">
       {/* Prize Pool Banner */}
-      <div className="relative rounded-2xl overflow-hidden">
+      <CardFrame size="lg" className="w-full">
         <img
           src="/images/pool-bg.png"
           alt="Prize Pool"
           className="w-full h-auto object-cover"
         />
-      </div>
+      </CardFrame>
 
       {/* Search and Filters */}
       <div className="flex gap-2">
@@ -92,13 +93,13 @@ export default function LeaderboardPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button3D className="size-10" size="3d-tiny" onClick={handleSort}>
-          <ArrowDownUp />
-        </Button3D>
+        <RoundButton variant="purple" size="sm" onClick={handleSort}>
+          <ArrowDownUp className="text-white" />
+        </RoundButton>
 
-        <Button3D className="size-10" size="3d-tiny" onClick={handleFilter}>
-          <Filter />
-        </Button3D>
+        <RoundButton variant="purple" size="sm" onClick={handleFilter}>
+          <Filter className="text-white" />
+        </RoundButton>
 
         {/* <button
           onClick={handleSort}

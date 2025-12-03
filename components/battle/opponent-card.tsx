@@ -1,6 +1,7 @@
 import { Flame, Zap, Wind, Brain } from "lucide-react";
 import type { OpponentPanda } from "@/lib/mock/battles";
-import { Button3D } from "../ui/button-3d";
+import { Button } from "../ui/button";
+import { CardFrame } from "../ui/card-frame";
 
 interface OpponentCardProps {
   opponent: OpponentPanda;
@@ -14,15 +15,22 @@ export function OpponentCard({
   onBattle,
 }: OpponentCardProps) {
   return (
-    <div className="rounded-xl p-2.5 sm:p-3 flex items-center gap-2.5 sm:gap-3 border border-[#2a4a6c] bg-black/60 bg-cover bg-center relative overflow-hidden">
-      {/* Content */}
-      <div className="relative z-10 w-16 sm:w-20 h-16 sm:h-20 rounded-lg overflow-hidden shrink-0 backdrop-blur-sm bg-black/20">
-        <img
-          src="/images/sample-panda.png"
-          alt={opponent.name}
-          className="w-full h-full object-cover"
-        />
-      </div>
+    <div className="rounded-xl p-2.5 sm:p-3 flex items-center gap-2.5 sm:gap-3 border border-[#2a4a6c] bg-black/60">
+      {/* Avatar */}
+      <CardFrame size="sm" className="shrink-0">
+        <div className="w-16 sm:w-20 h-16 sm:h-20 relative overflow-hidden">
+          <img
+            src="/images/reated-panda-bg"
+            alt="Background"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <img
+            src="/images/sample-panda.png"
+            alt={opponent.name}
+            className="relative z-10 w-full h-full object-cover"
+          />
+        </div>
+      </CardFrame>
 
       {/* Stats */}
       <div className="flex-1 relative z-10">
@@ -65,9 +73,9 @@ export function OpponentCard({
 
       {/* Battle Button */}
       <div className="relative z-10">
-        <Button3D size="3d-tiny" variant="3d-red" onClick={onBattle}>
+        <Button size="sm" variant="danger" onClick={onBattle}>
           Battle
-        </Button3D>
+        </Button>
       </div>
     </div>
   );

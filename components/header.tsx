@@ -4,10 +4,11 @@ import { useEmbeddedAddress } from "@/hooks/use-embedded-address";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React from "react";
-import { Button3D } from "./ui/button-3d";
 import { ArrowLeft, EllipsisVertical } from "lucide-react";
 import { Typography } from "./ui/typography";
 import { SettingsDropdown } from "./settings-dropdown";
+import { RoundButton } from "./ui/round-button";
+import { CardFrame } from "./ui/card-frame";
 
 export default function Header() {
   const embeddedAddress = useEmbeddedAddress();
@@ -18,25 +19,32 @@ export default function Header() {
     switch (true) {
       case pathname?.includes("profile"):
         return (
-          <Button3D
-            variant="header-action"
-            size="3d-tiny"
+          <RoundButton
+            variant="blue"
+            size="sm"
             onClick={() => router.back()}
           >
-            <ArrowLeft className="size-4" />
-          </Button3D>
+            <ArrowLeft className="size-4 text-white" />
+          </RoundButton>
         );
       default:
         return (
           <div className="flex items-center gap-3">
             <Link href={`/profile/${embeddedAddress}`}>
-              <div className="size-12 rounded-full border-4 border-[#4a9eff] bg-linear-to-b from-[#87ceeb] to-[#4a9eff] overflow-hidden flex items-center justify-center">
-                <img
-                  src="/images/sample-panda.png"
-                  alt="Panda Avatar"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              <CardFrame size="tiny">
+                <div className="size-12 overflow-hidden flex items-center justify-center relative">
+                  <img
+                    src="/images/reated-panda-bg"
+                    alt="Background"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <img
+                    src="/images/sample-panda.png"
+                    alt="Panda Avatar"
+                    className="relative z-10 w-full h-full object-cover"
+                  />
+                </div>
+              </CardFrame>
             </Link>
             <div className="text-white">
               <p className="text-sm font-medium opacity-90">Points:</p>
@@ -66,9 +74,9 @@ export default function Header() {
     switch (true) {
       case pathname?.includes("profile"):
         return (
-          <Button3D variant="header-action" size="3d-tiny">
-            <EllipsisVertical className="size-4" />
-          </Button3D>
+          <RoundButton variant="purple" size="sm">
+            <EllipsisVertical className="size-4 text-white" />
+          </RoundButton>
         );
       default:
         return (
