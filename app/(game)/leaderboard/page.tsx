@@ -84,7 +84,10 @@ export default function LeaderboardPage() {
       {/* Search and Filters */}
       <div className="flex gap-2 py-2.5">
         <div className="flex-1 bg-[#0f2a4a]/80 border border-cyan-500/20 rounded-lg flex items-center px-2.5 sm:px-3 py-2 sm:py-2.5">
-          <Search className="w-4 h-4 sm:w-5 sm:h-5 text-white/50 mr-2" strokeWidth={2.5} />
+          <Search
+            className="w-4 h-4 sm:w-5 sm:h-5 text-white/50 mr-2"
+            strokeWidth={2.5}
+          />
           <input
             type="text"
             placeholder="Search Players..."
@@ -103,7 +106,7 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Player List */}
-      <div className="space-y-2 sm:space-y-3">
+      <div className="space-y-2 sm:space-y-4">
         {filteredPlayers.map((player) => (
           <PlayerCard
             key={player.rank}

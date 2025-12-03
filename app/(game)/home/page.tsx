@@ -1,15 +1,10 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { mockPlayerData } from "@/lib/mock/game";
 import { useEffect, useState } from "react";
-import { Typography } from "@/components/ui/typography";
 import { useWallet } from "@/hooks/use-wallet";
 import { CardFrame } from "@/components/ui/card-frame";
-import { BonusCard } from "@/components/ui/bonus-card";
 
 export default function HomePage() {
   const { logout } = useWallet();
@@ -166,14 +161,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-
-      <BonusCard
-        size="sm"
-        title="BONUS"
-        icon="🎁"
-        onOpen={() => console.log("Open bonus")}
-        onClose={() => console.log("Close")}
-      />
     </div>
   );
 }

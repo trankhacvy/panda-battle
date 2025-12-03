@@ -55,7 +55,7 @@ export default function BattlePage() {
         </div>
       </div>
 
-      <div className="space-y-2 sm:space-y-3">
+      <div className="space-y-2 sm:space-y-4">
         {displayOpponents.map((opponent, index) => (
           <OpponentCard
             key={opponent.id}

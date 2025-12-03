@@ -7,10 +7,10 @@ const cardFrameVariants = cva(
     {
         variants: {
             variant: {
-                default: "hover:scale-[1.02]",
-                primary: "hover:scale-[1.02]",
-                secondary: "hover:scale-[1.02]",
-                accent: "hover:scale-[1.02]",
+                default: "hhover:scale-[1.02]",
+                primary: "hhover:scale-[1.02]",
+                secondary: "hhover:scale-[1.02]",
+                accent: "hhover:scale-[1.02]",
             },
             size: {
                 default:

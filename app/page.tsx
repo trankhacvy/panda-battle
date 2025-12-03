@@ -1,11 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button3D } from "@/components/ui/button-3d";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useWallet } from "@/hooks/use-wallet";
 import { useLogin } from "@privy-io/react-auth";
+import { motion } from "motion/react";
 
 export default function Home() {
   const router = useRouter();
@@ -43,7 +42,12 @@ export default function Home() {
       </div>
 
       <div className="relative size-full flex flex-col items-center justify-center space-y-8">
-        <div className="text-center space-y-2 animate-fade-in">
+        <motion.div
+          className="text-center space-y-2"
+          initial={{ y: -100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
+        >
           <h1
             className="text-6xl sm:text-7xl md:text-8xl font-black text-yellow-400 drop-shadow-[0_0_30px_rgba(250,204,21,0.5)]"
             style={{
@@ -66,74 +70,39 @@ export default function Home() {
           >
             CHAOS
           </h2>
-        </div>
+        </motion.div>
 
-        <div className="relative animate-bounce-slow">
+        <motion.div
+          className="relative"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
           <div className="absolute inset-0 bg-yellow-400/30 blur-3xl rounded-full"></div>
           <img
             src="/images/sample-panda.png"
             alt="Panda Warrior"
             className="w-48 h-48 sm:w-64 sm:h-64 object-contain relative z-10 drop-shadow-2xl"
           />
-        </div>
+        </motion.div>
 
-        {/* Loading Section */}
-        {/* <div className="hidden flex flex-col items-center space-y-4 w-full max-w-xs">
-          <div className="text-5xl animate-pulse">🐾</div>
-
-          <div className="w-full bg-gray-700/50 rounded-full h-3 overflow-hidden border-2 border-yellow-900/50">
-            <div
-              className="h-full bg-linear-to-r from-yellow-600 via-yellow-400 to-yellow-600 rounded-full transition-all duration-300 ease-out shadow-[0_0_20px_rgba(250,204,21,0.8)]"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-
-          <p className="text-gray-300 text-lg font-semibold tracking-widest animate-pulse">
-            Loading...
-          </p>
-        </div> */}
-
-        <Button
-          variant="game"
-          size="lg"
+        <motion.div
           className="max-w-md w-full"
-          disabled={!ready}
-          onClick={login}
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
         >
-          Play
-        </Button>
+          <Button
+            variant="game"
+            size="lg"
+            className="w-full"
+            disabled={!ready}
+            onClick={login}
+          >
+            Play
+          </Button>
+        </motion.div>
       </div>
-
-      <style jsx>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes bounce-slow {
-          0%,
-          100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fade-in 1s ease-out;
-        }
-
-        .animate-bounce-slow {
-          animation: bounce-slow 2s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }
