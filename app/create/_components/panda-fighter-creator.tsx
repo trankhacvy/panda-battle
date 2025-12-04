@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { Flame, Dumbbell, Zap, Brain } from "lucide-react";
-import { Button3D } from "@/components/ui/button-3d";
+import { Button } from "@/components/ui/button";
 import { AttributeCard } from "./attribute-card";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 
 interface PandaAttributes {
   sta: number;
@@ -63,7 +64,7 @@ export function PandaFighterCreator() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center gap-4 px-4 py-8 relative overflow-hidden">
+    <div className="size-full flex flex-col items-center gap-6 px-4 py-8 relative">
       {/* Stars background */}
       <div className="absolute inset-0 z-[-1] overflow-hidden pointer-events-none">
         {[...Array(50)].map((_, i) => (
@@ -79,8 +80,12 @@ export function PandaFighterCreator() {
         ))}
       </div>
 
-      {/* Title Section */}
-      <div className="text-center mb-6 relative">
+      <motion.div
+        className="text-center relative"
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
+      >
         <h1
           className="text-3xl sm:text-4xl font-extrabold tracking-wide"
           style={{
@@ -92,7 +97,7 @@ export function PandaFighterCreator() {
           Create Your
         </h1>
         <h2
-          className="text-4xl sm:text-5xl font-black tracking-wide mt-1"
+          className="text-3xl sm:text-4xl font-black tracking-wide mt-1"
           style={{
             color: "#ffd93d",
             textShadow: "0 4px 0 #c9a227, 0 6px 10px rgba(0,0,0,0.3)",
@@ -101,12 +106,16 @@ export function PandaFighterCreator() {
         >
           Panda Fighter
         </h2>
-      </div>
+      </motion.div>
 
-      {/* Panda Image */}
-      <div className="flex flex-1 w-full flex-col items-center justify-center">
+      <motion.div
+        className="flex flex-1 w-full flex-col items-center justify-center"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
         {!isCreated ? (
-          <div className="w-full max-w-md mx-auto aspect-square rounded-2xl overflow-hidden relative z-10 mb-6 border-4 border-[#3a7a5a]/50">
+          <div className="w-full max-w-xs mx-auto aspect-square rounded-2xl overflow-hidden relative z-10 border-4 border-[#3a7a5a]/50">
             <img
               src="/images/who-that-panda.png"
               alt="Mystery Panda Fighter"
@@ -115,7 +124,7 @@ export function PandaFighterCreator() {
           </div>
         ) : (
           <div className="w-full">
-            <div className="max-w-md mx-auto mb-6 aspect-square rounded-2xl overflow-hidden relative border-4 border-[#3a7a5a]/50">
+            <div className="max-w-xs mx-auto mb-4 aspect-square rounded-2xl overflow-hidden relative border-4 border-[#3a7a5a]/50">
               <img
                 src="/images/fighter-frame.png"
                 alt="Panda Background"
@@ -128,9 +137,8 @@ export function PandaFighterCreator() {
               />
             </div>
 
-            {/* Attributes Display - Only show when panda is created (3 attributes only) */}
             {isCreated && attributes && (
-              <div className="w-full grid grid-cols-3 max-w-md mx-auto gap-2 sm:gap-3 relative z-10">
+              <div className="w-full grid grid-cols-3 max-w-xs mx-auto gap-2 sm:gap-3 relative z-10">
                 <AttributeCard
                   label="STR"
                   value={attributes.str}
@@ -153,33 +161,47 @@ export function PandaFighterCreator() {
             )}
           </div>
         )}
-      </div>
+      </motion.div>
 
-      {/* Buttons */}
-      {!isCreated ? (
-        <Button3D onClick={createPanda} disabled={isLoading} className="w-full max-w-md text-sm sm:text-base">
-          {isLoading ? "Creating..." : "Create Panda Fighter"}
-        </Button3D>
-      ) : (
-        <div className="flex w-full max-w-md gap-3 sm:gap-4 relative z-10">
-          <Button3D
-            onClick={handleReroll}
+      <motion.div
+        className="w-full flex justify-center"
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
+      >
+        {!isCreated ? (
+          <Button
+            variant="game"
+            size="lg"
+            onClick={createPanda}
             disabled={isLoading}
-            variant="3d-orange"
-            className="w-full text-sm sm:text-base"
+            className="w-full max-w-md text-sm sm:text-base"
           >
-            {isLoading ? "Rerolling..." : "Reroll"}
-          </Button3D>
-          <Button3D
-            onClick={handleStartGame}
-            disabled={isLoading}
-            variant="3d-green"
-            className="w-full text-sm sm:text-base"
-          >
-            Start Game
-          </Button3D>
-        </div>
-      )}
+            {isLoading ? "Creating..." : "Create Panda Fighter"}
+          </Button>
+        ) : (
+          <div className="flex w-full max-w-md gap-3 sm:gap-4 relative z-10">
+            <Button
+              onClick={handleReroll}
+              disabled={isLoading}
+              variant="warning"
+              size="lg"
+              className="w-full text-sm sm:text-base"
+            >
+              {isLoading ? "Rerolling..." : "Reroll"}
+            </Button>
+            <Button
+              onClick={handleStartGame}
+              disabled={isLoading}
+              variant="game"
+              size="lg"
+              className="w-full text-sm sm:text-base"
+            >
+              Start Game
+            </Button>
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 }

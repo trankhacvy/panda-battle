@@ -1,14 +1,10 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { mockPlayerData } from "@/lib/mock/game";
 import { useEffect, useState } from "react";
-import { Typography } from "@/components/ui/typography";
-import { Button3D } from "@/components/ui/button-3d";
 import { useWallet } from "@/hooks/use-wallet";
+import { CardFrame } from "@/components/ui/card-frame";
 
 export default function HomePage() {
   const { logout } = useWallet();
@@ -51,21 +47,24 @@ export default function HomePage() {
   return (
     <div className="p-4 pb-24 space-y-4">
       {/* Panda Image */}
-      <div
-        className="rounded-xl flex items-center justify-center aspect-video overflow-hidden shadow-[0_0_12px_rgba(0,0,0,0.15)]"
-        style={{
-          backgroundImage: "url(/images/fighter-frame.png)",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <img
-          src="/images/sample-panda.png"
-          alt="Panda Warrior"
-          className="w-auto h-full object-cover"
-        />
-      </div>
+      <CardFrame size="lg">
+        <div className="aspect-video flex items-center justify-center relative overflow-hidden">
+          <picture className="absolute inset-0 w-full h-full">
+            <source srcSet="/images/fighter-frame.avif" type="image/avif" />
+            <source srcSet="/images/fighter-frame.webp" type="image/webp" />
+            <img
+              src="/images/fighter-frame.png"
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          </picture>
+          <img
+            src="/images/sample-panda.png"
+            alt="Panda Warrior"
+            className="relative z-10 w-auto h-full object-cover"
+          />
+        </div>
+      </CardFrame>
 
       {/* Level and XP Section */}
       <div
@@ -85,15 +84,16 @@ export default function HomePage() {
 
           {/* XP Progress Bar */}
           <div className="relative">
-            <Progress 
-              value={(player.experience / player.experienceToNextLevel) * 100} 
-              variant="game" 
-              showShell 
+            <Progress
+              value={(player.experience / player.experienceToNextLevel) * 100}
+              variant="game"
+              showShell
               className="h-8"
             />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span className="text-white font-bold text-sm drop-shadow-lg z-10">
-                XP: {player.experience.toLocaleString()} / {player.experienceToNextLevel.toLocaleString()}
+                XP: {player.experience.toLocaleString()} /{" "}
+                {player.experienceToNextLevel.toLocaleString()}
               </span>
             </div>
           </div>
@@ -141,15 +141,28 @@ export default function HomePage() {
       <div>
         <h3 className="text-xl font-bold text-white mb-3">News Feed</h3>
         <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3">
-          <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-            <img
-              src="/images/sample-panda.png"
-              alt="Event"
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <CardFrame size="sm" className="flex-shrink-0">
+            <div className="w-12 h-12 relative overflow-hidden">
+              <picture className="absolute inset-0 w-full h-full">
+                <source srcSet="/images/fighter-frame.avif" type="image/avif" />
+                <source srcSet="/images/fighter-frame.webp" type="image/webp" />
+                <img
+                  src="/images/fighter-frame.png"
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              </picture>
+              <img
+                src="/images/sample-panda.png"
+                alt="Event"
+                className="relative z-10 w-full h-full object-cover"
+              />
+            </div>
+          </CardFrame>
           <div>
-            <p className="text-white font-bold text-sm">New Event: Bamboo Festival</p>
+            <p className="text-white font-bold text-sm">
+              New Event: Bamboo Festival
+            </p>
           </div>
         </div>
       </div>
@@ -181,15 +194,15 @@ function QuestCard({
           {title}
         </p>
         <div className="w-full relative">
-          <Progress 
-            value={(progress / total) * 100} 
-            variant="game" 
-            showShell 
+          <Progress
+            value={(progress / total) * 100}
+            variant="game"
+            showShell
             className="h-5"
           />
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <p className="text-white text-xs font-bold drop-shadow-lg z-10">
-              {isFull ? '100%' : `${progress} / ${total}`}
+              {isFull ? "100%" : `${progress} / ${total}`}
             </p>
           </div>
         </div>

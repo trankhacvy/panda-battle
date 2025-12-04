@@ -1,9 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Rubik } from "next/font/google";
 import "@/styles/globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AppBackground } from "@/components/background/app-background";
+import { GameBackground } from "@/components/background/game-background";
 import { AppProviders } from "@/components/providers/app-provider";
+import { cn } from "@/lib/utils";
+import { InstallAppDrawer } from "@/components/global/install-app-drawer";
 
 const rubik = Rubik({
   variable: "--font-rubik",
@@ -13,6 +16,14 @@ const rubik = Rubik({
 export const metadata: Metadata = {
   title: "Bamboo Panda Battles",
   description: "Strategic turn-based panda battles on the blockchain",
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -21,29 +32,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className="flex h-full flex-col items-center overscroll-none"
-    >
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`flex h-full min-h-0 w-full max-w-(--max-layout-width) flex-col ${rubik.variable}  antialiased`}
+        className={cn(
+          "flex items-center justify-center h-dvh w-full flex-col antialiased",
+          rubik.variable
+        )}
       >
+        <AppBackground />
         <AppProviders>
-          <AppBackground />
-          {/* <Header /> */}
-          <main
-            className="h-full min-h-0 grow overflow-auto overscroll-contain"
-            style={{
-              backgroundImage: "url(/images/game-bg.png)",
-              backgroundRepeat: "no-repeat",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
+          <main className="relative w-full h-full max-w-(--max-layout-width) flex-1 overflow-hidden">
+            <GameBackground />
             {children}
           </main>
-          {/* <Navigation /> */}
+          <InstallAppDrawer />
           <Toaster className="z-100" position="top-center" />
         </AppProviders>
       </body>

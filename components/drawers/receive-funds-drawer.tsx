@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Button3D } from "@/components/ui/button-3d";
 import {
   Drawer,
   DrawerContent,
@@ -112,20 +111,22 @@ export function ReceiveFundsDrawer({
 
           {/* Buttons */}
           <div className="flex gap-3 mb-6">
-            <Button3D
-              variant="3d-blue"
-              className="flex flex-1 gap-2 h-10"
+            <Button
+              variant="primary"
+              size="sm"
+              className="flex flex-1 gap-2"
               onClick={() => copy(address)}
             >
               Copy
-            </Button3D>
-            <Button3D
-              variant="3d-blue"
-              className="flex flex-1 gap-2 h-10"
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              className="flex flex-1 gap-2"
               onClick={handleShare}
             >
               Share
-            </Button3D>
+            </Button>
           </div>
 
           {/* Warning - Centered */}

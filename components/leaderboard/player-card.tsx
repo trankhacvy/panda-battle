@@ -1,4 +1,5 @@
-import { Button3D } from "../ui/button-3d";
+import { Button } from "../ui/button";
+import { CardFrame } from "../ui/card-frame";
 
 interface PlayerCardProps {
   rank: number;
@@ -9,6 +10,26 @@ interface PlayerCardProps {
   onBattle?: () => void;
 }
 
+const CrownIcon = ({ rank }: { rank: number }) => {
+  const getColor = () => {
+    if (rank === 1) return "#FFD700"; // Gold
+    if (rank === 2) return "#C0C0C0"; // Silver
+    return "#CD7F32"; // Bronze
+  };
+
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill={getColor()}
+      className="drop-shadow-lg"
+    >
+      <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
+    </svg>
+  );
+};
+
 export function PlayerCard({
   rank,
   name,
@@ -17,69 +38,59 @@ export function PlayerCard({
   borderColor,
   onBattle,
 }: PlayerCardProps) {
-  const getCardBackground = () => {
-    if (rank === 1) return "bg-linear-to-r from-yellow-600/30 via-yellow-500/20 to-yellow-600/30";
-    if (rank === 2) return "bg-linear-to-r from-gray-600/30 via-gray-500/20 to-gray-600/30";
-    if (rank === 3) return "bg-linear-to-r from-amber-700/30 via-amber-600/20 to-amber-700/30";
-    return "bg-[#041e39]";
-  };
-
-  const getBackgroundImage = () => {
-    if (rank === 1) return "/images/leaderboard/golden-tree.png";
-    if (rank === 2) return "/images/leaderboard/silver-tree.png";
-    if (rank === 3) return "/images/leaderboard/broze-tree.png";
-    return "";
-  };
-
   return (
-    <div
-      className={`${getCardBackground()} backdrop-blur rounded-xl p-2.5 sm:p-3 flex items-center gap-2.5 sm:gap-3 ${borderColor} relative overflow-hidden`}
-    >
-      {/* Background pattern for top 3 */}
-      {rank <= 3 && (
-        <div className="absolute inset-0 opacity-80">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url(${getBackgroundImage()})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }} />
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="relative z-10 flex items-center gap-2.5 sm:gap-3 w-full">
-        {/* Rank */}
-        <div className="flex flex-col items-center w-6 sm:w-8">
-          <span className="text-white font-bold text-base sm:text-lg">{rank}.</span>
-        </div>
+    <CardFrame size="md" className={`w-full relative`}>
+      <div className="rounded-[1.125rem] p-2 sm:p-2.5 flex items-center gap-2 sm:gap-2.5 bg-white relative overflow-hidden">
+        {/* Background pattern for top 3 */}
+        {rank <= 3 && (
+          <div className="absolute inset-0 opacity-80">
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            />
+          </div>
+        )}
 
         {/* Avatar */}
-        <div
-          className={`w-12 sm:w-16 h-12 sm:h-16 rounded-lg ${bgColor} overflow-hidden shrink-0`}
-        >
-          <img
-            src="/images/sample-panda.png"
-            alt={name}
-            className="w-full h-full object-cover"
-          />
+        <div className="relative z-10 shrink-0">
+          {/* Crown icon for top 3 - positioned outside CardFrame */}
+          {rank <= 3 && (
+            <div className="absolute -top-1 sm:-top-1.5 left-1/2 -translate-x-1/2 z-30">
+              <CrownIcon rank={rank} />
+            </div>
+          )}
+          <div className="w-10 sm:w-14 h-10 sm:h-14 relative">
+            <img
+              src="/images/sample-panda.png"
+              alt={name}
+              className="relative z-10 w-full h-auto object-cover"
+            />
+          </div>
         </div>
 
         {/* Info */}
-        <div className="flex-1">
-          <h3 className="text-white font-bold text-base sm:text-lg">{name}</h3>
-          <p className="text-white/80 text-xs sm:text-sm">
+        <div className="relative z-10 flex-1">
+          <h3 className="text-gray-900 font-bold text-sm sm:text-base">
+            {name}
+          </h3>
+          <p className="text-gray-600 text-[10px] sm:text-xs">
             Points:{" "}
-            <span className="text-yellow-400 font-bold">
+            <span className="text-yellow-600 font-bold">
               {points.toLocaleString()}
             </span>
           </p>
         </div>
 
         {/* Battle Button */}
-        <Button3D variant="3d-red" size="3d-tiny" onClick={onBattle}>
-          Battle
-        </Button3D>
+        <div className="relative z-10">
+          <Button variant="danger" size="sm" onClick={onBattle}>
+            Battle
+          </Button>
+        </div>
       </div>
-    </div>
+    </CardFrame>
   );
 }

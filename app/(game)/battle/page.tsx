@@ -4,8 +4,8 @@ import { ArrowDownUp, Filter } from "lucide-react";
 import { mockOpponents } from "@/lib/mock/battles";
 import { OpponentCard } from "@/components/battle/opponent-card";
 import { useSound } from "@/hooks/use-sound";
-import { Button3D } from "@/components/ui/button-3d";
 import { useRouter } from "next/navigation";
+import { RoundButton } from "@/components/ui/round-button";
 
 const bgColors = [
   "bg-red-900/60",
@@ -40,33 +40,21 @@ export default function BattlePage() {
 
   return (
     <div className="flex-1 px-4 pb-6 relative z-10">
-      {/* Title and filters */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-white font-bold text-base sm:text-xl">
           Battle Opponent List
         </h1>
         <div className="flex gap-2">
-          <Button3D
-            className="size-8"
-            variant="3d-green"
-            size="3d-tiny"
-            onClick={handleSort}
-          >
-            <ArrowDownUp />
-          </Button3D>
-          <Button3D
-            variant="3d-green"
-            className="size-8"
-            size="3d-tiny"
-            onClick={handleFilter}
-          >
-            <Filter />
-          </Button3D>
+          <RoundButton variant="green" size="sm" onClick={handleSort}>
+            <ArrowDownUp className="text-white" />
+          </RoundButton>
+          <RoundButton variant="green" size="sm" onClick={handleFilter}>
+            <Filter className="text-white" />
+          </RoundButton>
         </div>
       </div>
 
-      {/* Opponent List */}
-      <div className="space-y-2 sm:space-y-3">
+      <div className="space-y-2 sm:space-y-4">
         {displayOpponents.map((opponent, index) => (
           <OpponentCard
             key={opponent.id}

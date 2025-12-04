@@ -1,4 +1,12 @@
-export function BattleIntro({ show, onStart }: { show: boolean; onStart?: () => void }) {
+import { Button } from "@/components/ui/button";
+
+export function BattleIntro({
+  show,
+  onStart,
+}: {
+  show: boolean;
+  onStart?: () => void;
+}) {
   if (!show) return null;
 
   return (
@@ -9,19 +17,22 @@ export function BattleIntro({ show, onStart }: { show: boolean; onStart?: () => 
           className="text-5xl font-black animate-pulse"
           style={{
             color: "#FFD700",
-            textShadow: "0 0 30px rgba(255,215,0,0.8), 4px 4px 0 rgba(0,0,0,0.8)",
+            textShadow:
+              "0 0 30px rgba(255,215,0,0.8), 4px 4px 0 rgba(0,0,0,0.8)",
             WebkitTextStroke: "2px #000",
           }}
         >
           BATTLE START!
         </h1>
         {onStart && (
-          <button
+          <Button
             onClick={onStart}
-            className="mt-6 px-8 py-3 bg-gradient-to-b from-[#A855F7] to-[#7E3FB8] hover:from-[#B865F7] hover:to-[#8E4FC8] text-white font-bold text-xl rounded-lg shadow-[0_8px_0_#5E1F88] hover:shadow-[0_6px_0_#5E1F88] active:shadow-none active:translate-y-[8px] transition-all duration-150"
+            variant="secondary"
+            size="lg"
+            className="mt-6"
           >
             TAP TO START!
-          </button>
+          </Button>
         )}
       </div>
     </div>

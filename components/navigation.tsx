@@ -1,17 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Button3D } from "@/components/ui/button-3d";
-import { Home, Swords, Trophy, User } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useSound } from "@/hooks/use-sound";
+import { IconButton, type IconButtonProps } from "./ui/icon-button";
 
 interface NavItem {
   id: string;
   label: string;
   path: string;
   icon: string;
+  variant: IconButtonProps["variant"];
 }
 
 const navItems: NavItem[] = [
@@ -20,26 +18,22 @@ const navItems: NavItem[] = [
     label: "Home",
     path: "/home",
     icon: "/images/home-icon.png",
+    variant: "primary",
   },
   {
     id: "battle",
     label: "Battle",
     path: "/battle",
     icon: "/images/battle-icon.png",
+    variant: "secondary",
   },
   {
     id: "leaderboard",
     label: "Leaderboard",
     path: "/leaderboard",
     icon: "/images/leaderboard-icon.png",
+    variant: "warning",
   },
-  // {
-  //   id: "profile",
-  //   label: "Profile",
-  //   path: "/profile",
-  //   icon: <User className="size-15" />,
-  //   variant: "3d-purple",
-  // },
 ];
 
 export function Navigation() {
@@ -62,7 +56,7 @@ export function Navigation() {
 
   return (
     <nav
-      className="h-20 flex items-center justify-center border-t-2 border-[#030911] bg-[#030911]"
+      className=" flex items-center justify-center gap-3 p-3  bborder-t-4"
       role="navigation"
       aria-label="Main navigation"
     >
@@ -70,32 +64,20 @@ export function Navigation() {
         const active = isActive(item.path);
 
         return (
-          <button
+          <IconButton
             key={item.id}
+            className="size-20 cursor-pointer p-2"
             onClick={() => handleNavClick(item.path)}
-            className={cn(
-              "transition-all duration-200 flex flex-col items-center justify-center w-full h-full flex-1",
-              active && "bg-[#1a3a5c]"
-            )}
-            aria-label={item.label}
-            aria-current={active ? "page" : undefined}
+            variant={item.variant}
           >
             <img
               src={item.icon}
-              width={32}
-              height={32}
+              width={36}
+              height={36}
               alt={item.label}
               className="object-cover"
             />
-            <span
-              className={cn(
-                "transition-colors duration-200 text-sm font-bold",
-                active ? "text-white" : "text-white/90"
-              )}
-            >
-              {item.label}
-            </span>
-          </button>
+          </IconButton>
         );
       })}
     </nav>

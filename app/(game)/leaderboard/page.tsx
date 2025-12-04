@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Search, ArrowDownUp, Filter } from "lucide-react";
 import { PlayerCard } from "@/components/leaderboard/player-card";
 import { useSound } from "@/hooks/use-sound";
-import { Button3D } from "@/components/ui/button-3d";
+import { RoundButton } from "@/components/ui/round-button";
+import { CardFrame } from "@/components/ui/card-frame";
 
 const players = [
   {
@@ -72,18 +73,25 @@ export default function LeaderboardPage() {
   return (
     <div className="flex-1 px-3 sm:px-4 py-2 space-y-2 sm:space-y-3 overflow-auto relative z-10 pb-24">
       {/* Prize Pool Banner */}
-      <div className="relative rounded-2xl overflow-hidden">
-        <img
-          src="/images/attributes/pool-bg.png"
-          alt="Prize Pool"
-          className="w-full h-auto object-cover"
-        />
-      </div>
+      <CardFrame size="lg" className="w-full">
+        <picture>
+          <source srcSet="/images/pool-bg.avif" type="image/avif" />
+          <source srcSet="/images/pool-bg.webp" type="image/webp" />
+          <img
+            src="/images/pool-bg.png"
+            alt="Prize Pool"
+            className="w-full h-auto object-cover"
+          />
+        </picture>
+      </CardFrame>
 
       {/* Search and Filters */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 py-2.5">
         <div className="flex-1 bg-[#0f2a4a]/80 border border-cyan-500/20 rounded-lg flex items-center px-2.5 sm:px-3 py-2 sm:py-2.5">
-          <Search className="w-4 h-4 sm:w-5 sm:h-5 text-white/50 mr-2" />
+          <Search
+            className="w-4 h-4 sm:w-5 sm:h-5 text-white/50 mr-2"
+            strokeWidth={2.5}
+          />
           <input
             type="text"
             placeholder="Search Players..."
@@ -92,32 +100,17 @@ export default function LeaderboardPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button3D className="size-10" size="3d-tiny" onClick={handleSort}>
-          <ArrowDownUp />
-        </Button3D>
+        <RoundButton variant="purple" size="sm" onClick={handleSort}>
+          <ArrowDownUp className="text-white" strokeWidth={2.5} />
+        </RoundButton>
 
-        <Button3D className="size-10" size="3d-tiny" onClick={handleFilter}>
-          <Filter />
-        </Button3D>
-
-        {/* <button
-          onClick={handleSort}
-          className="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2.5 flex flex-col items-center justify-center min-w-[60px] transition-colors"
-        >
-          <ArrowDownUp className="w-5 h-5 text-white mb-0.5" />
-          <span className="text-white text-xs font-medium">Sort</span>
-        </button> */}
-        {/* <button
-          onClick={handleFilter}
-          className="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2.5 flex flex-col items-center justify-center min-w-[60px] transition-colors"
-        >
-          <Filter className="w-5 h-5 text-white mb-0.5" />
-          <span className="text-white text-xs font-medium">Filter</span>
-        </button> */}
+        <RoundButton variant="purple" size="sm" onClick={handleFilter}>
+          <Filter className="text-white" strokeWidth={2.5} />
+        </RoundButton>
       </div>
 
       {/* Player List */}
-      <div className="space-y-2 sm:space-y-3">
+      <div className="space-y-2 sm:space-y-4">
         {filteredPlayers.map((player) => (
           <PlayerCard
             key={player.rank}

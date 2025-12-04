@@ -1,47 +1,83 @@
 import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
+import { Slot, Slottable } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
+import { Loader2Icon } from "lucide-react";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "group relative inline-block outline-none hover:scale-100! focus:outline-none transition-transform duration-200",
+  {
+    variants: {
+      variant: {
+        default: "bg-white hover:scale-[1.02]",
+        primary: "bg-white hover:scale-[1.02]",
+        game: "bg-white hover:scale-[1.02]",
+        "game-secondary": "bg-white hover:scale-[1.02]",
+        danger: "bg-white hover:scale-[1.02]",
+        attack: "bg-white hover:scale-[1.02]",
+        defend: "bg-white hover:scale-[1.02]",
+        energy: "bg-white hover:scale-[1.02]",
+        warning: "bg-white hover:scale-[1.02]",
+        destructive: "bg-white hover:scale-[1.02]",
+        outline: "bg-white hover:scale-[1.02]",
+        secondary: "bg-white hover:scale-[1.02]",
+        ghost: "bg-white hover:scale-[1.02]",
+        link: "bg-white hover:scale-[1.02]",
+      },
+      size: {
+        default: "p-[4px] pb-[12px] rounded-[1.25rem]",
+        sm: "p-[4px] pb-[12px] rounded-[1.25rem]",
+        md: "p-[5px] pb-[13px] rounded-[1.75rem]",
+        lg: "p-[6px] pb-[14px] rounded-[2.25rem]",
+        xl: "p-[8px] pb-[16px] rounded-[2.5rem]",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+);
+
+const innerVariants = cva(
+  "block relative w-full transition-all duration-150 ease-out overflow-hidden flex items-center justify-center px-4",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-        outline:
-          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        // Game-specific variants
+          "bg-[#75E536] shadow-[0_8px_0_#4CA322] group-active:shadow-[0_0px_0_#4CA322] group-active:translate-y-[8px]",
         primary:
-          "w-[250px] tracking-[2px] rounded-lg text-[#ffc000] text-lg font-normal [text-shadow:0_1px_3px_#000] bg-[radial-gradient(circle,#8b0000,#8b0000)] border-t-[4px] border-t-[ridge] border-t-[#ffb000] border-l-[4px] border-l-[groove] border-l-[#ffb000] border-r-[4px] border-r-[ridge] border-r-[#ffb000] border-b-[4px] border-b-[groove] border-b-[#ffb000] [box-shadow:inset_0px_0px_5px_3px_rgba(1,1,1,0.3)] hover:bg-[radial-gradient(circle,#e52b2b,#8b0000)] hover:[box-shadow:0px_0_5px_5px_rgba(255,255,255,0.2)] active:bg-[radial-gradient(circle,#ec6a6a,#e52b2b)] active:[box-shadow:0px_0_5px_5px_rgba(255,255,255,0.2)] transition-all duration-200",
+          "bg-[#75E536] shadow-[0_8px_0_#4CA322] group-active:shadow-[0_0px_0_#4CA322] group-active:translate-y-[8px]",
+        game: "bg-[#75E536] shadow-[0_8px_0_#4CA322] group-active:shadow-[0_0px_0_#4CA322] group-active:translate-y-[8px]",
         "game-secondary":
-          "bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold shadow-lg hover:shadow-indigo-500/50 hover:scale-105 active:scale-95 border-2 border-indigo-400/50 hover:from-indigo-600 hover:to-purple-600",
+          "bg-[#A855F7] shadow-[0_8px_0_#7E3FB8] group-active:shadow-[0_0px_0_#7E3FB8] group-active:translate-y-[8px]",
         danger:
-          "bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold shadow-lg hover:shadow-red-500/50 hover:scale-105 active:scale-95 border-2 border-red-400/50 hover:from-red-600 hover:to-orange-600",
-        game: "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold shadow-lg hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 border-2 border-emerald-400/50",
+          "bg-[#FF4757] shadow-[0_8px_0_#CC3946] group-active:shadow-[0_0px_0_#CC3946] group-active:translate-y-[8px]",
         attack:
-          "bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold shadow-lg hover:shadow-red-500/50 hover:scale-105 active:scale-95 border-2 border-red-400/50",
+          "bg-[#FF4757] shadow-[0_8px_0_#CC3946] group-active:shadow-[0_0px_0_#CC3946] group-active:translate-y-[8px]",
         defend:
-          "bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-lg hover:shadow-blue-500/50 hover:scale-105 active:scale-95 border-2 border-blue-400/50",
+          "bg-[#00A3FF] shadow-[0_8px_0_#0073B3] group-active:shadow-[0_0px_0_#0073B3] group-active:translate-y-[8px]",
         energy:
-          "bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-lg hover:shadow-purple-500/50 hover:scale-105 active:scale-95 border-2 border-purple-400/50",
+          "bg-[#A855F7] shadow-[0_8px_0_#7E3FB8] group-active:shadow-[0_0px_0_#7E3FB8] group-active:translate-y-[8px]",
         warning:
-          "bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-bold shadow-lg hover:shadow-yellow-500/50 hover:scale-105 active:scale-95 border-2 border-yellow-400/50",
+          "bg-[#FFD700] shadow-[0_8px_0_#CCB000] group-active:shadow-[0_0px_0_#CCB000] group-active:translate-y-[8px]",
+        destructive:
+          "bg-[#FF4757] shadow-[0_8px_0_#CC3946] group-active:shadow-[0_0px_0_#CC3946] group-active:translate-y-[8px]",
+        outline:
+          "bg-gray-500 shadow-[0_8px_0_#6B7280] group-active:shadow-[0_0px_0_#6B7280] group-active:translate-y-[8px]",
+        secondary:
+          "bg-[#A855F7] shadow-[0_8px_0_#7E3FB8] group-active:shadow-[0_0px_0_#7E3FB8] group-active:translate-y-[8px]",
+        ghost:
+          "bg-gray-500 shadow-[0_8px_0_#6B7280] group-active:shadow-[0_0px_0_#6B7280] group-active:translate-y-[8px]",
+        link: "bg-[#00A3FF] shadow-[0_8px_0_#0073B3] group-active:shadow-[0_0px_0_#0073B3] group-active:translate-y-[8px]",
       },
       size: {
-        default: "h-11 px-4 py-2 min-h-[44px]",
-        sm: "h-9 rounded-md px-3 text-xs min-h-[36px]",
-        lg: "h-12 rounded-md px-8 text-base min-h-[48px]",
-        xl: "h-14 rounded-lg px-10 text-lg min-h-[56px]",
-        icon: "h-11 w-11 min-h-[44px] min-w-[44px]",
+        default: "h-10 rounded-[1rem]",
+        sm: "h-10 rounded-[1rem]",
+        md: "h-12 rounded-[1.5rem]",
+        lg: "h-16 rounded-[2rem]",
+        xl: "h-20 rounded-[2.25rem]",
       },
     },
     defaultVariants: {
@@ -55,17 +91,69 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  loading?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      disabled: disabledProp,
+      loading = false,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const Comp = asChild ? Slot : "button";
+    const disabled = disabledProp || loading;
+
+    // Text size mapping based on button size
+    const textSizeMap = {
+      default: "text-sm",
+      sm: "text-sm",
+      md: "text-base",
+      lg: "text-lg",
+      xl: "text-xl",
+    };
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        disabled={disabled}
         {...props}
-      />
+      >
+        <span className={cn(innerVariants({ variant, size }))}>
+          <span
+            className="absolute inset-0 w-full h-full opacity-20 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(120deg, rgba(255,255,255,1) 40%, rgba(255,255,255,0) 40%)",
+            }}
+          />
+          <div
+            className={cn(
+              "relative flex items-center gap-2 z-10 font-black tracking-widest text-white drop-shadow-[0_4px_1px_rgba(0,0,0,0.15)] select-none uppercase",
+              textSizeMap[size || "default"]
+            )}
+          >
+            {loading ? (
+              <Loader2Icon
+                className={cn(
+                  "text-white aabsolute animate-spin font-bold",
+                  "loading"
+                )}
+              />
+            ) : (
+              <Slottable>{children}</Slottable>
+            )}
+          </div>
+        </span>
+      </Comp>
     );
   }
 );
