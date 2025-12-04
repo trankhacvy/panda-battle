@@ -46,8 +46,8 @@ export default function RootLayout({
             <GameBackground />
             {children}
           </main>
-          <InstallAppDrawer />
-          <NotificationPermissionDrawer />
+          {/* <InstallAppDrawer />
+          <NotificationPermissionDrawer /> */}
           <Toaster className="z-100" position="top-center" />
         </AppProviders>
       </body>

@@ -11,14 +11,24 @@ import { Typography } from "../ui/typography";
 
 const LOCAL_STORAGE_KEY = "SHOW_INSTALL_APP_DRAWER";
 
-export const InstallAppDrawer = () => {
+interface InstallAppDrawerProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const InstallAppDrawer = ({ isOpen, onClose }: InstallAppDrawerProps = {}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const isRunningInPWA = useIsRunningInPWA();
+  const isControlled = isOpen !== undefined;
 
   const handlePermanentClose = () => {
     localStorage.setItem(LOCAL_STORAGE_KEY, "false");
-    setIsVisible(false);
+    if (isControlled && onClose) {
+      onClose();
+    } else {
+      setIsVisible(false);
+    }
   };
 
   const handleInstallClick = async () => {
@@ -56,9 +66,12 @@ export const InstallAppDrawer = () => {
       );
     };
   }, []);
+  
+  const open = isControlled ? isOpen : isVisible;
+  
   return (
     <Drawer
-      open={isVisible}
+      open={open}
       onOpenChange={(open) => {
         if (!open) handlePermanentClose();
       }}

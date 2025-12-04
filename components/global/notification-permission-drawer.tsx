@@ -8,14 +8,24 @@ import { Button } from "../ui/button";
 import { Drawer, DrawerContent, DrawerTitle } from "../ui/drawer";
 import { Typography } from "../ui/typography";
 
-const LOCAL_STORAGE_KEY = "";
+const LOCAL_STORAGE_KEY = "NOTIFICATION_PERMISSION_DISMISSED";
 
-export const NotificationPermissionDrawer = () => {
+interface NotificationPermissionDrawerProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const NotificationPermissionDrawer = ({ isOpen, onClose }: NotificationPermissionDrawerProps = {}) => {
   const [isVisible, setIsVisible] = useState(false);
+  const isControlled = isOpen !== undefined;
 
   const handleDismiss = () => {
     localStorage.setItem(LOCAL_STORAGE_KEY, "true");
-    setIsVisible(false);
+    if (isControlled && onClose) {
+      onClose();
+    } else {
+      setIsVisible(false);
+    }
   };
 
   const handleEnableNotifications = async () => {
@@ -41,9 +51,11 @@ export const NotificationPermissionDrawer = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const open = isControlled ? isOpen : isVisible;
+
   return (
     <Drawer
-      open={isVisible}
+      open={open}
       onOpenChange={(open) => {
         if (!open) handleDismiss();
       }}
