@@ -60,7 +60,7 @@ export default function Header() {
       case pathname?.includes("profile"):
         return (
           <div className="flex-1 flex items-center justify-center">
-            <Typography variant="page-title" className="text-[#A855F7]">
+            <Typography variant="page-title" className="text-white drop-shadow-lg">
               Profile
             </Typography>
           </div>

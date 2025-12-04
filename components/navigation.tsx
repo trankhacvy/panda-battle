@@ -36,6 +36,8 @@ const navItems: NavItem[] = [
   },
 ];
 
+const hiddenNavPaths = ["/", "/deposit", "/delegate"];
+
 export function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
@@ -50,7 +52,7 @@ export function Navigation() {
     router.push(path);
   };
 
-  if (pathname === "/") {
+  if (hiddenNavPaths.some(path => pathname === path || pathname?.includes(path))) {
     return null;
   }
 

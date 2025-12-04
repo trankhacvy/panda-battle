@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Typography } from "@/components/ui/typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CardFrame } from "@/components/ui/card-frame";
 import { ReceiveFundsDrawer } from "@/components/drawers/receive-funds-drawer";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import {
@@ -23,6 +24,9 @@ import {
   Copy,
   Wallet,
   Check,
+  TrendingUp,
+  Target,
+  Award,
 } from "lucide-react";
 import { formatAddress } from "@/lib/utils";
 
@@ -65,96 +69,133 @@ export default function ProfilePage() {
       : "0.0";
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
-      {/* Profile Header - Simple */}
-      <div className="flex items-center gap-6 mb-8">
-        <Avatar className="size-20 border-4 border-[#4a9eff]">
-          <AvatarImage src="/images/sample-panda.png" alt={player.pandaName} />
-          <AvatarFallback className="bg-linear-to-b from-[#87ceeb] to-[#4a9eff] text-white text-xl font-bold">
-            {player.pandaName.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-1">
-            <Typography variant="h2" className="text-white">
-              {player.pandaName}
-            </Typography>
-            {player.inTop20 && (
-              <Badge variant="rank">
-                <Trophy className="size-3 mr-1" />
-                Top 20
-              </Badge>
-            )}
-            {player.rank > 0 && (
-              <Badge variant="default">Rank #{player.rank}</Badge>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Typography
-              variant="muted"
-              className="text-white/60 font-mono text-sm"
-            >
-              {formatAddress(player.wallet, 4)}
-            </Typography>
-            <button
-              onClick={() => copy(player.wallet)}
-              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
-              aria-label="Copy address"
-            >
-              {isCopied ? (
-                <Check className="size-4 text-green-500" />
-              ) : (
-                <Copy className="size-4 text-white/60" />
-              )}
-            </button>
-          </div>
+    <div className="p-4 pb-24 space-y-4">
+      {/* Panda Avatar Card */}
+      <CardFrame size="lg">
+        <div className="aspect-video flex items-center justify-center relative overflow-hidden">
+          <picture className="absolute inset-0 w-full h-full">
+            <source srcSet="/images/fighter-frame.avif" type="image/avif" />
+            <source srcSet="/images/fighter-frame.webp" type="image/webp" />
+            <img
+              src="/images/fighter-frame.png"
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          </picture>
+          <img
+            src="/images/sample-panda.png"
+            alt={player.pandaName}
+            className="relative z-10 w-auto h-full object-cover"
+          />
         </div>
-        <div className="text-right">
-          <Typography variant="small" className="text-white/60 mb-1">
-            Earnings
-          </Typography>
-          <Typography variant="h3" className="text-[#ffd700] font-bold mb-3">
-            {player.earnings.toFixed(2)} SOL
-          </Typography>
+      </CardFrame>
+
+      {/* Player Info Card */}
+      <div className="w-full relative z-10">
+        <div className="p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Typography 
+                  variant="h2" 
+                  className="text-white font-black text-3xl"
+                  style={{
+                    textShadow: '3px 3px 0px rgba(0,0,0,0.3), 5px 5px 10px rgba(0,0,0,0.5)'
+                  }}
+                >
+                  {player.pandaName}
+                </Typography>
+                {player.inTop20 && (
+                  <Badge variant="rank" className="flex items-center gap-1">
+                    <Trophy className="size-3" />
+                    Top 20
+                  </Badge>
+                )}
+              </div>
+              {player.rank > 0 && (
+                <Badge variant="default" className="mb-2">
+                  Rank #{player.rank}
+                </Badge>
+              )}
+              <div className="flex items-center gap-2">
+                <Typography
+                  variant="small"
+                  className="text-white font-mono"
+                >
+                  {formatAddress(player.wallet, 6)}
+                </Typography>
+                <button
+                  onClick={() => copy(player.wallet)}
+                  className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                  aria-label="Copy address"
+                >
+                  {isCopied ? (
+                    <Check className="size-4 text-green-500" />
+                  ) : (
+                    <Copy className="size-4 text-white" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Earnings Section */}
+          <div className="bg-gradient-to-br bg-white shadow-[0_7px_0_#d0d0d0,0_8px_16px_-7px_rgba(0,0,0,0.2)] rounded-xl p-4 mb-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <Typography variant="small" className="text-gray-600 mb-1">
+                  Total Earnings
+                </Typography>
+                <Typography variant="h3" className="text-[#ffd700] font-bold">
+                  {player.earnings.toFixed(2)} SOL
+                </Typography>
+              </div>
+              {/* <Trophy className="size-8 text-[#ffd700]" /> */}
+            </div>
+          </div>
+
+          {/* Deposit Button */}
           <ReceiveFundsDrawer
             address={player.wallet}
             trigger={
-              <Button className="bg-[#4a9eff] hover:bg-[#3a8eef] text-white">
-                <Wallet className="size-4 mr-2" />
-                Deposit
+              <Button className="w-full" variant="primary" size="lg">
+                <Wallet className="size-5 mr-2" />
+                Deposit Funds
               </Button>
             }
           />
         </div>
       </div>
 
-      {/* Stats Grid - Same as home */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <StatBadge
-          icon={<Flame className="w-5 h-5" />}
-          label="STA"
-          value={player.attributes.endurance}
-          color="bg-[#ff6b35]"
-        />
-        <StatBadge
-          icon={<Dumbbell className="w-5 h-5" />}
-          label="STR"
-          value={player.attributes.strength}
-          color="bg-[#ff9500]"
-        />
-        <StatBadge
-          icon={<Zap className="w-5 h-5" />}
-          label="AGI"
-          value={player.attributes.speed}
-          color="bg-[#34c759]"
-        />
-        <StatBadge
-          icon={<Brain className="w-5 h-5" />}
-          label="INT"
-          value={player.attributes.luck}
-          color="bg-[#007aff]"
-        />
+      {/* Stats Card */}
+      <div className="w-full relative z-10">
+        <Typography variant="h3" className="text-white mb-3 font-bold px-1">
+          Attributes
+        </Typography>
+        <div className="flex gap-3">
+          <StatBadge
+            icon={<Dumbbell className="w-6 h-6" />}
+            label="Strength"
+            value={player.attributes.strength}
+            color="bg-[#ff9500]"
+          />
+          <StatBadge
+            icon={<Zap className="w-6 h-6" />}
+            label="Agility"
+            value={player.attributes.speed}
+            color="bg-[#34c759]"
+          />
+          <StatBadge
+            icon={<Brain className="w-6 h-6" />}
+            label="Intelligence"
+            value={player.attributes.luck}
+            color="bg-[#007aff]"
+          />
+        </div>
       </div>
+
+    
+      
     </div>
   );
 }
@@ -171,11 +212,46 @@ function StatBadge({
   color: string;
 }) {
   return (
-    <div className="bg-white/95 rounded-xl px-2 py-1.5 flex items-center gap-2 shadow-md">
-      <div className={`${color} text-white p-1.5 rounded-lg`}>{icon}</div>
-      <span className="font-bold text-gray-800 text-sm">
-        {label}: {value}
-      </span>
+    <div className="flex-1 bg-white rounded-2xl p-4 shadow-[0_7px_0_#d0d0d0,0_8px_16px_-7px_rgba(0,0,0,0.2)]">
+      <div className="flex flex-col items-center gap-2">
+        <div className={`${color} text-white p-3 rounded-xl`}>
+          {icon}
+        </div>
+        <Typography variant="small" className="text-gray-700 font-semibold">
+          {label}
+        </Typography>
+        <Typography variant="h2" className="text-gray-900 font-bold">
+          {value}
+        </Typography>
+      </div>
+    </div>
+  );
+}
+
+function BattleStatBadge({
+  icon,
+  label,
+  value,
+  color,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  color: string;
+}) {
+  return (
+    <div className="flex-1 bg-white rounded-2xl p-4 shadow-[0_7px_0_#d0d0d0,0_8px_16px_-7px_rgba(0,0,0,0.2)]">
+      <div className="flex flex-col items-center gap-2">
+        <div className={`${color} text-white p-3 rounded-xl`}>
+          {icon}
+        </div>
+        <Typography variant="small" className="text-gray-700 font-semibold">
+          {label}
+        </Typography>
+        <Typography variant="h2" className="text-gray-900 font-bold">
+          {value}
+        </Typography>
+      </div>
     </div>
   );
 }

@@ -23,37 +23,27 @@ export const InstallAppDrawer = () => {
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
-      // Show the install prompt
       deferredPrompt.prompt();
 
-      // Wait for the user's response
       const { outcome } = await deferredPrompt.userChoice;
 
       if (outcome === "accepted") {
-        // User accepted the install prompt
         handlePermanentClose();
       }
 
-      // Clear the deferredPrompt
       setDeferredPrompt(null);
     }
   };
 
   useEffect(() => {
-    // Only show if:
-    // 1. User hasn't permanently closed it
-    // 2. Not running in PWA mode
     const shouldShow =
       localStorage.getItem(LOCAL_STORAGE_KEY) !== "false" && !isRunningInPWA;
     setIsVisible(shouldShow);
   }, [isRunningInPWA]);
 
   useEffect(() => {
-    // Listen for the beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent the default install dialog
       e.preventDefault();
-      // Store the event for later use
       setDeferredPrompt(e);
     };
 
@@ -73,40 +63,40 @@ export const InstallAppDrawer = () => {
         if (!open) handlePermanentClose();
       }}
     >
-      <DrawerContent className="bg-[#75E536] px-5">
+      <DrawerContent className="bg-white px-5">
         <DrawerTitle
           onClose={handlePermanentClose}
-          className="w-full text-center"
+          className="w-full text-center text-gray-900"
         >
           Install Panda Battle
         </DrawerTitle>
         <div className="flex flex-col items-center gap-6 pt-6">
           <div className="relative animate-bounce-slow">
             <Image
-              src="/images/sample-panda.png"
+              src="/images/panda-dowload-require.png"
               alt="Panda Fighter"
-              width={120}
-              height={120}
+              width={400}
+              height={400}
               className="relative z-10 drop-shadow-2xl"
             />
           </div>
           <div className="text-center space-y-3">
-            <Typography variant="h4" className="font-black">
+            <Typography variant="h4" className="font-black text-gray-900">
               Take the battle with you! 🐾
             </Typography>
             <div className="flex items-center justify-center gap-[1ch] flex-wrap">
-              <Typography variant="small" className="text-ds-gray-700">
+              <Typography variant="small" className="text-gray-700">
                 Tap
               </Typography>
-              <Share size={18} />
+              <Share size={18} className="text-gray-700" />
               <Typography
                 variant="small"
-                className="text-ds-gray-700 font-mono"
+                className="text-gray-700 font-mono"
               >
                 then &apos;Add to Home Screen&apos;
               </Typography>
             </div>
-            <Typography variant="small" className="text-ds-gray-600 mt-2">
+            <Typography variant="small" className="text-gray-600 mt-2">
               Fight anytime, anywhere!
             </Typography>
           </div>
@@ -116,13 +106,15 @@ export const InstallAppDrawer = () => {
                 variant="primary"
                 onClick={handleInstallClick}
                 className="w-full"
+                size="lg"
               >
                 Install Now
               </Button>
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={() => setIsVisible(false)}
                 className="w-full"
+                size="lg"
               >
                 Remind me later
               </Button>
@@ -132,6 +124,7 @@ export const InstallAppDrawer = () => {
               variant="primary"
               onClick={() => setIsVisible(false)}
               className="w-full"
+              size="lg"
             >
               Got it!
             </Button>

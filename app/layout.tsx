@@ -7,6 +7,7 @@ import { GameBackground } from "@/components/background/game-background";
 import { AppProviders } from "@/components/providers/app-provider";
 import { cn } from "@/lib/utils";
 import { InstallAppDrawer } from "@/components/global/install-app-drawer";
+import { NotificationPermissionDrawer } from "@/components/global/notification-permission-drawer";
 
 const rubik = Rubik({
   variable: "--font-rubik",
@@ -46,6 +47,7 @@ export default function RootLayout({
             {children}
           </main>
           <InstallAppDrawer />
+          <NotificationPermissionDrawer />
           <Toaster className="z-100" position="top-center" />
         </AppProviders>
       </body>
