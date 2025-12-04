@@ -1,19 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Swords, Trophy, User } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useSound } from "@/hooks/use-sound";
-import { CardFrame } from "./ui/card-frame";
-import { IconButton } from "./ui/icon-button";
+import { IconButton, type IconButtonProps } from "./ui/icon-button";
 
 interface NavItem {
   id: string;
   label: string;
   path: string;
   icon: string;
-  color: string;
+  variant: IconButtonProps["variant"];
 }
 
 const navItems: NavItem[] = [
@@ -22,21 +18,21 @@ const navItems: NavItem[] = [
     label: "Home",
     path: "/home",
     icon: "/images/home-icon.png",
-    color: "bg-[#00D9FF]",
+    variant: "primary",
   },
   {
     id: "battle",
     label: "Battle",
     path: "/battle",
     icon: "/images/battle-icon.png",
-    color: "bg-[#FF6B9D]",
+    variant: "secondary",
   },
   {
     id: "leaderboard",
     label: "Leaderboard",
     path: "/leaderboard",
     icon: "/images/leaderboard-icon.png",
-    color: "bg-[#FFD700]",
+    variant: "warning",
   },
 ];
 
@@ -72,15 +68,8 @@ export function Navigation() {
             key={item.id}
             className="size-20 cursor-pointer p-2"
             onClick={() => handleNavClick(item.path)}
-            variant="success"
+            variant={item.variant}
           >
-            {/* <div
-              className={cn(
-                "relative rounded-[0.875rem] overflow-hidden transition-all duration-200 flex flex-col items-center justify-center py-3 px-2",
-                item.color,
-                active && "scale-95"
-              )}
-            > */}
             <img
               src={item.icon}
               width={36}
@@ -88,10 +77,6 @@ export function Navigation() {
               alt={item.label}
               className="object-cover"
             />
-            {/* <span className="text-white text-xs font-black tracking-wide uppercase">
-                {item.label}
-              </span> */}
-            {/* </div> */}
           </IconButton>
         );
       })}

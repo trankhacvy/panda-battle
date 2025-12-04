@@ -4,7 +4,6 @@ import { ArrowDownUp, Filter } from "lucide-react";
 import { mockOpponents } from "@/lib/mock/battles";
 import { OpponentCard } from "@/components/battle/opponent-card";
 import { useSound } from "@/hooks/use-sound";
-import { Button3D } from "@/components/ui/button-3d";
 import { useRouter } from "next/navigation";
 import { RoundButton } from "@/components/ui/round-button";
 

@@ -48,19 +48,20 @@ export default function HomePage() {
     <div className="p-4 pb-24 space-y-4">
       {/* Panda Image */}
       <CardFrame size="lg">
-        <div
-          className="aspect-video flex items-center justify-center relative overflow-hidden"
-          style={{
-            backgroundImage: "url(/images/fighter-frame.png)",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        >
+        <div className="aspect-video flex items-center justify-center relative overflow-hidden">
+          <picture className="absolute inset-0 w-full h-full">
+            <source srcSet="/images/fighter-frame.avif" type="image/avif" />
+            <source srcSet="/images/fighter-frame.webp" type="image/webp" />
+            <img
+              src="/images/fighter-frame.png"
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          </picture>
           <img
             src="/images/sample-panda.png"
             alt="Panda Warrior"
-            className="w-auto h-full object-cover"
+            className="relative z-10 w-auto h-full object-cover"
           />
         </div>
       </CardFrame>
@@ -142,11 +143,15 @@ export default function HomePage() {
         <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3">
           <CardFrame size="sm" className="flex-shrink-0">
             <div className="w-12 h-12 relative overflow-hidden">
-              <img
-                src="/images/reated-panda-bg.png"
-                alt="Background"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
+              <picture className="absolute inset-0 w-full h-full">
+                <source srcSet="/images/fighter-frame.avif" type="image/avif" />
+                <source srcSet="/images/fighter-frame.webp" type="image/webp" />
+                <img
+                  src="/images/fighter-frame.png"
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              </picture>
               <img
                 src="/images/sample-panda.png"
                 alt="Event"

@@ -3,6 +3,7 @@ import { Rubik } from "next/font/google";
 import "@/styles/globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AppBackground } from "@/components/background/app-background";
+import { GameBackground } from "@/components/background/game-background";
 import { AppProviders } from "@/components/providers/app-provider";
 import { cn } from "@/lib/utils";
 import { InstallAppDrawer } from "@/components/global/install-app-drawer";
@@ -38,17 +39,10 @@ export default function RootLayout({
           rubik.variable
         )}
       >
+        <AppBackground />
         <AppProviders>
-          <AppBackground />
-          <main
-            className="w-full h-full max-w-(--max-layout-width) flex-1 overflow-hidden"
-            style={{
-              backgroundImage: "url(/images/game-bg.png)",
-              backgroundRepeat: "no-repeat",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
+          <main className="relative w-full h-full max-w-(--max-layout-width) flex-1 overflow-hidden">
+            <GameBackground />
             {children}
           </main>
           <InstallAppDrawer />

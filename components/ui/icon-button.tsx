@@ -5,26 +5,26 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const iconButtonVariants = cva(
-  "group relative inline-flex items-center justify-center rounded-full transition-all duration-150 ease-in-out focus:outline-none active:shadow-none disabled:pointer-events-none disabled:opacity-50",
+  "group relative inline-flex items-center justify-center rounded-full transition-all duration-150 ease-in-out focus:outline-none active:shadow-none disabled:pointer-events-none disabled:shadow-[0_8px_0_#6B7280]",
   {
     variants: {
       variant: {
         primary:
-          "bg-white shadow-[0_8px_0_#9f1d3b] active:translate-y-[8px] hover:shadow-[0_8px_0_#8a1835]",
+          "bg-white shadow-[0_8px_0_#B8234D] active:translate-y-[8px] hover:shadow-[0_8px_0_#9f1d3b]",
         secondary:
-          "bg-white shadow-[0_8px_0_#1d3e9f] active:translate-y-[8px] hover:shadow-[0_8px_0_#19358a]",
+          "bg-white shadow-[0_8px_0_#2350CC] active:translate-y-[8px] hover:shadow-[0_8px_0_#1a3d99]",
         success:
-          "bg-white shadow-[0_8px_0_#2EFF63] active:translate-y-[8px] hover:shadow-[0_8px_0_#2EFF63]",
+          "bg-white shadow-[0_8px_0_#25CC4F] active:translate-y-[8px] hover:shadow-[0_8px_0_#1a993b]",
         error:
-          "bg-white shadow-[0_8px_0_#9f1d3b] active:translate-y-[8px] hover:shadow-[0_8px_0_#8a1835]",
+          "bg-white shadow-[0_8px_0_#B8234D] active:translate-y-[8px] hover:shadow-[0_8px_0_#9f1d3b]",
         warning:
-          "bg-white shadow-[0_8px_0_#9f8a1d] active:translate-y-[8px] hover:shadow-[0_8px_0_#8a791a]",
+          "bg-white shadow-[0_8px_0_#CC9225] active:translate-y-[8px] hover:shadow-[0_8px_0_#99701a]",
       },
       size: {
-        sm: "w-12 h-12 p-1.5 sshadow-[0_4px_0_#9f1d3b] active:translate-y-[4px]",
-        md: "w-16 h-16 p-2 sshadow-[0_6px_0_#9f1d3b] active:translate-y-[6px]",
-        lg: "w-24 h-24 p-3 sshadow-[0_8px_0_#9f1d3b] active:translate-y-[8px]",
-        xl: "w-32 h-32 p-4 sshadow-[0_10px_0_#9f1d3b] active:translate-y-[10px]",
+        sm: "w-12 h-12 p-1.5 active:translate-y-[4px]",
+        md: "w-16 h-16 p-2 active:translate-y-[6px]",
+        lg: "w-24 h-24 p-3 active:translate-y-[8px]",
+        xl: "w-32 h-32 p-4 active:translate-y-[10px]",
       },
     },
     defaultVariants: {
@@ -35,15 +35,15 @@ const iconButtonVariants = cva(
 );
 
 const iconButtonInnerVariants = cva(
-  "w-full h-full rounded-full flex items-center justify-center transition-transform group-hover:scale-105",
+  "w-full h-full rounded-full flex items-center justify-center transition-transform group-enabled:group-hover:scale-105",
   {
     variants: {
       variant: {
-        primary: "bg-[#FF2E63]",
-        secondary: "bg-[#2E63FF]",
-        success: "bg-[#2EFF63]",
-        error: "bg-[#FF2E63]",
-        warning: "bg-[#FFB82E]",
+        primary: "bg-[#FF2E63] group-disabled:bg-[#9CA3AF]",
+        secondary: "bg-[#2E63FF] group-disabled:bg-[#9CA3AF]",
+        success: "bg-[#2EFF63] group-disabled:bg-[#9CA3AF]",
+        error: "bg-[#FF2E63] group-disabled:bg-[#9CA3AF]",
+        warning: "bg-[#FFB82E] group-disabled:bg-[#9CA3AF]",
       },
     },
     defaultVariants: {
@@ -66,7 +66,18 @@ export interface IconButtonProps
 }
 
 const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ className, variant, size, asChild = false, children, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      disabled = false,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const Comp = asChild ? Slot : "button";
     const currentSize = size || "lg";
     const iconSize = iconSizeMap[currentSize];
@@ -75,6 +86,7 @@ const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
       <Comp
         className={cn(iconButtonVariants({ variant, size, className }))}
         ref={ref}
+        disabled={disabled}
         {...props}
       >
         <div className={cn(iconButtonInnerVariants({ variant }))}>

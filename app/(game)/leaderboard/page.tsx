@@ -74,11 +74,15 @@ export default function LeaderboardPage() {
     <div className="flex-1 px-3 sm:px-4 py-2 space-y-2 sm:space-y-3 overflow-auto relative z-10 pb-24">
       {/* Prize Pool Banner */}
       <CardFrame size="lg" className="w-full">
-        <img
-          src="/images/pool-bg.png"
-          alt="Prize Pool"
-          className="w-full h-auto object-cover"
-        />
+        <picture>
+          <source srcSet="/images/pool-bg.avif" type="image/avif" />
+          <source srcSet="/images/pool-bg.webp" type="image/webp" />
+          <img
+            src="/images/pool-bg.png"
+            alt="Prize Pool"
+            className="w-full h-auto object-cover"
+          />
+        </picture>
       </CardFrame>
 
       {/* Search and Filters */}
