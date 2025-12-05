@@ -37,7 +37,7 @@ export default function HomePage() {
   return (
     <div className="p-4 pb-24 space-y-4">
       {/* Panda Image */}
-      <Card size="lg">
+      <Card>
         <CardContent className="aspect-video flex items-center justify-center relative overflow-hidden">
           <picture className="absolute inset-0 w-full h-full">
             <source srcSet="/images/fighter-frame.avif" type="image/avif" />
@@ -63,21 +63,18 @@ export default function HomePage() {
           value={player.attributes.strength}
           icon="💪"
           variant="destructive"
-          size="lg"
         />
         <AttributeCard
           label="AGI"
           value={player.attributes.speed}
           icon="⚡"
           variant="info"
-          size="lg"
         />
         <AttributeCard
           label="INT"
           value={player.attributes.luck}
           icon="🧠"
           variant="secondary"
-          size="lg"
         />
       </div>
 

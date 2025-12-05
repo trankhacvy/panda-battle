@@ -33,9 +33,10 @@ export default function BattlePage() {
   return (
     <div className="flex-1 px-4 pb-6 relative z-10">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-white font-bold text-base sm:text-xl">
+        {/* <h1 className="text-white font-bold text-base sm:text-xl">
           Battle Opponent List
-        </h1>
+        </h1> */}
+        <div />
         <div className="flex gap-2">
           <IconButton variant="secondary" size="sm" onClick={handleSort}>
             <ArrowDownUp className="text-white" />
