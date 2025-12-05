@@ -86,24 +86,10 @@ export function PandaFighterCreator() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
       >
-        <h1
-          className="text-3xl sm:text-4xl font-extrabold tracking-wide"
-          style={{
-            color: "#4dd8ff",
-            textShadow: "0 0 10px rgba(77, 216, 255, 0.5), 2px 2px 0 #1a5a7a",
-            WebkitTextStroke: "1px #2a8ab0",
-          }}
-        >
+        <h1 className="text-3xl sm:text-4xl tracking-wide font-black text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.5)] game-title-text">
           Create Your
         </h1>
-        <h2
-          className="text-3xl sm:text-4xl font-black tracking-wide mt-1"
-          style={{
-            color: "#ffd93d",
-            textShadow: "0 4px 0 #c9a227, 0 6px 10px rgba(0,0,0,0.3)",
-            WebkitTextStroke: "2px #c9a227",
-          }}
-        >
+        <h2 className="text-3xl sm:text-4xl tracking-wide mt-1 font-black text-yellow-400 drop-shadow-[0_0_30px_rgba(250,204,21,0.5)] game-title-text">
           Panda Fighter
         </h2>
       </motion.div>

@@ -299,6 +299,13 @@
     animation: punch-left 0.5s ease-out forwards;
   }
 
+  .game-title-text {
+    text-shadow: 4px 4px 0px rgba(0, 0, 0, 0.8),
+      -2px -2px 0px rgba(255, 255, 255, 0.3);
+    -webkit-text-stroke: 3px #000;
+    paint-order: stroke fill;
+  }
+
   /* Custom range slider styles */
   input[type="range"].slider-thumb::-webkit-slider-thumb {
     appearance: none;

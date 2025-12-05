@@ -6,24 +6,24 @@ import { cn } from "@/lib/utils";
 import { Loader2Icon } from "lucide-react";
 
 const buttonVariants = cva(
-  "group relative inline-block outline-none hover:scale-100! focus:outline-none transition-transform duration-200",
+  "group relative inline-block cursor-pointer outline-none focus:outline-none transition-transform duration-200",
   {
     variants: {
       variant: {
-        default: "bg-white hover:scale-[1.02]",
-        primary: "bg-white hover:scale-[1.02]",
-        game: "bg-white hover:scale-[1.02]",
-        "game-secondary": "bg-white hover:scale-[1.02]",
-        danger: "bg-white hover:scale-[1.02]",
-        attack: "bg-white hover:scale-[1.02]",
-        defend: "bg-white hover:scale-[1.02]",
-        energy: "bg-white hover:scale-[1.02]",
-        warning: "bg-white hover:scale-[1.02]",
-        destructive: "bg-white hover:scale-[1.02]",
-        outline: "bg-white hover:scale-[1.02]",
-        secondary: "bg-white hover:scale-[1.02]",
-        ghost: "bg-white hover:scale-[1.02]",
-        link: "bg-white hover:scale-[1.02]",
+        default: "bg-white ",
+        primary: "bg-white ",
+        game: "bg-white",
+        "game-secondary": "bg-white ",
+        danger: "bg-white",
+        attack: "bg-white",
+        defend: "bg-white",
+        energy: "bg-white",
+        warning: "bg-white",
+        destructive: "bg-white",
+        outline: "bg-white",
+        secondary: "bg-white",
+        ghost: "bg-white",
+        link: "bg-white",
       },
       size: {
         default: "p-[4px] pb-[12px] rounded-[1.25rem]",

@@ -5,6 +5,8 @@ import { mockPlayerData } from "@/lib/mock/game";
 import { useEffect, useState } from "react";
 import { useWallet } from "@/hooks/use-wallet";
 import { CardFrame } from "@/components/ui/card-frame";
+import { Badge } from "@/components/ui/badge";
+import { LevelBadge } from "@/components/ui/level-badge";
 
 export default function HomePage() {
   const { logout } = useWallet();
@@ -65,6 +67,7 @@ export default function HomePage() {
           />
         </div>
       </CardFrame>
+      <LevelBadge level={player.level}>haah</LevelBadge>
 
       {/* Level and XP Section */}
       <div
@@ -101,7 +104,7 @@ export default function HomePage() {
       </div>
 
       {/* Daily Quests */}
-      <div>
+      {/* <div>
         <h3 className="text-xl font-bold text-white mb-3">Daily Quests</h3>
         <div className="grid grid-cols-3 gap-2">
           <QuestCard
@@ -128,13 +131,14 @@ export default function HomePage() {
             completed
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Action Buttons */}
       <div className="grid grid-cols-3 gap-3">
-        <ActionButton icon="⚔️" label="Train" />
+        <LevelBadge level={player.level} />
+        {/* <ActionButton icon="⚔️" label="Train" />
         <ActionButton icon="🏪" label="Shop" />
-        <ActionButton icon="👥" label="Social" />
+        <ActionButton icon="👥" label="Social" /> */}
       </div>
 
       {/* News Feed */}
