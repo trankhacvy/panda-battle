@@ -37,7 +37,7 @@ export default function HomePage() {
   return (
     <div className="p-4 pb-24 space-y-4">
       {/* Panda Image */}
-      <Card>
+      <Card className="w-full">
         <CardContent className="aspect-video flex items-center justify-center relative overflow-hidden">
           <picture className="absolute inset-0 w-full h-full">
             <source srcSet="/images/fighter-frame.avif" type="image/avif" />
