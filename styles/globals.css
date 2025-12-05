@@ -69,6 +69,37 @@
   --shadow-xl: 0 12px 0px 0px hsl(123 46% 30% / 0.9),
     0 8px 10px -1px hsl(123 46% 30% / 0.7);
   --shadow-2xl: 0 16px 0px 0px hsl(123 46% 30% / 1);
+
+  /* Game Color System - 6 Base Colors */
+  /* Primary - Green (refresh button) */
+  --game-primary: hsl(97 77% 55%);
+  --game-primary-dark: hsl(101 66% 39%);
+  --game-primary-foreground: hsl(0 0% 100%);
+
+  /* Secondary - Purple (settings button) */
+  --game-secondary: hsl(271 91% 65%);
+  --game-secondary-dark: hsl(271 54% 49%);
+  --game-secondary-foreground: hsl(0 0% 100%);
+
+  /* Destructive - Red (close button) */
+  --game-destructive: hsl(343 100% 59%);
+  --game-destructive-dark: hsl(343 70% 43%);
+  --game-destructive-foreground: hsl(0 0% 100%);
+
+  /* Warning - Yellow (back button) */
+  --game-warning: hsl(51 100% 50%);
+  --game-warning-dark: hsl(51 100% 40%);
+  --game-warning-foreground: hsl(0 0% 100%);
+
+  /* Info - Cyan (home button) */
+  --game-info: hsl(193 80% 64%);
+  --game-info-dark: hsl(193 54% 49%);
+  --game-info-foreground: hsl(0 0% 100%);
+
+  /* Pink (menu button) */
+  --game-pink: hsl(340 100% 71%);
+  --game-pink-dark: hsl(340 60% 56%);
+  --game-pink-foreground: hsl(0 0% 100%);
 }
 
 .dark {
@@ -124,6 +155,37 @@
   --shadow-xl: 0 12px 0px 0px hsl(123 46% 30% / 0.9),
     0 8px 10px -1px hsl(123 46% 30% / 0.7);
   --shadow-2xl: 0 16px 0px 0px hsl(123 46% 30% / 1);
+
+  /* Game Color System - 6 Base Colors (Dark Mode) */
+  /* Primary - Green (refresh button) */
+  --game-primary: hsl(97 77% 55%);
+  --game-primary-dark: hsl(101 66% 39%);
+  --game-primary-foreground: hsl(0 0% 100%);
+
+  /* Secondary - Purple (settings button) */
+  --game-secondary: hsl(271 91% 65%);
+  --game-secondary-dark: hsl(271 54% 49%);
+  --game-secondary-foreground: hsl(0 0% 100%);
+
+  /* Destructive - Red (close button) */
+  --game-destructive: hsl(343 100% 59%);
+  --game-destructive-dark: hsl(343 70% 43%);
+  --game-destructive-foreground: hsl(0 0% 100%);
+
+  /* Warning - Yellow (back button) */
+  --game-warning: hsl(51 100% 50%);
+  --game-warning-dark: hsl(51 100% 40%);
+  --game-warning-foreground: hsl(0 0% 100%);
+
+  /* Info - Cyan (home button) */
+  --game-info: hsl(193 80% 64%);
+  --game-info-dark: hsl(193 54% 49%);
+  --game-info-foreground: hsl(0 0% 100%);
+
+  /* Pink (menu button) */
+  --game-pink: hsl(340 100% 71%);
+  --game-pink-dark: hsl(340 60% 56%);
+  --game-pink-foreground: hsl(0 0% 100%);
 }
 
 @theme inline {
@@ -159,6 +221,26 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Game Color System */
+  --color-game-primary: var(--game-primary);
+  --color-game-primary-dark: var(--game-primary-dark);
+  --color-game-primary-foreground: var(--game-primary-foreground);
+  --color-game-secondary: var(--game-secondary);
+  --color-game-secondary-dark: var(--game-secondary-dark);
+  --color-game-secondary-foreground: var(--game-secondary-foreground);
+  --color-game-destructive: var(--game-destructive);
+  --color-game-destructive-dark: var(--game-destructive-dark);
+  --color-game-destructive-foreground: var(--game-destructive-foreground);
+  --color-game-warning: var(--game-warning);
+  --color-game-warning-dark: var(--game-warning-dark);
+  --color-game-warning-foreground: var(--game-warning-foreground);
+  --color-game-info: var(--game-info);
+  --color-game-info-dark: var(--game-info-dark);
+  --color-game-info-foreground: var(--game-info-foreground);
+  --color-game-pink: var(--game-pink);
+  --color-game-pink-dark: var(--game-pink-dark);
+  --color-game-pink-foreground: var(--game-pink-foreground);
 
   --font-rubik: var(--font-rubik);
   /* --font-mono: var(--font-rubik); */
@@ -297,6 +379,13 @@
 
   .animate-punch-left {
     animation: punch-left 0.5s ease-out forwards;
+  }
+
+  .game-title-text {
+    text-shadow: 4px 4px 0px rgba(0, 0, 0, 0.8),
+      -2px -2px 0px rgba(255, 255, 255, 0.3);
+    -webkit-text-stroke: 3px #000;
+    paint-order: stroke fill;
   }
 
   /* Custom range slider styles */

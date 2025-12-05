@@ -9,12 +9,15 @@ export function BattleResult({ isPlayerWin, onBackToHome }: BattleResultProps) {
   return (
     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-500">
       <div className="text-center space-y-4 animate-in zoom-in-95 duration-500 px-4">
-        <div className="text-7xl animate-bounce">{isPlayerWin ? "🏆" : "💀"}</div>
+        <div className="text-7xl animate-bounce">
+          {isPlayerWin ? "🏆" : "💀"}
+        </div>
         <h2
           className="text-4xl font-black drop-shadow-lg"
           style={{
             color: isPlayerWin ? "#FFD700" : "#FF4757",
-            textShadow: "0 0 20px rgba(255,215,0,0.8), 4px 4px 0 rgba(0,0,0,0.8)",
+            textShadow:
+              "0 0 20px rgba(255,215,0,0.8), 4px 4px 0 rgba(0,0,0,0.8)",
             WebkitTextStroke: "2px #000",
           }}
         >
@@ -24,7 +27,7 @@ export function BattleResult({ isPlayerWin, onBackToHome }: BattleResultProps) {
           {isPlayerWin ? "You Won the Battle!" : "Better Luck Next Time!"}
         </p>
         <div className="pt-2">
-          <Button variant="game" size="md" onClick={onBackToHome}>
+          <Button variant="primary" size="md" onClick={onBackToHome}>
             Back to Home
           </Button>
         </div>

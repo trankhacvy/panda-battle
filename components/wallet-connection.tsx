@@ -148,7 +148,7 @@ export function WalletConnectButton() {
   return (
     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="min-w-[140px] justify-between">
+        <Button variant='primary' className="min-w-[140px] justify-between">
           {isConnected && selectedWallet && selectedAccount ? (
             <>
               <div className="flex items-center gap-2">

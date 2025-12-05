@@ -48,26 +48,10 @@ export default function Home() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
         >
-          <h1
-            className="text-6xl sm:text-7xl md:text-8xl font-black text-yellow-400 drop-shadow-[0_0_30px_rgba(250,204,21,0.5)]"
-            style={{
-              textShadow:
-                "4px 4px 0px rgba(0,0,0,0.8), -2px -2px 0px rgba(255,255,255,0.3)",
-              WebkitTextStroke: "3px #000",
-              paintOrder: "stroke fill",
-            }}
-          >
+          <h1 className="text-6xl sm:text-7xl md:text-8xl font-black text-yellow-400 drop-shadow-[0_0_30px_rgba(250,204,21,0.5)] game-title-text">
             PANDA
           </h1>
-          <h2
-            className="text-5xl sm:text-6xl md:text-7xl font-black text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]"
-            style={{
-              textShadow:
-                "4px 4px 0px rgba(0,0,0,0.8), -2px -2px 0px rgba(200,200,200,0.3)",
-              WebkitTextStroke: "3px #000",
-              paintOrder: "stroke fill",
-            }}
-          >
+          <h2 className="text-5xl sm:text-6xl md:text-7xl font-black text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.5)] game-title-text">
             CHAOS
           </h2>
         </motion.div>
@@ -93,7 +77,7 @@ export default function Home() {
           transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
         >
           <Button
-            variant="game"
+            variant="primary"
             size="lg"
             className="w-full"
             disabled={!ready}

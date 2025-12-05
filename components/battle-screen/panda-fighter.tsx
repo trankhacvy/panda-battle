@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { CardFrame } from "@/components/ui/card-frame";
+import { Card } from "../ui/card";
 
 interface PandaStats {
   name: string;
@@ -60,7 +60,7 @@ export function PandaFighter({
           hitAnimation
         )}
       >
-        <CardFrame size="md">
+        <Card size="md">
           <div className="w-28 sm:w-36 h-28 sm:h-36 relative overflow-hidden bg-cover bg-center">
             <img
               src="/images/fighter-frame.png"
@@ -78,7 +78,7 @@ export function PandaFighter({
               className="relative z-10 w-full h-full object-contain"
             />
           </div>
-        </CardFrame>
+        </Card>
         <div
           className={`absolute ${
             side === "left"

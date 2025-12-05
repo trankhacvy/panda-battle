@@ -74,7 +74,7 @@ export function StanceSelector({
   onStanceChange,
 }: StanceSelectorProps) {
   return (
-    <Card variant="game">
+    <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <span className="text-xl">🎯</span>
@@ -110,7 +110,7 @@ export function StanceSelector({
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-sm">{stance.name}</h4>
                       {isSelected && (
-                        <Badge variant="default" className="text-xs">
+                        <Badge variant="secondary" className="text-xs">
                           Selected ✓
                         </Badge>
                       )}

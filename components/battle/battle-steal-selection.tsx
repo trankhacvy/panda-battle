@@ -29,17 +29,6 @@ interface AttributeOption {
   variant: "strength" | "speed" | "endurance" | "luck";
 }
 
-/**
- * BattleStealSelection - Attribute steal selection UI
- *
- * Task 9.3: Create attribute steal selection
- * - Show steal selection UI after battle win
- * - Display loser's attributes with steal percentages
- * - Allow winner to select attribute to steal
- * - Show before/after attribute comparison
- *
- * Requirements: 4.1, 4.2
- */
 export function BattleStealSelection({
   winner,
   loser,
@@ -158,7 +147,6 @@ export function BattleStealSelection({
           {attributeOptions.map((option) => (
             <Card
               key={option.type}
-              variant={selectedAttribute === option.type ? "highlight" : "game"}
               className={cn(
                 "cursor-pointer transition-all duration-300 hover:scale-105",
                 selectedAttribute === option.type &&
@@ -172,7 +160,7 @@ export function BattleStealSelection({
                     <span className="text-2xl">{option.icon}</span>
                     <span>{option.label}</span>
                   </span>
-                  <Badge variant="default" className="text-sm">
+                  <Badge variant="secondary" className="text-sm">
                     {option.stealPercentage}%
                   </Badge>
                 </CardTitle>
@@ -186,7 +174,7 @@ export function BattleStealSelection({
                   </div>
                   <Progress
                     value={(option.currentValue / 40) * 100}
-                    variant={option.variant}
+                    variant="pink"
                     className="h-2"
                   />
                 </div>
@@ -219,7 +207,7 @@ export function BattleStealSelection({
                     </div>
                     <Progress
                       value={(option.newWinnerValue / 40) * 100}
-                      variant={option.variant}
+                      variant="pink"
                       className="h-2"
                     />
                   </div>
@@ -236,7 +224,7 @@ export function BattleStealSelection({
                     </div>
                     <Progress
                       value={(option.newLoserValue / 40) * 100}
-                      variant={option.variant}
+                      variant="pink"
                       className="h-2 opacity-50"
                     />
                   </div>
@@ -249,7 +237,7 @@ export function BattleStealSelection({
         {/* Action Buttons */}
         <div className="flex gap-4">
           <Button
-            variant="outline"
+            variant="secondary"
             size="lg"
             className="flex-1"
             onClick={onSkip}
@@ -257,7 +245,7 @@ export function BattleStealSelection({
             Skip Steal
           </Button>
           <Button
-            variant="game"
+            variant="secondary"
             size="lg"
             className="flex-1"
             onClick={handleConfirmSteal}
@@ -271,7 +259,7 @@ export function BattleStealSelection({
         </div>
 
         {/* Info */}
-        <Card variant="game" className="bg-muted/30">
+        <Card className="bg-muted/30">
           <CardContent className="p-4">
             <div className="text-xs text-muted-foreground space-y-1">
               <p className="font-semibold">Steal Mechanics:</p>

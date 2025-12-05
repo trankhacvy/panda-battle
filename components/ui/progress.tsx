@@ -1,12 +1,57 @@
 import * as React from "react";
 import * as ProgressPrimitive from "@radix-ui/react-progress";
+import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+const progressVariants = cva(
+  "relative w-full overflow-hidden rounded-full transition-all duration-200",
+  {
+    variants: {
+      variant: {
+        primary: "bg-game-primary/20",
+        secondary: "bg-game-secondary/20",
+        destructive: "bg-game-destructive/20",
+        warning: "bg-game-warning/20",
+        info: "bg-game-info/20",
+        pink: "bg-game-pink/20",
+      },
+      size: {
+        sm: "h-2",
+        md: "h-3",
+        lg: "h-4",
+      },
+    },
+    defaultVariants: {
+      variant: "primary",
+      size: "md",
+    },
+  }
+);
+
+const progressIndicatorVariants = cva(
+  "h-full w-full flex-1 transition-all duration-500 ease-out rounded-full",
+  {
+    variants: {
+      variant: {
+        primary: "bg-game-primary",
+        secondary: "bg-game-secondary",
+        destructive: "bg-game-destructive",
+        warning: "bg-game-warning",
+        info: "bg-game-info",
+        pink: "bg-game-pink",
+      },
+    },
+    defaultVariants: {
+      variant: "primary",
+    },
+  }
+);
+
 interface ProgressProps
-  extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
-  variant?: "default" | "strength" | "speed" | "endurance" | "luck" | "game";
-  showShell?: boolean; // Enable white border container
+  extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>,
+    VariantProps<typeof progressVariants> {
+  showShell?: boolean;
 }
 
 const Progress = React.forwardRef<
@@ -14,36 +59,28 @@ const Progress = React.forwardRef<
   ProgressProps
 >(
   (
-    { className, value, variant = "default", showShell = false, ...props },
+    {
+      className,
+      value,
+      variant = "primary",
+      size = "md",
+      showShell = false,
+      ...props
+    },
     ref
   ) => {
-    const variantClasses = {
-      default: "bg-primary",
-      strength:
-        "bg-gradient-to-r from-red-500 to-orange-500 shadow-lg shadow-red-500/50",
-      speed:
-        "bg-gradient-to-r from-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/50",
-      endurance:
-        "bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg shadow-green-500/50",
-      luck: "bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg shadow-purple-500/50",
-      game: "bg-yellow-400",
-    };
-
     const progressBar = (
       <ProgressPrimitive.Root
         ref={ref}
         className={cn(
-          "relative h-3 w-full overflow-hidden rounded-full bg-primary/20 border border-primary/30 transition-all duration-200",
-          showShell && "h-4 bg-[#1a0b2e] border-0",
+          progressVariants({ variant, size }),
+          showShell && "bg-gray-200",
           className
         )}
         {...props}
       >
         <ProgressPrimitive.Indicator
-          className={cn(
-            "h-full w-full flex-1 transition-all duration-500 ease-out animate-in rounded-full",
-            variantClasses[variant]
-          )}
+          className={cn(progressIndicatorVariants({ variant }))}
           style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
         />
       </ProgressPrimitive.Root>
@@ -52,8 +89,7 @@ const Progress = React.forwardRef<
     if (showShell) {
       return (
         <div className="relative">
-          {/* Outer White Container - Creates thick white border effect */}
-          <div className="bg-white p-[3px] rounded-full">
+          <div className="bg-white p-[3px] rounded-full shadow-[0_2px_0_#d0d0d0]">
             {progressBar}
           </div>
         </div>
@@ -68,31 +104,64 @@ Progress.displayName = ProgressPrimitive.Root.displayName;
 // Simple progress bar component (non-Radix version for more flexibility)
 interface SimpleProgressProps {
   value: number; // 0 to 100
-  colorClass?: string; // Tailwind class for fill color
+  variant?:
+    | "primary"
+    | "secondary"
+    | "destructive"
+    | "warning"
+    | "info"
+    | "pink";
+  size?: "sm" | "md" | "lg";
   className?: string;
   showShell?: boolean;
 }
 
 const SimpleProgress: React.FC<SimpleProgressProps> = ({
   value,
-  colorClass = "bg-yellow-400",
+  variant = "primary",
+  size = "md",
   className = "",
   showShell = true,
 }) => {
   const clampedValue = Math.min(100, Math.max(0, value));
 
+  const sizeClasses = {
+    sm: "h-2",
+    md: "h-3",
+    lg: "h-4",
+  };
+
+  const variantBgClasses = {
+    primary: "bg-game-primary/20",
+    secondary: "bg-game-secondary/20",
+    destructive: "bg-game-destructive/20",
+    warning: "bg-game-warning/20",
+    info: "bg-game-info/20",
+    pink: "bg-game-pink/20",
+  };
+
+  const variantFillClasses = {
+    primary: "bg-game-primary",
+    secondary: "bg-game-secondary",
+    destructive: "bg-game-destructive",
+    warning: "bg-game-warning",
+    info: "bg-game-info",
+    pink: "bg-game-pink",
+  };
+
   const progressBar = (
     <div
       className={cn(
-        "w-full h-4 bg-[#1a0b2e] rounded-full overflow-hidden relative",
-        !showShell && "border border-primary/30",
+        "w-full rounded-full overflow-hidden relative",
+        sizeClasses[size],
+        showShell ? "bg-gray-200" : variantBgClasses[variant],
         className
       )}
     >
       <div
         className={cn(
           "h-full rounded-full transition-all duration-500 ease-out",
-          colorClass
+          variantFillClasses[variant]
         )}
         style={{ width: `${clampedValue}%` }}
       />
@@ -102,7 +171,7 @@ const SimpleProgress: React.FC<SimpleProgressProps> = ({
   if (showShell) {
     return (
       <div className="relative">
-        <div className="bg-white p-[3px] rounded-full">
+        <div className="bg-white p-[3px] rounded-full shadow-[0_2px_0_#d0d0d0]">
           {progressBar}
         </div>
       </div>

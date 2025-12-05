@@ -199,7 +199,7 @@ export default function TestSponsorPage() {
             <div className="flex gap-2">
               <Button
                 onClick={() => setTestMode("whitelisted")}
-                variant={testMode === "whitelisted" ? "primary" : "outline"}
+                variant={testMode === "whitelisted" ? "primary" : "secondary"}
                 className="flex-1"
                 disabled={isLoading}
               >
@@ -208,7 +208,7 @@ export default function TestSponsorPage() {
               <Button
                 onClick={() => setTestMode("non-whitelisted")}
                 variant={
-                  testMode === "non-whitelisted" ? "destructive" : "outline"
+                  testMode === "non-whitelisted" ? "destructive" : "secondary"
                 }
                 className="flex-1"
                 disabled={isLoading}

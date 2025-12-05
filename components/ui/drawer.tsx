@@ -77,7 +77,7 @@ function DrawerContent({
         )}
         {...props}
       >
-        <div className="bg-[#4a9eff]/50 mx-auto mt-3 hidden h-1 w-[60px] shrink-0 rounded-full group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
+        <div className="bg-gray-300 mx-auto mt-3 hidden h-1 w-[60px] shrink-0 rounded-full group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
         {children}
       </DrawerPrimitive.Content>
     </DrawerPortal>
@@ -127,7 +127,7 @@ function DrawerTitle({
 
         <DrawerClose asChild>
           <Button
-            variant="ghost"
+            variant="info"
             size="default"
             aria-label="Close drawer"
             onClick={onClose === true ? undefined : onClose}

@@ -412,7 +412,6 @@ function PandaDisplay({
 }: PandaDisplayProps) {
   return (
     <Card
-      variant="battle"
       className={cn(
         "relative overflow-hidden transition-all duration-300",
         isPlayer ? "md:mr-4" : "md:ml-4",
@@ -422,16 +421,19 @@ function PandaDisplay({
       <CardContent className="p-6 space-y-4">
         {/* Header */}
         <div className="text-center space-y-2">
-          <Badge variant={isPlayer ? "default" : "outline"} className="text-xs">
+          <Badge
+            variant={isPlayer ? "primary" : "secondary"}
+            className="text-xs"
+          >
             {label}
           </Badge>
           <h2 className="text-2xl font-bold">{panda.name}</h2>
           <div className="flex items-center justify-center gap-2">
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="secondary" className="text-xs">
               Rank #{panda.rank}
             </Badge>
             {panda.isInTop20 && (
-              <Badge variant="default" className="text-xs bg-yellow-500">
+              <Badge variant="primary" className="text-xs bg-yellow-500">
                 Top 20
               </Badge>
             )}
@@ -458,7 +460,7 @@ function PandaDisplay({
               <span className="font-semibold">HP</span>
               <span className="text-muted-foreground">{hp}%</span>
             </div>
-            <Progress value={hp} className="h-4" variant="default" />
+            <Progress value={hp} className="h-4" variant="primary" />
           </div>
         </div>
 
@@ -481,7 +483,7 @@ function PandaDisplay({
             </div>
             <Progress
               value={(panda.attributes.strength / 40) * 100}
-              variant="strength"
+              variant="primary"
               className="h-2"
             />
           </div>
@@ -499,7 +501,7 @@ function PandaDisplay({
             </div>
             <Progress
               value={(panda.attributes.speed / 40) * 100}
-              variant="speed"
+              variant="primary"
               className="h-2"
             />
           </div>
@@ -517,7 +519,7 @@ function PandaDisplay({
             </div>
             <Progress
               value={(panda.attributes.endurance / 40) * 100}
-              variant="endurance"
+              variant="primary"
               className="h-2"
             />
           </div>
@@ -535,7 +537,7 @@ function PandaDisplay({
             </div>
             <Progress
               value={(panda.attributes.luck / 40) * 100}
-              variant="luck"
+              variant="primary"
               className="h-2"
             />
           </div>
@@ -545,7 +547,7 @@ function PandaDisplay({
         <div className="pt-3 border-t border-border/50">
           <div className="flex justify-between items-center">
             <span className="text-sm font-semibold">Total Power</span>
-            <Badge variant="default" className="text-base px-3 py-1">
+            <Badge variant="primary" className="text-base px-3 py-1">
               {panda.power}
             </Badge>
           </div>
