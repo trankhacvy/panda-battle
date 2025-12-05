@@ -1,10 +1,10 @@
 "use client";
 
 import { ReactNode } from "react";
-import { Home, Swords, Trophy } from "lucide-react";
+import { Home, Swords, Trophy, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type TabType = "home" | "battle" | "leaderboard";
+export type TabType = "home" | "battle" | "world-boss" | "leaderboard";
 
 interface TabNavigationProps {
   activeTab: TabType;
@@ -27,6 +27,11 @@ const tabs: TabItem[] = [
     id: "battle",
     label: "Battle",
     icon: <Swords className="w-6 h-6" />,
+  },
+  {
+    id: "world-boss",
+    label: "World Boss",
+    icon: <Crown className="w-6 h-6" />,
   },
   {
     id: "leaderboard",

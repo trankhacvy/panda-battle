@@ -28,6 +28,13 @@ const navItems: NavItem[] = [
     variant: "secondary",
   },
   {
+    id: "world-boss",
+    label: "World Bosses",
+    path: "/world-boss",
+    icon: "/images/boss-icon.png",
+    variant: "warning",
+  },
+  {
     id: "leaderboard",
     label: "Leaderboard",
     path: "/leaderboard",
