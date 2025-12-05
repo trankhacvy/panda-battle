@@ -1,19 +1,14 @@
-import { Flame, Zap, Wind, Brain } from "lucide-react";
 import type { OpponentPanda } from "@/lib/mock/battles";
 import { Button } from "../ui/button";
 import { CardFrame } from "../ui/card-frame";
+import { Badge } from "../ui/badge";
 
 interface OpponentCardProps {
   opponent: OpponentPanda;
-  bgColor: string;
   onBattle?: () => void;
 }
 
-export function OpponentCard({
-  opponent,
-  bgColor,
-  onBattle,
-}: OpponentCardProps) {
+export function OpponentCard({ opponent, onBattle }: OpponentCardProps) {
   return (
     <CardFrame size="md" className="w-full">
       <div className="rounded-[1.125rem] p-2 sm:p-2.5 flex items-center gap-2 sm:gap-2.5 bg-white">
@@ -28,46 +23,23 @@ export function OpponentCard({
 
         {/* Stats */}
         <div className="flex-1">
-          <h3 className="text-gray-900 font-bold text-sm sm:text-base mb-0.5">
+          <h3 className="text-gray-900 font-bold text-sm sm:text-base mb-1">
             {opponent.name}
           </h3>
-          <div className="grid grid-cols-2 gap-x-2 sm:gap-x-3 gap-y-0.5 text-[10px] sm:text-xs">
-            <div className="flex items-center gap-1">
-              <span className="w-4 h-4 bg-red-500 rounded flex items-center justify-center">
-                <Flame className="w-2.5 h-2.5 text-white" />
-              </span>
-              <span className="text-gray-700 font-medium">
-                STA: {opponent.attributes.endurance}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="w-4 h-4 bg-orange-400 rounded flex items-center justify-center">
-                <Zap className="w-2.5 h-2.5 text-white" />
-              </span>
-              <span className="text-gray-700 font-medium">
-                STR: {opponent.attributes.strength}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="w-4 h-4 bg-green-500 rounded flex items-center justify-center">
-                <Wind className="w-2.5 h-2.5 text-white" />
-              </span>
-              <span className="text-gray-700 font-medium">
-                AGI: {opponent.attributes.speed}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
-                <Brain className="w-2.5 h-2.5 text-white" />
-              </span>
-              <span className="text-gray-700 font-medium">
-                INT: {opponent.attributes.luck}
-              </span>
-            </div>
+          <div className="flex flex-wrap gap-1">
+            <Badge variant="destructive" size="sm">
+              💪 {opponent.attributes.strength}
+            </Badge>
+            <Badge variant="info" size="sm">
+              ⚡ {opponent.attributes.speed}
+            </Badge>
+            <Badge variant="secondary" size="sm">
+              🧠 {opponent.attributes.luck}
+            </Badge>
           </div>
         </div>
 
-        <Button size="sm" variant="danger" onClick={onBattle}>
+        <Button size="sm" variant="destructive" onClick={onBattle}>
           Battle
         </Button>
       </div>

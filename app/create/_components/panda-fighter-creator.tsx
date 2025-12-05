@@ -129,19 +129,19 @@ export function PandaFighterCreator() {
                   label="STR"
                   value={attributes.str}
                   icon="💪"
-                  textColor="text-orange-500"
+                  variant="secondary"
                 />
                 <AttributeCard
                   label="AGI"
                   value={attributes.agi}
                   icon="⚡"
-                  textColor="text-green-500"
+                  variant="secondary"
                 />
                 <AttributeCard
                   label="INT"
                   value={attributes.int}
                   icon="🧠"
-                  textColor="text-blue-500"
+                  variant="secondary"
                 />
               </div>
             )}
@@ -157,7 +157,6 @@ export function PandaFighterCreator() {
       >
         {!isCreated ? (
           <Button
-            variant="game"
             size="lg"
             onClick={createPanda}
             disabled={isLoading}
@@ -170,7 +169,7 @@ export function PandaFighterCreator() {
             <Button
               onClick={handleReroll}
               disabled={isLoading}
-              variant="warning"
+              variant="secondary"
               size="lg"
               className="w-full text-sm sm:text-base"
             >
@@ -179,7 +178,6 @@ export function PandaFighterCreator() {
             <Button
               onClick={handleStartGame}
               disabled={isLoading}
-              variant="game"
               size="lg"
               className="w-full text-sm sm:text-base"
             >

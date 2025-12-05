@@ -21,7 +21,7 @@ function LevelBadge({ level, className, ...props }: LevelBadgeProps) {
       <div
         className={cn(
           "flex items-center justify-center",
-          "bg-[#A855F7] shadow-[0_3px_0_#7E3FB8]",
+          "bg-game-secondary shadow-[0_3px_0_var(--game-secondary-dark)]",
           "rounded-full",
           "px-3 py-0.5"
         )}

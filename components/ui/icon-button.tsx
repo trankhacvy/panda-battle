@@ -10,15 +10,15 @@ const iconButtonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-white shadow-[0_8px_0_#B8234D] active:translate-y-[8px] hover:shadow-[0_8px_0_#9f1d3b]",
+          "bg-white shadow-[0_8px_0_var(--game-primary-dark)] active:translate-y-[8px] hover:shadow-[0_8px_0_var(--game-primary-dark)]",
         secondary:
-          "bg-white shadow-[0_8px_0_#2350CC] active:translate-y-[8px] hover:shadow-[0_8px_0_#1a3d99]",
-        success:
-          "bg-white shadow-[0_8px_0_#25CC4F] active:translate-y-[8px] hover:shadow-[0_8px_0_#1a993b]",
-        error:
-          "bg-white shadow-[0_8px_0_#B8234D] active:translate-y-[8px] hover:shadow-[0_8px_0_#9f1d3b]",
+          "bg-white shadow-[0_8px_0_var(--game-secondary-dark)] active:translate-y-[8px] hover:shadow-[0_8px_0_var(--game-secondary-dark)]",
+        destructive:
+          "bg-white shadow-[0_8px_0_var(--game-destructive-dark)] active:translate-y-[8px] hover:shadow-[0_8px_0_var(--game-destructive-dark)]",
         warning:
-          "bg-white shadow-[0_8px_0_#CC9225] active:translate-y-[8px] hover:shadow-[0_8px_0_#99701a]",
+          "bg-white shadow-[0_8px_0_var(--game-warning-dark)] active:translate-y-[8px] hover:shadow-[0_8px_0_var(--game-warning-dark)]",
+        info: "bg-white shadow-[0_8px_0_var(--game-info-dark)] active:translate-y-[8px] hover:shadow-[0_8px_0_var(--game-info-dark)]",
+        pink: "bg-white shadow-[0_8px_0_var(--game-pink-dark)] active:translate-y-[8px] hover:shadow-[0_8px_0_var(--game-pink-dark)]",
       },
       size: {
         sm: "w-12 h-12 p-1.5 active:translate-y-[4px]",
@@ -39,11 +39,12 @@ const iconButtonInnerVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-[#FF2E63] group-disabled:bg-[#9CA3AF]",
-        secondary: "bg-[#2E63FF] group-disabled:bg-[#9CA3AF]",
-        success: "bg-[#2EFF63] group-disabled:bg-[#9CA3AF]",
-        error: "bg-[#FF2E63] group-disabled:bg-[#9CA3AF]",
-        warning: "bg-[#FFB82E] group-disabled:bg-[#9CA3AF]",
+        primary: "bg-game-primary group-disabled:bg-[#9CA3AF]",
+        secondary: "bg-game-secondary group-disabled:bg-[#9CA3AF]",
+        destructive: "bg-game-destructive group-disabled:bg-[#9CA3AF]",
+        warning: "bg-game-warning group-disabled:bg-[#9CA3AF]",
+        info: "bg-game-info group-disabled:bg-[#9CA3AF]",
+        pink: "bg-game-pink group-disabled:bg-[#9CA3AF]",
       },
     },
     defaultVariants: {

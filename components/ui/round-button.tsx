@@ -9,12 +9,16 @@ const roundButtonVariants = cva(
   {
     variants: {
       variant: {
-        default: "shadow-[0_4px_0_#9f1d3b] active:translate-y-[8px]",
-        red: "shadow-[0_4px_0_#9f1d3b] active:translate-y-[8px]",
-        purple: "shadow-[0_4px_0_#7c3aed] active:translate-y-[8px]",
-        blue: "shadow-[0_4px_0_#1d4ed8] active:translate-y-[8px]",
-        green: "shadow-[0_4px_0_#4ca600] active:translate-y-[8px]",
-        orange: "shadow-[0_4px_0_#cc7000] active:translate-y-[8px]",
+        primary:
+          "shadow-[0_4px_0_var(--game-primary-dark)] active:translate-y-[8px]",
+        secondary:
+          "shadow-[0_4px_0_var(--game-secondary-dark)] active:translate-y-[8px]",
+        destructive:
+          "shadow-[0_4px_0_var(--game-destructive-dark)] active:translate-y-[8px]",
+        warning:
+          "shadow-[0_4px_0_var(--game-warning-dark)] active:translate-y-[8px]",
+        info: "shadow-[0_4px_0_var(--game-info-dark)] active:translate-y-[8px]",
+        pink: "shadow-[0_4px_0_var(--game-pink-dark)] active:translate-y-[8px]",
       },
       size: {
         sm: "p-[4px] active:translate-y-[4px]",
@@ -24,7 +28,7 @@ const roundButtonVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
       size: "lg",
     },
   }
@@ -35,12 +39,12 @@ const roundButtonInnerVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[#FF2E63] border-[3px] border-[#FF2E63]",
-        red: "bg-[#FF2E63] border-[3px] border-[#FF2E63]",
-        purple: "bg-[#A855F7] border-[3px] border-[#A855F7]",
-        blue: "bg-[#3B82F6] border-[3px] border-[#3B82F6]",
-        green: "bg-[#74D700] border-[3px] border-[#74D700]",
-        orange: "bg-[#FF8C00] border-[3px] border-[#FF8C00]",
+        primary: "bg-game-primary border-[3px] border-game-primary",
+        secondary: "bg-game-secondary border-[3px] border-game-secondary",
+        destructive: "bg-game-destructive border-[3px] border-game-destructive",
+        warning: "bg-game-warning border-[3px] border-game-warning",
+        info: "bg-game-info border-[3px] border-game-info",
+        pink: "bg-game-pink border-[3px] border-game-pink",
       },
       size: {
         sm: "w-10 h-10",
@@ -50,7 +54,7 @@ const roundButtonInnerVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
       size: "lg",
     },
   }

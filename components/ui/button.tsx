@@ -10,20 +10,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-white ",
-        primary: "bg-white ",
-        game: "bg-white",
-        "game-secondary": "bg-white ",
-        danger: "bg-white",
-        attack: "bg-white",
-        defend: "bg-white",
-        energy: "bg-white",
-        warning: "bg-white",
-        destructive: "bg-white",
-        outline: "bg-white",
+        primary: "bg-white",
         secondary: "bg-white",
-        ghost: "bg-white",
-        link: "bg-white",
+        destructive: "bg-white",
+        warning: "bg-white",
+        info: "bg-white",
+        pink: "bg-white",
       },
       size: {
         default: "p-[4px] pb-[12px] rounded-[1.25rem]",
@@ -34,7 +26,7 @@ const buttonVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
       size: "default",
     },
   }
@@ -45,32 +37,16 @@ const innerVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "bg-[#75E536] shadow-[0_8px_0_#4CA322] group-active:shadow-[0_0px_0_#4CA322] group-active:translate-y-[8px]",
         primary:
-          "bg-[#75E536] shadow-[0_8px_0_#4CA322] group-active:shadow-[0_0px_0_#4CA322] group-active:translate-y-[8px]",
-        game: "bg-[#75E536] shadow-[0_8px_0_#4CA322] group-active:shadow-[0_0px_0_#4CA322] group-active:translate-y-[8px]",
-        "game-secondary":
-          "bg-[#A855F7] shadow-[0_8px_0_#7E3FB8] group-active:shadow-[0_0px_0_#7E3FB8] group-active:translate-y-[8px]",
-        danger:
-          "bg-[#FF4757] shadow-[0_8px_0_#CC3946] group-active:shadow-[0_0px_0_#CC3946] group-active:translate-y-[8px]",
-        attack:
-          "bg-[#FF4757] shadow-[0_8px_0_#CC3946] group-active:shadow-[0_0px_0_#CC3946] group-active:translate-y-[8px]",
-        defend:
-          "bg-[#00A3FF] shadow-[0_8px_0_#0073B3] group-active:shadow-[0_0px_0_#0073B3] group-active:translate-y-[8px]",
-        energy:
-          "bg-[#A855F7] shadow-[0_8px_0_#7E3FB8] group-active:shadow-[0_0px_0_#7E3FB8] group-active:translate-y-[8px]",
-        warning:
-          "bg-[#FFD700] shadow-[0_8px_0_#CCB000] group-active:shadow-[0_0px_0_#CCB000] group-active:translate-y-[8px]",
-        destructive:
-          "bg-[#FF4757] shadow-[0_8px_0_#CC3946] group-active:shadow-[0_0px_0_#CC3946] group-active:translate-y-[8px]",
-        outline:
-          "bg-gray-500 shadow-[0_8px_0_#6B7280] group-active:shadow-[0_0px_0_#6B7280] group-active:translate-y-[8px]",
+          "bg-game-primary shadow-[0_8px_0_var(--game-primary-dark)] group-active:shadow-[0_0px_0_var(--game-primary-dark)] group-active:translate-y-[8px]",
         secondary:
-          "bg-[#A855F7] shadow-[0_8px_0_#7E3FB8] group-active:shadow-[0_0px_0_#7E3FB8] group-active:translate-y-[8px]",
-        ghost:
-          "bg-gray-500 shadow-[0_8px_0_#6B7280] group-active:shadow-[0_0px_0_#6B7280] group-active:translate-y-[8px]",
-        link: "bg-[#00A3FF] shadow-[0_8px_0_#0073B3] group-active:shadow-[0_0px_0_#0073B3] group-active:translate-y-[8px]",
+          "bg-game-secondary shadow-[0_8px_0_var(--game-secondary-dark)] group-active:shadow-[0_0px_0_var(--game-secondary-dark)] group-active:translate-y-[8px]",
+        destructive:
+          "bg-game-destructive shadow-[0_8px_0_var(--game-destructive-dark)] group-active:shadow-[0_0px_0_var(--game-destructive-dark)] group-active:translate-y-[8px]",
+        warning:
+          "bg-game-warning shadow-[0_8px_0_var(--game-warning-dark)] group-active:shadow-[0_0px_0_var(--game-warning-dark)] group-active:translate-y-[8px]",
+        info: "bg-game-info shadow-[0_8px_0_var(--game-info-dark)] group-active:shadow-[0_0px_0_var(--game-info-dark)] group-active:translate-y-[8px]",
+        pink: "bg-game-pink shadow-[0_8px_0_var(--game-pink-dark)] group-active:shadow-[0_0px_0_var(--game-pink-dark)] group-active:translate-y-[8px]",
       },
       size: {
         default: "h-10 rounded-[1rem]",
@@ -81,7 +57,7 @@ const innerVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
       size: "default",
     },
   }

@@ -4,9 +4,8 @@ import { Progress } from "@/components/ui/progress";
 import { mockPlayerData } from "@/lib/mock/game";
 import { useEffect, useState } from "react";
 import { useWallet } from "@/hooks/use-wallet";
-import { CardFrame } from "@/components/ui/card-frame";
-import { Badge } from "@/components/ui/badge";
-import { LevelBadge } from "@/components/ui/level-badge";
+import { AttributeCard } from "@/app/create/_components/attribute-card";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function HomePage() {
   const { logout } = useWallet();
@@ -35,22 +34,11 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [player.nextTurnRegenTime]);
 
-  const totalPower =
-    player.attributes.strength +
-    player.attributes.speed +
-    player.attributes.endurance +
-    player.attributes.luck;
-
-  const winRate =
-    player.totalBattles > 0
-      ? Math.round((player.wins / player.totalBattles) * 100)
-      : 0;
-
   return (
     <div className="p-4 pb-24 space-y-4">
       {/* Panda Image */}
-      <CardFrame size="lg">
-        <div className="aspect-video flex items-center justify-center relative overflow-hidden">
+      <Card size="lg">
+        <CardContent className="aspect-video flex items-center justify-center relative overflow-hidden">
           <picture className="absolute inset-0 w-full h-full">
             <source srcSet="/images/fighter-frame.avif" type="image/avif" />
             <source srcSet="/images/fighter-frame.webp" type="image/webp" />
@@ -65,9 +53,33 @@ export default function HomePage() {
             alt="Panda Warrior"
             className="relative z-10 w-auto h-full object-cover"
           />
-        </div>
-      </CardFrame>
-      <LevelBadge level={player.level}>haah</LevelBadge>
+        </CardContent>
+      </Card>
+
+      {/* Attributes Section */}
+      <div className="grid grid-cols-3 gap-2">
+        <AttributeCard
+          label="STR"
+          value={player.attributes.strength}
+          icon="💪"
+          variant="destructive"
+          size="lg"
+        />
+        <AttributeCard
+          label="AGI"
+          value={player.attributes.speed}
+          icon="⚡"
+          variant="info"
+          size="lg"
+        />
+        <AttributeCard
+          label="INT"
+          value={player.attributes.luck}
+          icon="🧠"
+          variant="secondary"
+          size="lg"
+        />
+      </div>
 
       {/* Level and XP Section */}
       <div
@@ -89,7 +101,7 @@ export default function HomePage() {
           <div className="relative">
             <Progress
               value={(player.experience / player.experienceToNextLevel) * 100}
-              variant="game"
+              variant="warning"
               showShell
               className="h-8"
             />
@@ -134,15 +146,14 @@ export default function HomePage() {
       </div> */}
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-3 gap-3">
-        <LevelBadge level={player.level} />
-        {/* <ActionButton icon="⚔️" label="Train" />
+      {/* <div className="grid grid-cols-3 gap-3">
+         <ActionButton icon="⚔️" label="Train" />
         <ActionButton icon="🏪" label="Shop" />
-        <ActionButton icon="👥" label="Social" /> */}
-      </div>
+        <ActionButton icon="👥" label="Social" /> 
+      </div> */}
 
       {/* News Feed */}
-      <div>
+      {/* <div>
         <h3 className="text-xl font-bold text-white mb-3">News Feed</h3>
         <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3">
           <CardFrame size="sm" className="flex-shrink-0">
@@ -169,59 +180,59 @@ export default function HomePage() {
             </p>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
 
-function QuestCard({
-  icon,
-  title,
-  progress,
-  total,
-  color,
-  completed = false,
-}: {
-  icon: string;
-  title: string;
-  progress: number;
-  total: number;
-  color: string;
-  completed?: boolean;
-}) {
-  const isFull = progress >= total;
-  return (
-    <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-xl p-3">
-      <div className="flex flex-col items-center gap-2">
-        <div className="text-2xl">{icon}</div>
-        <p className="text-white text-xs font-medium text-center leading-tight min-h-[2rem]">
-          {title}
-        </p>
-        <div className="w-full relative">
-          <Progress
-            value={(progress / total) * 100}
-            variant="game"
-            showShell
-            className="h-5"
-          />
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <p className="text-white text-xs font-bold drop-shadow-lg z-10">
-              {isFull ? "100%" : `${progress} / ${total}`}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+// function QuestCard({
+//   icon,
+//   title,
+//   progress,
+//   total,
+//   color,
+//   completed = false,
+// }: {
+//   icon: string;
+//   title: string;
+//   progress: number;
+//   total: number;
+//   color: string;
+//   completed?: boolean;
+// }) {
+//   const isFull = progress >= total;
+//   return (
+//     <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-xl p-3">
+//       <div className="flex flex-col items-center gap-2">
+//         <div className="text-2xl">{icon}</div>
+//         <p className="text-white text-xs font-medium text-center leading-tight min-h-[2rem]">
+//           {title}
+//         </p>
+//         <div className="w-full relative">
+//           <Progress
+//             value={(progress / total) * 100}
+//             variant="game"
+//             showShell
+//             className="h-5"
+//           />
+//           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+//             <p className="text-white text-xs font-bold drop-shadow-lg z-10">
+//               {isFull ? "100%" : `${progress} / ${total}`}
+//             </p>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
 
-function ActionButton({ icon, label }: { icon: string; label: string }) {
-  return (
-    <button className="bg-[#0a1628]/90 backdrop-blur-sm rounded-xl p-4 hover:bg-[#0a1628]/100 transition-all active:scale-95">
-      <div className="flex flex-col items-center gap-2">
-        <div className="text-3xl">{icon}</div>
-        <p className="text-white font-bold text-sm">{label}</p>
-      </div>
-    </button>
-  );
-}
+// function ActionButton({ icon, label }: { icon: string; label: string }) {
+//   return (
+//     <button className="bg-[#0a1628]/90 backdrop-blur-sm rounded-xl p-4 hover:bg-[#0a1628]/100 transition-all active:scale-95">
+//       <div className="flex flex-col items-center gap-2">
+//         <div className="text-3xl">{icon}</div>
+//         <p className="text-white font-bold text-sm">{label}</p>
+//       </div>
+//     </button>
+//   );
+// }

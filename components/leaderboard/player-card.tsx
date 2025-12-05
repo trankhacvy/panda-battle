@@ -86,7 +86,7 @@ export function PlayerCard({
 
         {/* Battle Button */}
         <div className="relative z-10">
-          <Button variant="danger" size="sm" onClick={onBattle}>
+          <Button variant="destructive" size="sm" onClick={onBattle}>
             Battle
           </Button>
         </div>
