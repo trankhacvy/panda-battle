@@ -1,26 +1,30 @@
-import type { LucideIcon } from "lucide-react";
+import { Badge, type BadgeProps } from "@/components/ui/badge";
 
 interface AttributeCardProps {
   label: string;
   value: number;
   icon: string;
-  textColor: string;
+  variant?:
+    | "primary"
+    | "secondary"
+    | "destructive"
+    | "warning"
+    | "info"
+    | "pink";
+  size?: BadgeProps["size"];
 }
 
 export function AttributeCard({
   label,
   value,
   icon,
-  textColor,
+  variant = "primary",
+  size = "md",
 }: AttributeCardProps) {
   return (
-    <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-2xl px-2 py-2 flex items-center justify-center gap-1.5 border border-white/10">
-      <div className="text-lg grayscale opacity-80">
-        {icon}
-      </div>
-      <span className="font-bold text-xs whitespace-nowrap text-white">
-        {label}: <span className={textColor}>{value}</span>
-      </span>
-    </div>
+    <Badge variant={variant} size={size}>
+      <span className="mr-1">{icon}</span>
+      {label}: {value}
+    </Badge>
   );
 }

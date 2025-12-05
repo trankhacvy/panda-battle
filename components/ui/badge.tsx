@@ -3,37 +3,143 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-const badgeVariants = cva(
-  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+const badgeVariants = cva("inline-block bg-white rounded-full", {
+  variants: {
+    variant: {
+      primary: "",
+      secondary: "",
+      destructive: "",
+      warning: "",
+      info: "",
+      pink: "",
+    },
+    size: {
+      sm: "p-[2px] pb-[4px]",
+      md: "p-[3px] pb-[6px]",
+      lg: "p-[4px] pb-[8px]",
+    },
+  },
+  defaultVariants: {
+    variant: "primary",
+    size: "md",
+  },
+});
+
+const badgeInnerVariants = cva(
+  "flex items-center justify-center rounded-full font-bold text-white tracking-wide",
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
+        primary: "bg-game-primary shadow-[0_3px_0_var(--game-primary-dark)]",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-game-secondary shadow-[0_3px_0_var(--game-secondary-dark)]",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
-        outline: "text-foreground",
-        // Game-specific stat badges
-        strength:
-          "border-transparent bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-md shadow-red-500/30 font-bold hover:shadow-red-500/50 hover:scale-105",
-        speed:
-          "border-transparent bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md shadow-cyan-500/30 font-bold hover:shadow-cyan-500/50 hover:scale-105",
-        endurance:
-          "border-transparent bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md shadow-green-500/30 font-bold hover:shadow-green-500/50 hover:scale-105",
-        luck: "border-transparent bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md shadow-purple-500/30 font-bold hover:shadow-purple-500/50 hover:scale-105",
-        rank: "border-2 border-yellow-500/50 bg-gradient-to-r from-yellow-500 to-amber-500 text-white shadow-lg shadow-yellow-500/40 font-bold hover:shadow-yellow-500/60 hover:scale-105 animate-pulse-slow",
-        win: "border-transparent bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-md shadow-emerald-500/30 hover:shadow-emerald-500/50",
-        loss: "border-transparent bg-gradient-to-r from-gray-500 to-slate-500 text-white shadow-md shadow-gray-500/30 hover:shadow-gray-500/50",
-        turns:
-          "border-transparent bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md shadow-indigo-500/30 font-bold hover:shadow-indigo-500/50 hover:scale-105",
-        prize:
-          "border-2 border-amber-500/50 bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg shadow-amber-500/40 font-bold hover:shadow-amber-500/60 hover:scale-105",
+          "bg-game-destructive shadow-[0_3px_0_var(--game-destructive-dark)]",
+        warning: "bg-game-warning shadow-[0_3px_0_var(--game-warning-dark)]",
+        info: "bg-game-info shadow-[0_3px_0_var(--game-info-dark)]",
+        pink: "bg-game-pink shadow-[0_3px_0_var(--game-pink-dark)]",
+      },
+      size: {
+        sm: "px-2 py-0.5 text-[10px] shadow-[0_2px_0_var(--game-primary-dark)]",
+        md: "px-3 py-0.5 text-xs shadow-[0_3px_0_var(--game-primary-dark)]",
+        lg: "px-4 py-1 text-sm shadow-[0_4px_0_var(--game-primary-dark)]",
       },
     },
+    compoundVariants: [
+      {
+        variant: "primary",
+        size: "sm",
+        class: "shadow-[0_2px_0_var(--game-primary-dark)]",
+      },
+      {
+        variant: "primary",
+        size: "md",
+        class: "shadow-[0_3px_0_var(--game-primary-dark)]",
+      },
+      {
+        variant: "primary",
+        size: "lg",
+        class: "shadow-[0_4px_0_var(--game-primary-dark)]",
+      },
+      {
+        variant: "secondary",
+        size: "sm",
+        class: "shadow-[0_2px_0_var(--game-secondary-dark)]",
+      },
+      {
+        variant: "secondary",
+        size: "md",
+        class: "shadow-[0_3px_0_var(--game-secondary-dark)]",
+      },
+      {
+        variant: "secondary",
+        size: "lg",
+        class: "shadow-[0_4px_0_var(--game-secondary-dark)]",
+      },
+      {
+        variant: "destructive",
+        size: "sm",
+        class: "shadow-[0_2px_0_var(--game-destructive-dark)]",
+      },
+      {
+        variant: "destructive",
+        size: "md",
+        class: "shadow-[0_3px_0_var(--game-destructive-dark)]",
+      },
+      {
+        variant: "destructive",
+        size: "lg",
+        class: "shadow-[0_4px_0_var(--game-destructive-dark)]",
+      },
+      {
+        variant: "warning",
+        size: "sm",
+        class: "shadow-[0_2px_0_var(--game-warning-dark)]",
+      },
+      {
+        variant: "warning",
+        size: "md",
+        class: "shadow-[0_3px_0_var(--game-warning-dark)]",
+      },
+      {
+        variant: "warning",
+        size: "lg",
+        class: "shadow-[0_4px_0_var(--game-warning-dark)]",
+      },
+      {
+        variant: "info",
+        size: "sm",
+        class: "shadow-[0_2px_0_var(--game-info-dark)]",
+      },
+      {
+        variant: "info",
+        size: "md",
+        class: "shadow-[0_3px_0_var(--game-info-dark)]",
+      },
+      {
+        variant: "info",
+        size: "lg",
+        class: "shadow-[0_4px_0_var(--game-info-dark)]",
+      },
+      {
+        variant: "pink",
+        size: "sm",
+        class: "shadow-[0_2px_0_var(--game-pink-dark)]",
+      },
+      {
+        variant: "pink",
+        size: "md",
+        class: "shadow-[0_3px_0_var(--game-pink-dark)]",
+      },
+      {
+        variant: "pink",
+        size: "lg",
+        class: "shadow-[0_4px_0_var(--game-pink-dark)]",
+      },
+    ],
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
+      size: "md",
     },
   }
 );
@@ -42,9 +148,13 @@ export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
+function Badge({ className, variant, size, children, ...props }: BadgeProps) {
   return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+    <div className={cn(badgeVariants({ variant, size }), className)} {...props}>
+      <div className={cn(badgeInnerVariants({ variant, size }))}>
+        {children}
+      </div>
+    </div>
   );
 }
 

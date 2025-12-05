@@ -7,8 +7,8 @@ import React from "react";
 import { ArrowLeft, EllipsisVertical } from "lucide-react";
 import { Typography } from "./ui/typography";
 import { SettingsDropdown } from "./settings-dropdown";
-import { RoundButton } from "./ui/round-button";
-import { CardFrame } from "./ui/card-frame";
+import { IconButton } from "./ui/icon-button";
+import { Card, CardContent } from "./ui/card";
 
 export default function Header() {
   const embeddedAddress = useEmbeddedAddress();
@@ -19,32 +19,30 @@ export default function Header() {
     switch (true) {
       case pathname?.includes("profile"):
         return (
-          <RoundButton
-            variant="blue"
+          <IconButton
+            variant="secondary"
             size="sm"
             onClick={() => router.back()}
           >
             <ArrowLeft className="size-4 text-white" strokeWidth={3} />
-          </RoundButton>
+          </IconButton>
         );
       default:
         return (
           <div className="flex items-center gap-3">
             <Link href={`/profile/${embeddedAddress}`}>
-              <CardFrame size="tiny">
-                <div className="size-12 overflow-hidden flex items-center justify-center relative">
-                  <img
-                    src="/images/reated-panda-bg.png"
-                    alt="Background"
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  <img
-                    src="/images/sample-panda.png"
-                    alt="Panda Avatar"
-                    className="relative z-10 w-full h-full object-cover"
-                  />
-                </div>
-              </CardFrame>
+              <div className="size-12 rounded-xl overflow-hidden flex items-center justify-center relative">
+                <img
+                  src="/images/fighter-frame.png"
+                  alt="Background"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <img
+                  src="/images/sample-panda.png"
+                  alt="Panda Avatar"
+                  className="relative z-10 w-full h-full object-cover"
+                />
+              </div>
             </Link>
             <div className="text-white">
               <p className="text-sm font-medium opacity-90">Points:</p>
@@ -60,7 +58,10 @@ export default function Header() {
       case pathname?.includes("profile"):
         return (
           <div className="flex-1 flex items-center justify-center">
-            <Typography variant="page-title" className="text-[#A855F7]">
+            <Typography
+              variant="page-title"
+              className="text-white drop-shadow-lg"
+            >
               Profile
             </Typography>
           </div>
@@ -74,9 +75,9 @@ export default function Header() {
     switch (true) {
       case pathname?.includes("profile"):
         return (
-          <RoundButton variant="purple" size="sm">
+          <IconButton variant="secondary" size="sm">
             <EllipsisVertical className="size-4 text-white" strokeWidth={3} />
-          </RoundButton>
+          </IconButton>
         );
       default:
         return (

@@ -50,7 +50,7 @@ export function Navigation() {
     router.push(path);
   };
 
-  if (pathname === "/") {
+  if (pathname === "/" || pathname?.includes("/deposit") || pathname?.includes("/delegate")) {
     return null;
   }
 

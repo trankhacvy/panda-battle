@@ -7,7 +7,7 @@ interface StatCardProps extends React.HTMLAttributes<HTMLDivElement> {
   label: string;
   value: number;
   maxValue?: number;
-  variant?: "strength" | "speed" | "endurance" | "luck";
+  variant?: "destructive" | "warning" | "primary" | "secondary";
   showProgress?: boolean;
   icon?: React.ReactNode;
 }
@@ -19,7 +19,7 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
       label,
       value,
       maxValue = 100,
-      variant = "strength",
+      variant = "destructive",
       showProgress = true,
       icon,
       ...props
@@ -29,10 +29,10 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
     const percentage = (value / maxValue) * 100;
 
     const variantColors = {
-      strength: "from-red-500/10 to-orange-500/10 border-red-500/30",
-      speed: "from-cyan-500/10 to-blue-500/10 border-cyan-500/30",
-      endurance: "from-green-500/10 to-emerald-500/10 border-green-500/30",
-      luck: "from-purple-500/10 to-pink-500/10 border-purple-500/30",
+      destructive: "from-red-500/10 to-orange-500/10 border-red-500/30",
+      warning: "from-cyan-500/10 to-blue-500/10 border-cyan-500/30",
+      primary: "from-green-500/10 to-emerald-500/10 border-green-500/30",
+      secondary: "from-purple-500/10 to-pink-500/10 border-purple-500/30",
     };
 
     return (
@@ -58,7 +58,12 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
         </div>
 
         {showProgress && (
-          <Progress value={percentage} variant={variant} showShell className="h-2" />
+          <Progress
+            value={percentage}
+            variant={variant}
+            showShell
+            className="h-2"
+          />
         )}
       </div>
     );

@@ -5,15 +5,7 @@ import { mockOpponents } from "@/lib/mock/battles";
 import { OpponentCard } from "@/components/battle/opponent-card";
 import { useSound } from "@/hooks/use-sound";
 import { useRouter } from "next/navigation";
-import { RoundButton } from "@/components/ui/round-button";
-
-const bgColors = [
-  "bg-red-900/60",
-  "bg-green-900/60",
-  "bg-purple-900/60",
-  "bg-slate-700/60",
-  "bg-teal-900/60",
-];
+import { IconButton } from "@/components/ui/icon-button";
 
 export default function BattlePage() {
   const router = useRouter();
@@ -45,12 +37,12 @@ export default function BattlePage() {
           Battle Opponent List
         </h1>
         <div className="flex gap-2">
-          <RoundButton variant="green" size="sm" onClick={handleSort}>
+          <IconButton variant="secondary" size="sm" onClick={handleSort}>
             <ArrowDownUp className="text-white" />
-          </RoundButton>
-          <RoundButton variant="green" size="sm" onClick={handleFilter}>
+          </IconButton>
+          <IconButton variant="secondary" size="sm" onClick={handleFilter}>
             <Filter className="text-white" />
-          </RoundButton>
+          </IconButton>
         </div>
       </div>
 
@@ -59,7 +51,6 @@ export default function BattlePage() {
           <OpponentCard
             key={opponent.id}
             opponent={opponent}
-            bgColor={bgColors[index % bgColors.length]}
             onBattle={() => handleBattle(opponent.id)}
           />
         ))}
