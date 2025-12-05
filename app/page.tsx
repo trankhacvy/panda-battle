@@ -77,7 +77,7 @@ export default function Home() {
           transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
         >
           <Button
-            variant="game"
+            variant="primary"
             size="lg"
             className="w-full"
             disabled={!ready}

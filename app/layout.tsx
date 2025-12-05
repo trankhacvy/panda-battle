@@ -6,8 +6,8 @@ import { AppBackground } from "@/components/background/app-background";
 import { GameBackground } from "@/components/background/game-background";
 import { AppProviders } from "@/components/providers/app-provider";
 import { cn } from "@/lib/utils";
-import { InstallAppDrawer } from "@/components/global/install-app-drawer";
-import { NotificationPermissionDrawer } from "@/components/global/notification-permission-drawer";
+// import { InstallAppDrawer } from "@/components/global/install-app-drawer";
+// import { NotificationPermissionDrawer } from "@/components/global/notification-permission-drawer";
 
 const rubik = Rubik({
   variable: "--font-rubik",

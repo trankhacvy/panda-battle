@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Search, ArrowDownUp, Filter } from "lucide-react";
 import { PlayerCard } from "@/components/leaderboard/player-card";
 import { useSound } from "@/hooks/use-sound";
-import { RoundButton } from "@/components/ui/round-button";
-import { CardFrame } from "@/components/ui/card-frame";
+import { Card } from "@/components/ui/card";
+import { IconButton } from "@/components/ui/icon-button";
 
 const players = [
   {
@@ -72,7 +72,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="flex-1 px-3 sm:px-4 py-2 space-y-2 sm:space-y-3 overflow-auto relative z-10 pb-24">
-      <CardFrame size="lg" className="w-full">
+      <Card size="lg" className="w-full">
         <picture>
           <source srcSet="/images/pool-bg.avif" type="image/avif" />
           <source srcSet="/images/pool-bg.webp" type="image/webp" />
@@ -82,7 +82,7 @@ export default function LeaderboardPage() {
             className="w-full h-auto object-cover"
           />
         </picture>
-      </CardFrame>
+      </Card>
 
       {/* Search and Filters */}
       <div className="flex gap-2 py-2.5">
@@ -99,13 +99,13 @@ export default function LeaderboardPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <RoundButton variant='secondary' size="sm" onClick={handleSort}>
+        <IconButton variant="secondary" size="sm" onClick={handleSort}>
           <ArrowDownUp className="text-white" strokeWidth={2.5} />
-        </RoundButton>
+        </IconButton>
 
-        <RoundButton variant="secondary" size="sm" onClick={handleFilter}>
+        <IconButton variant="secondary" size="sm" onClick={handleFilter}>
           <Filter className="text-white" strokeWidth={2.5} />
-        </RoundButton>
+        </IconButton>
       </div>
 
       {/* Player List */}

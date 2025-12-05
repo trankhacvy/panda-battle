@@ -12,16 +12,6 @@ interface BattleConfirmationDialogProps {
   onCancel: () => void;
 }
 
-/**
- * BattleConfirmationDialog - Confirmation dialog before battle
- *
- * Task 8.2: Add battle initiation UI
- * - Show turn cost indicator
- * - Add confirmation dialog before battle
- * - Display warning if challenging Top 20 player
- *
- * Requirements: 3.1, 9.4
- */
 export function BattleConfirmationDialog({
   opponent,
   playerTurns,
@@ -34,10 +24,7 @@ export function BattleConfirmationDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <Card
-        variant="game"
-        className="w-full max-w-md animate-in zoom-in-95 duration-200"
-      >
+      <Card className="w-full max-w-md animate-in zoom-in-95 duration-200">
         <CardHeader>
           <CardTitle className="text-center">
             <span className="text-2xl">⚔️</span> Challenge Opponent
@@ -54,8 +41,8 @@ export function BattleConfirmationDialog({
             </div>
             <h3 className="text-xl font-bold">{opponent.name}</h3>
             <div className="flex items-center justify-center gap-2">
-              <Badge variant="rank">Rank #{opponent.rank}</Badge>
-              <Badge variant="default">Power: {opponent.power}</Badge>
+              <Badge variant="secondary">Rank #{opponent.rank}</Badge>
+              <Badge variant="primary">Power: {opponent.power}</Badge>
             </div>
           </div>
 
@@ -65,7 +52,7 @@ export function BattleConfirmationDialog({
               <span className="text-xl">🎯</span>
               <span className="text-sm font-medium">Turn Cost</span>
             </div>
-            <Badge variant="turns" className="text-lg px-3 py-1">
+            <Badge variant="secondary" className="text-lg px-3 py-1">
               1 Turn
             </Badge>
           </div>
@@ -74,7 +61,7 @@ export function BattleConfirmationDialog({
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Your turns:</span>
             <Badge
-              variant={canBattle ? "default" : "destructive"}
+              variant={canBattle ? "secondary" : "destructive"}
               className="text-base"
             >
               {playerTurns} / 10
@@ -125,7 +112,7 @@ export function BattleConfirmationDialog({
           {/* Action Buttons */}
           <div className="flex gap-3 pt-2">
             <Button
-              variant="outline"
+              variant="secondary"
               size="lg"
               className="flex-1"
               onClick={onCancel}
@@ -133,7 +120,7 @@ export function BattleConfirmationDialog({
               Cancel
             </Button>
             <Button
-              variant="game"
+              variant="secondary"
               size="lg"
               className="flex-1"
               onClick={onConfirm}

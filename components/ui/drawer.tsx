@@ -127,7 +127,7 @@ function DrawerTitle({
 
         <DrawerClose asChild>
           <Button
-            variant="ghost"
+            variant="info"
             size="default"
             aria-label="Close drawer"
             onClick={onClose === true ? undefined : onClose}

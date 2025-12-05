@@ -1,7 +1,7 @@
 import type { OpponentPanda } from "@/lib/mock/battles";
 import { Button } from "../ui/button";
-import { CardFrame } from "../ui/card-frame";
 import { Badge } from "../ui/badge";
+import { Card } from "../ui/card";
 
 interface OpponentCardProps {
   opponent: OpponentPanda;
@@ -10,7 +10,7 @@ interface OpponentCardProps {
 
 export function OpponentCard({ opponent, onBattle }: OpponentCardProps) {
   return (
-    <CardFrame size="md" className="w-full">
+    <Card size="md" className="w-full">
       <div className="rounded-[1.125rem] p-2 sm:p-2.5 flex items-center gap-2 sm:gap-2.5 bg-white">
         {/* Avatar */}
         <div className="w-14 sm:w-16 h-14 sm:h-16 relative overflow-hidden">
@@ -43,6 +43,6 @@ export function OpponentCard({ opponent, onBattle }: OpponentCardProps) {
           Battle
         </Button>
       </div>
-    </CardFrame>
+    </Card>
   );
 }

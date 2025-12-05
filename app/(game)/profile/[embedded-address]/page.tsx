@@ -8,27 +8,22 @@ import {
   generateAttributes,
   type Player,
 } from "@/lib/mock/data";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Typography } from "@/components/ui/typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CardFrame } from "@/components/ui/card-frame";
 import { ReceiveFundsDrawer } from "@/components/drawers/receive-funds-drawer";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import {
   Trophy,
   Brain,
   Dumbbell,
-  Flame,
   Zap,
   Copy,
   Wallet,
   Check,
-  TrendingUp,
-  Target,
-  Award,
 } from "lucide-react";
 import { formatAddress } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
 export default function ProfilePage() {
   const params = useParams();
@@ -71,7 +66,7 @@ export default function ProfilePage() {
   return (
     <div className="p-4 pb-24 space-y-4">
       {/* Panda Avatar Card */}
-      <CardFrame size="lg">
+      <Card size="lg">
         <div className="aspect-video flex items-center justify-center relative overflow-hidden">
           <picture className="absolute inset-0 w-full h-full">
             <source srcSet="/images/fighter-frame.avif" type="image/avif" />
@@ -88,7 +83,7 @@ export default function ProfilePage() {
             className="relative z-10 w-auto h-full object-cover"
           />
         </div>
-      </CardFrame>
+      </Card>
 
       {/* Player Info Card */}
       <div className="w-full relative z-10">
@@ -96,32 +91,33 @@ export default function ProfilePage() {
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <Typography 
-                  variant="h2" 
+                <Typography
+                  variant="h2"
                   className="text-white font-black text-3xl"
                   style={{
-                    textShadow: '3px 3px 0px rgba(0,0,0,0.3), 5px 5px 10px rgba(0,0,0,0.5)'
+                    textShadow:
+                      "3px 3px 0px rgba(0,0,0,0.3), 5px 5px 10px rgba(0,0,0,0.5)",
                   }}
                 >
                   {player.pandaName}
                 </Typography>
                 {player.inTop20 && (
-                  <Badge variant="rank" className="flex items-center gap-1">
+                  <Badge
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
                     <Trophy className="size-3" />
                     Top 20
                   </Badge>
                 )}
               </div>
               {player.rank > 0 && (
-                <Badge variant="default" className="mb-2">
+                <Badge variant="secondary" className="mb-2">
                   Rank #{player.rank}
                 </Badge>
               )}
               <div className="flex items-center gap-2">
-                <Typography
-                  variant="small"
-                  className="text-white font-mono"
-                >
+                <Typography variant="small" className="text-white font-mono">
                   {formatAddress(player.wallet, 6)}
                 </Typography>
                 <button
@@ -193,9 +189,6 @@ export default function ProfilePage() {
           />
         </div>
       </div>
-
-    
-      
     </div>
   );
 }
@@ -214,9 +207,7 @@ function StatBadge({
   return (
     <div className="flex-1 bg-white rounded-2xl p-4 shadow-[0_7px_0_#d0d0d0,0_8px_16px_-7px_rgba(0,0,0,0.2)]">
       <div className="flex flex-col items-center gap-2">
-        <div className={`${color} text-white p-3 rounded-xl`}>
-          {icon}
-        </div>
+        <div className={`${color} text-white p-3 rounded-xl`}>{icon}</div>
         <Typography variant="small" className="text-gray-700 font-semibold">
           {label}
         </Typography>
@@ -242,9 +233,7 @@ function BattleStatBadge({
   return (
     <div className="flex-1 bg-white rounded-2xl p-4 shadow-[0_7px_0_#d0d0d0,0_8px_16px_-7px_rgba(0,0,0,0.2)]">
       <div className="flex flex-col items-center gap-2">
-        <div className={`${color} text-white p-3 rounded-xl`}>
-          {icon}
-        </div>
+        <div className={`${color} text-white p-3 rounded-xl`}>{icon}</div>
         <Typography variant="small" className="text-gray-700 font-semibold">
           {label}
         </Typography>

@@ -5,7 +5,7 @@ import { mockOpponents } from "@/lib/mock/battles";
 import { OpponentCard } from "@/components/battle/opponent-card";
 import { useSound } from "@/hooks/use-sound";
 import { useRouter } from "next/navigation";
-import { RoundButton } from "@/components/ui/round-button";
+import { IconButton } from "@/components/ui/icon-button";
 
 export default function BattlePage() {
   const router = useRouter();
@@ -37,12 +37,12 @@ export default function BattlePage() {
           Battle Opponent List
         </h1>
         <div className="flex gap-2">
-          <RoundButton variant="secondary" size="sm" onClick={handleSort}>
+          <IconButton variant="secondary" size="sm" onClick={handleSort}>
             <ArrowDownUp className="text-white" />
-          </RoundButton>
-          <RoundButton variant="secondary" size="sm" onClick={handleFilter}>
+          </IconButton>
+          <IconButton variant="secondary" size="sm" onClick={handleFilter}>
             <Filter className="text-white" />
-          </RoundButton>
+          </IconButton>
         </div>
       </div>
 

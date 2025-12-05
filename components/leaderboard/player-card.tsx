@@ -1,5 +1,5 @@
 import { Button } from "../ui/button";
-import { CardFrame } from "../ui/card-frame";
+import { Card } from "../ui/card";
 
 interface PlayerCardProps {
   rank: number;
@@ -39,7 +39,7 @@ export function PlayerCard({
   onBattle,
 }: PlayerCardProps) {
   return (
-    <CardFrame size="md" className={`w-full relative`}>
+    <Card size="md" className={`w-full relative`}>
       <div className="rounded-[1.125rem] p-2 sm:p-2.5 flex items-center gap-2 sm:gap-2.5 bg-white relative overflow-hidden">
         {/* Background pattern for top 3 */}
         {rank <= 3 && (
@@ -91,6 +91,6 @@ export function PlayerCard({
           </Button>
         </div>
       </div>
-    </CardFrame>
+    </Card>
   );
 }

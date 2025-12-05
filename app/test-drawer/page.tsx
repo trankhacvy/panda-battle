@@ -13,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CardFrame } from "@/components/ui/card-frame";
 
 export default function TestDrawerPage() {
   const [showInstallDrawer, setShowInstallDrawer] = useState(false);
@@ -43,7 +42,7 @@ export default function TestDrawerPage() {
         </Button>
         <Badge variant="primary">New</Badge>
         <Card variant="primary" size="lg">
-          <CardHeader variant='primary'>
+          <CardHeader variant="primary">
             <CardTitle>Card Title</CardTitle>
           </CardHeader>
           <CardContent>Card content here</CardContent>

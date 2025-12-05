@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CardFrame } from "@/components/ui/card-frame";
+import { Card } from "@/components/ui/card";
 import { useState } from "react";
 
 export default function DelegatePage() {
@@ -28,7 +28,7 @@ export default function DelegatePage() {
       </div>
 
       {/* Main Content Card */}
-      <CardFrame size="lg" className="flex-1 flex flex-col  mx-4">
+      <Card size="lg" className="flex-1 flex flex-col  mx-4">
         <div className="flex-1 flex flex-col  justify-between p-6 bg-gradient-to-b from-[#1a2942] to-[#0a1628]">
           {/* Content Section */}
           <div className="flex-1 flex flex-col justify-center gap-6 min-h-0 overflow-y-auto">
@@ -54,7 +54,7 @@ export default function DelegatePage() {
             </Button>
           </div>
         </div>
-      </CardFrame>
+      </Card>
     </div>
   );
 }

@@ -20,17 +20,6 @@ interface BattleResultsProps {
   onComplete: () => void;
 }
 
-/**
- * BattleResults - Battle results display screen
- *
- * Task 9.4: Add battle results screen
- * - Display final battle outcome
- * - Show attribute changes for both players
- * - Display updated rank/position
- * - Add "Battle Again" and "Return Home" buttons
- *
- * Requirements: 3.5, 4.4
- */
 export function BattleResults({
   playerPanda,
   opponentPanda,
@@ -104,7 +93,7 @@ export function BattleResults({
         </div>
 
         {/* Battle Scores */}
-        <Card variant="game">
+        <Card>
           <CardHeader>
             <CardTitle className="text-center">Battle Scores</CardTitle>
           </CardHeader>
@@ -121,7 +110,7 @@ export function BattleResults({
                 >
                   {playerScore}
                 </div>
-                <Badge variant={isVictory ? "default" : "outline"}>
+                <Badge variant={isVictory ? "primary" : "secondary"}>
                   {playerPanda.name}
                 </Badge>
               </div>
@@ -146,7 +135,7 @@ export function BattleResults({
                 >
                   {opponentScore}
                 </div>
-                <Badge variant={!isVictory ? "default" : "outline"}>
+                <Badge variant={!isVictory ? "primary" : "secondary"}>
                   {opponentPanda.name}
                 </Badge>
               </div>
@@ -156,7 +145,7 @@ export function BattleResults({
 
         {/* Attribute Changes */}
         {stolenAttribute && (
-          <Card variant="highlight">
+          <Card>
             <CardHeader>
               <CardTitle className="text-center flex items-center justify-center gap-2">
                 <span className="text-2xl">✨</span>
@@ -209,13 +198,7 @@ export function BattleResults({
                           40) *
                         100
                       }
-                      variant={
-                        stolenAttribute.type as
-                          | "strength"
-                          | "speed"
-                          | "endurance"
-                          | "luck"
-                      }
+                      variant={"info"}
                       className="h-2"
                     />
                   </div>
@@ -251,13 +234,7 @@ export function BattleResults({
                           40) *
                         100
                       }
-                      variant={
-                        stolenAttribute.type as
-                          | "strength"
-                          | "speed"
-                          | "endurance"
-                          | "luck"
-                      }
+                      variant={"info"}
                       className="h-2 opacity-50"
                     />
                   </div>
@@ -268,7 +245,7 @@ export function BattleResults({
         )}
 
         {/* Rank Changes */}
-        <Card variant="game">
+        <Card>
           <CardHeader>
             <CardTitle className="text-center">Rank Changes</CardTitle>
           </CardHeader>
@@ -280,12 +257,12 @@ export function BattleResults({
                   Your Rank
                 </div>
                 <div className="flex items-center justify-center gap-3 p-4 bg-muted/50 rounded-lg">
-                  <Badge variant="outline" className="text-lg">
+                  <Badge variant="secondary" className="text-lg">
                     #{playerPanda.rank}
                   </Badge>
                   <span className="text-2xl">{isVictory ? "⬆️" : "⬇️"}</span>
                   <Badge
-                    variant={isVictory ? "default" : "outline"}
+                    variant={isVictory ? "primary" : "secondary"}
                     className={cn("text-lg", isVictory && "bg-emerald-500")}
                   >
                     #{newPlayerRank}
@@ -293,7 +270,7 @@ export function BattleResults({
                 </div>
                 {isVictory && newPlayerRank <= 20 && playerPanda.rank > 20 && (
                   <div className="text-center">
-                    <Badge variant="default" className="bg-yellow-500">
+                    <Badge variant="primary" className="bg-yellow-500">
                       🎉 Entered Top 20!
                     </Badge>
                   </div>
@@ -306,12 +283,12 @@ export function BattleResults({
                   Opponent Rank
                 </div>
                 <div className="flex items-center justify-center gap-3 p-4 bg-muted/50 rounded-lg">
-                  <Badge variant="outline" className="text-lg">
+                  <Badge variant="secondary" className="text-lg">
                     #{opponentPanda.rank}
                   </Badge>
                   <span className="text-2xl">{!isVictory ? "⬆️" : "⬇️"}</span>
                   <Badge
-                    variant={!isVictory ? "default" : "outline"}
+                    variant={!isVictory ? "primary" : "secondary"}
                     className={cn("text-lg", !isVictory && "bg-emerald-500")}
                   >
                     #{newOpponentRank}
@@ -323,7 +300,7 @@ export function BattleResults({
         </Card>
 
         {/* Battle Statistics */}
-        <Card variant="game">
+        <Card>
           <CardHeader>
             <CardTitle className="text-center">Battle Statistics</CardTitle>
           </CardHeader>
@@ -371,7 +348,7 @@ export function BattleResults({
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
           <Button
-            variant="outline"
+            variant="secondary"
             size="lg"
             className="flex-1"
             onClick={onComplete}
@@ -380,7 +357,7 @@ export function BattleResults({
             Return Home
           </Button>
           <Button
-            variant="game"
+            variant="secondary"
             size="lg"
             className="flex-1"
             onClick={onComplete}
@@ -392,7 +369,7 @@ export function BattleResults({
 
         {/* Rewards Info (if victory) */}
         {isVictory && (
-          <Card variant="game" className="bg-muted/30">
+          <Card variant="secondary" className="bg-muted/30">
             <CardContent className="p-4">
               <div className="text-xs text-muted-foreground text-center space-y-1">
                 <p className="font-semibold">🎁 Victory Rewards:</p>

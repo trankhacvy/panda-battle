@@ -156,7 +156,7 @@ export default function HomePage() {
       {/* <div>
         <h3 className="text-xl font-bold text-white mb-3">News Feed</h3>
         <div className="bg-[#0a1628]/80 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3">
-          <CardFrame size="sm" className="flex-shrink-0">
+          <Card size="sm" className="flex-shrink-0">
             <div className="w-12 h-12 relative overflow-hidden">
               <picture className="absolute inset-0 w-full h-full">
                 <source srcSet="/images/fighter-frame.avif" type="image/avif" />
@@ -173,7 +173,7 @@ export default function HomePage() {
                 className="relative z-10 w-full h-full object-cover"
               />
             </div>
-          </CardFrame>
+          </Card>
           <div>
             <p className="text-white font-bold text-sm">
               New Event: Bamboo Festival
